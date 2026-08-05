@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="TypePulse foundation build and architecture status"
+    />
+    <title>TypePulse — Foundation</title>
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <span class="eyebrow">Phase A · Foundation build</span>
+        <h1>TypePulse</h1>
+        <p class="promise">See your typing rhythm. Not what you type.</p>
+      </header>
+
+      <section class="status-card" aria-labelledby="foundation-status">
+        <div>
+          <p class="section-label">Development status</p>
+          <h2 id="foundation-status">The application shell is ready.</h2>
+          <p>
+            This build validates the Tauri, Rust, and TypeScript foundation. It does not
+            monitor keyboard activity yet.
+          </p>
+        </div>
+        <span class="status" role="status">Foundation ready</span>
+      </section>
+
+      <section class="layers" aria-label="Architecture layers">
+        <article>
+          <span>01</span>
+          <h2>Portable core</h2>
+          <p>Metrics and sessions stay independent from the operating system.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h2>macOS adapter</h2>
+          <p>Permissions and global input remain behind a strict privacy boundary.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h2>Local storage</h2>
+          <p>Only sessions and aggregate statistics will reach SQLite.</p>
+        </article>
+      </section>
+
+      <footer>
+        <p>Next technical milestone: prove privacy-safe input monitoring on macOS.</p>
+        <p id="runtime-status">Frontend initialized.</p>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate macOS foundation
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: TypePulse
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: TypePulse/package-lock.json
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: TypePulse -> target
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Check frontend formatting
+        run: npm run format:check
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Check Rust formatting
+        run: cargo fmt --all --check
+
+      - name: Lint Rust workspace
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Test Rust workspace
+        run: cargo test --workspace --all-targets
+
+      - name: Check Rust workspace
+        run: cargo check --workspace --all-targets

@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+xcuserdata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Rust
+target/
+**/target/
+
+# Node / Vite
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local configuration and generated exports
+.env
+.env.*
+exports/

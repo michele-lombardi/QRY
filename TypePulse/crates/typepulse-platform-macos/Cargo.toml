@@ -1,0 +1,12 @@
+[package]
+name = "typepulse-platform-macos"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "macOS platform adapter for TypePulse"
+
+[dependencies]
+typepulse-core = { path = "../typepulse-core" }
+
+[lints]
+workspace = true

@@ -1,0 +1,12 @@
+[package]
+name = "typepulse-storage-sqlite"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "SQLite persistence adapter for TypePulse"
+
+[dependencies]
+typepulse-core = { path = "../typepulse-core" }
+
+[lints]
+workspace = true

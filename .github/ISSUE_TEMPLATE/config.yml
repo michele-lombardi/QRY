@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/TODO/typepulse/security/advisories/new
+    about: TODO — replace this URL and enable private reporting before publication.
