@@ -32,12 +32,12 @@ for actual in "$package_version" "$tauri_version" $cargo_versions; do
   fi
 done
 
-if ! rg -q "^## \\[$release_version\\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" "$project_root/CHANGELOG.md"; then
+if ! grep -Eq "^## \\[$release_version\\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" "$project_root/CHANGELOG.md"; then
   printf 'CHANGELOG.md has no dated section for %s\n' "$release_version" >&2
   exit 1
 fi
 
-if rg -q 'TODO_OWNER|TODO_[A-Z0-9_]+' "$project_root/.github/workflows"; then
+if grep -Eqr 'TODO_OWNER|TODO_[A-Z0-9_]+' "$project_root/.github/workflows"; then
   printf 'Release workflow contains unresolved placeholders.\n' >&2
   exit 1
 fi

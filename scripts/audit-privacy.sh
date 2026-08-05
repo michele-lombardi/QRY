@@ -6,7 +6,7 @@ project_root="$(cd "$script_dir/.." && pwd)"
 app_root="$project_root/QRY"
 
 log_hits="$(
-  rg -n 'print!|println!|eprint!|eprintln!|dbg!|tracing::|log::|console\.' \
+  grep -Ern 'print!|println!|eprint!|eprintln!|dbg!|tracing::|log::|console\.' \
     "$app_root/crates" "$app_root/src-tauri/src" "$app_root/src" || true
 )"
 unexpected_logs="$(
