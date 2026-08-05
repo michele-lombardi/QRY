@@ -30,13 +30,15 @@ una release macOS stabile.
 - Fase E: `APP-01`, `APP-02` e `APP-03` completati come prerequisito della
   Fase F; tray menu macOS attivo e app rimossa dal Dock;
 - Fase F: avviata dal pannello menu bar e dal ciclo finestra in background;
+- Fase G: automazione qualità/release avviata; audit privacy, SemVer, packaging,
+  workflow draft Release e template cask implementati;
 - rollover: automatico sulla data civile locale, con storico conservato;
 - avvio automatico: preferenza e login item macOS implementati in anticipo;
 - licenza open source: GNU GPLv3 only; restano placeholder anagrafici in
   `NOTICE.md`;
 - prossimo lavoro: completare le schermate della Fase F; overlay e animazione
-  della Fase E restano una linea separata. Restano manuali TCC, login item e
-  comportamento reale della menu bar.
+  della Fase E restano una linea separata. Gate G rimane aperto fino a queste
+  dipendenze, alle prove manuali e alla configurazione del remote GitHub.
 
 ### Priorità
 
@@ -404,22 +406,23 @@ e comprendere i dati senza istruzioni esterne.
 
 | ID | Task | Prio | Taglia | Dipende da | Criterio di accettazione |
 | --- | --- | --- | --- | --- | --- |
-| QA-01 | Audit log e database | P0 | M | DB-09, APP-04 | nessun key code, testo, app o titolo finestra presente |
-| QA-02 | Profilare CPU e memoria idle/typing | P0 | M | OVR-06 | baseline documentata e nessun loop continuo inutile |
-| QA-03 | Test sospensione, logout e riavvio | P0 | M | UI-10 | sessioni chiuse o riprese coerentemente |
-| QA-04 | Test timezone e cambio giorno | P1 | M | DB-07 | riepiloghi non si mescolano tra date |
-| QA-05 | Eseguire smoke test multi-monitor | P1 | M | OVR-03 | checklist manuale completata |
-| REL-01 | Definire versioning e changelog | P0 | S | FND-07 | tag SemVer genera note coerenti |
-| REL-02 | Creare workflow release macOS | P0 | L | REL-01, Gate F | tag produce artefatto e checksum |
-| REL-03 | Applicare firma ad-hoc dove utile | P1 | M | REL-02 | comportamento documentato su Apple Silicon e Intel |
-| REL-04 | Scrivere istruzioni Gatekeeper | P0 | S | REL-02 | utente comprende il limite delle build senza Developer ID |
-| REL-05 | Creare tap `homebrew-typepulse` | P0 | M | REL-02 | repository tap pubblico e installabile |
-| REL-06 | Creare e validare cask | P0 | M | REL-05 | install, upgrade e uninstall provati su macchina pulita |
-| REL-07 | Pubblicare release candidate | P0 | M | QA-01–QA-05, REL-06 | checklist completa e problemi bloccanti chiusi |
-| REL-08 | Pubblicare V1 macOS | P0 | S | REL-07 | tag stabile, release, checksum e cask disponibili |
+| QA-01 | Audit log e database — **Done automatico** | P0 | M | DB-09, APP-04 | script nel gate: niente log eventi, capability minima, schema/DTO aggregati |
+| QA-02 | Profilare CPU e memoria idle/typing — **Blocked da OVR-06/TCC** | P0 | M | OVR-06 | script di campionamento pronto; baseline finale TODO manuale |
+| QA-03 | Test sospensione, logout e riavvio — **Blocked da UI-10/TCC** | P0 | M | UI-10 | checklist pronta; prova reale TODO manuale |
+| QA-04 | Test timezone e cambio giorno — **Done automatico** | P1 | M | DB-07 | offset opposti e date isolate testati; mezzanotte naturale resta smoke test |
+| QA-05 | Eseguire smoke test multi-monitor — **Blocked da OVR-03** | P1 | M | OVR-03 | checklist predisposta, overlay ancora assente |
+| REL-01 | Definire versioning e changelog — **Done** | P0 | S | FND-07 | SemVer, changelog e audit coerenza metadati |
+| REL-02 | Creare workflow release macOS — **Implemented, non pubblicata** | P0 | L | REL-01, Gate F | due architetture, ZIP, checksum e draft Release su tag |
+| REL-03 | Applicare firma ad-hoc dove utile — **Done nel packaging** | P1 | M | REL-02 | identità `-` e `codesign --verify` obbligatorio |
+| REL-04 | Scrivere istruzioni Gatekeeper — **Done** | P0 | S | REL-02 | limiti e apertura sicura documentati senza bypass globale |
+| REL-05 | Creare tap `homebrew-typepulse` — **Template done, remote blocked** | P0 | M | REL-02 | struttura cask pronta; owner/repository TODO |
+| REL-06 | Creare e validare cask — **Blocked da REL-05/release reale** | P0 | M | REL-05 | renderer valida SemVer/hash; install/upgrade/uninstall TODO manuale |
+| REL-07 | Pubblicare release candidate — **Blocked** | P0 | M | QA-01–QA-05, REL-06 | Gate F, QA manuale e remote mancanti |
+| REL-08 | Pubblicare V1 macOS — **Blocked** | P0 | S | REL-07 | nessuna release stabile autorizzata |
 
-**Gate G:** un utente può installare TypePulse dal tap personale, completare
-l'onboarding, usarlo e disinstallarlo seguendo la documentazione pubblica.
+**Gate G: aperto.** Il codice di audit e distribuzione è pronto, ma nessun utente
+può ancora installare dal tap: mancano Gate F, prove reali, remote GitHub,
+Release pubblica e repository `homebrew-typepulse`.
 
 ### Fase H — Linux dopo la V1
 
@@ -561,8 +564,8 @@ Non sono requisiti per la V1:
 | Binding macOS | durante MAC-01 | Rust diretto; bridge minimo solo se necessario |
 | SQLite crate | completata | `rusqlite` bundled + `rusqlite_migration` |
 | Bucket metriche | completata | 60 secondi per la V1 |
-| Artefatto macOS | prima di REL-02 | `.app.tar.gz` o `.app.zip` per il cask |
-| Architetture macOS | prima di REL-02 | Apple Silicon prima; Intel se la CI resta semplice |
+| Artefatto macOS | completata | `.app.zip` separato per architettura + SHA-256 |
+| Architetture macOS | completata nel workflow | Apple Silicon e Intel |
 
 Ogni decisione che cambia un confine architetturale viene registrata in un ADR,
 non soltanto in una issue o in una conversazione.

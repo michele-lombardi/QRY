@@ -88,6 +88,10 @@ Run the complete local gate from the repository root:
 ./scripts/check.sh
 ```
 
+The gate now ends with the Phase G privacy audit. Release-only helpers are
+documented in `scripts/README.md` and `docs/release-process.md`; they create
+generated outputs under the ignored `release/` directory.
+
 ## Workspace design
 
 ### `typepulse-core`
@@ -248,3 +252,5 @@ the diagnostic window, then use the Phase D manual checklist.
 - complete the Phase B TCC, revocation and Secure Input checklists;
 - replace generated Tauri icons before the first release;
 - add a private security contact before public contributions.
+- configure the GitHub remote and Homebrew tap owner before any public release;
+- complete Gate F and the Phase G manual quality checklist before tagging V1.

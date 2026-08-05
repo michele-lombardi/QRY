@@ -30,16 +30,25 @@ npm run tauri build -- --bundles app
 
 ## GitHub Releases
 
-Ogni tag stabile crea tramite GitHub Actions:
+La workflow `.github/workflows/release-macos.yml` reagisce ai tag `v*`, esegue
+il gate completo e crea una draft GitHub Release contenente:
 
 - app bundle per Apple Silicon;
-- app bundle per Intel, finché supportato;
-- checksum SHA-256;
+- app bundle per Intel;
+- un checksum SHA-256 per ogni archivio;
 - archivio adatto al download da Homebrew Cask;
 - release notes e collegamento al codice sorgente del tag.
 
-La scelta tra due artefatti distinti e una Universal Binary resta aperta finché
-non viene misurato il costo in dimensione e tempo di build.
+La V1 usa due artefatti distinti:
+
+```text
+TypePulse-VERSION-aarch64.app.zip
+TypePulse-VERSION-x86_64.app.zip
+```
+
+Questa scelta evita una fase `lipo` non ancora necessaria e permette al cask di
+selezionare architettura e checksum corretti. La Release resta in bozza finché
+le checklist manuali non sono completate.
 
 ## Firma macOS
 
@@ -49,14 +58,16 @@ Per le prime release:
 
 - non è necessario iscriversi al programma Apple per pubblicare il sorgente;
 - le build locali possono essere eseguite senza Developer ID;
-- gli artefatti possono usare una firma ad-hoc gratuita quando tecnicamente
-  utile;
+- gli artefatti usano la firma ad-hoc `-`, verificata prima dell'archivio;
 - la documentazione deve spiegare che Gatekeeper può richiedere un'approvazione
   manuale al primo avvio.
 
 Una firma Developer ID e la notarizzazione potranno essere aggiunte in futuro
 per rendere l'installazione più fluida. Non cambieranno licenza o apertura del
 codice.
+
+La firma ad-hoc non identifica l'autore e non sostituisce la notarizzazione. La
+procedura utente è in [`gatekeeper.md`](gatekeeper.md).
 
 ## Homebrew
 
@@ -77,9 +88,11 @@ brew tap <owner>/typepulse
 brew install --cask typepulse
 ```
 
-Il cask contiene versione, URL immutabile della GitHub Release, checksum e nome
-dell'app bundle. Un workflow di release deve aggiornare il cask soltanto dopo
-che l'artefatto definitivo è stato pubblicato.
+Il cask contiene versione, URL immutabile della GitHub Release, checksum per
+architettura e nome dell'app bundle. Il template versionato è in
+`packaging/homebrew/Casks/typepulse.rb.template`; lo script di rendering accetta
+solo owner semplice, SemVer e hash SHA-256 da 64 cifre. Viene generato soltanto
+dopo che gli artefatti definitivi sono stati pubblicati.
 
 L'ingresso nel repository ufficiale `homebrew/cask` è una possibilità futura,
 non un requisito della V1: dipende anche dai criteri di accettazione e dalla
@@ -125,6 +138,11 @@ GitHub Release + checksum
   ↓
 aggiornamento del tap Homebrew
 ```
+
+La pipeline fino alla draft Release è implementata. L'aggiornamento del tap è
+intenzionalmente manuale per la prima versione e resta bloccato finché non
+esistono owner GitHub, repository remoto e checksum pubblici. La procedura
+operativa completa è in [`release-process.md`](release-process.md).
 
 La pipeline Linux verrà aggiunta senza modificare il flusso macOS già stabile.
 

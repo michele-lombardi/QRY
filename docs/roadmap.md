@@ -61,6 +61,11 @@ l'inattività configurata.
 - creare un tap Homebrew personale e il relativo cask;
 - documentare chiaramente l'avviso Gatekeeper per build senza Developer ID.
 
+Automazione Fase G già pronta: audit privacy, SemVer/changelog, firma ad-hoc,
+packaging Apple Silicon/Intel, checksum, draft GitHub Release e template Cask.
+Pubblicazione, onboarding e prove reali restano aperti fino a Gate F e alla
+configurazione del repository remoto.
+
 **Uscita:** tutti i sette punti dell'MVP sono verificati su una release installabile
 con il tap Homebrew personale.
 

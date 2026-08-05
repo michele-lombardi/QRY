@@ -33,6 +33,10 @@ final statistics/settings screens and the Phase E overlay remain in progress.
 
 See [`../docs/development.md`](../docs/development.md) for the complete guide.
 
+Release packaging and quality automation are documented in
+[`../docs/release-process.md`](../docs/release-process.md). No public release is created
+from an ordinary branch build; only a version tag can start the draft release workflow.
+
 ## License
 
 TypePulse is licensed under `GPL-3.0-only`. Copyright-holder and public-contact

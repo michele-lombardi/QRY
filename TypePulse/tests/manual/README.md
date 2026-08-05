@@ -14,6 +14,10 @@ Menu-bar shell check:
 
 - [`menu-bar-shell.md`](menu-bar-shell.md)
 
+Phase G release-quality check:
+
+- [`release-quality.md`](release-quality.md)
+
 Multi-monitor and release-installation checks arrive with their implementing phases.
 
 Never record or attach raw keyboard-event logs to a test result.

@@ -109,6 +109,8 @@ Controllo completo dalla root:
 3. Proseguire la Fase F con statistiche, preferenze e onboarding; la shell menu
    bar senza Dock è già attiva.
 4. Completare separatamente l'overlay animato della Fase E.
-5. Compilare titolare copyright e contatto pubblico in `NOTICE.md`.
+5. Chiudere le prove manuali della Fase G e configurare il remote GitHub prima
+   di creare una Release o il tap Homebrew.
+6. Compilare titolare copyright e contatto pubblico in `NOTICE.md`.
 
 Il piano aggiornato è in [`docs/working-plan.md`](docs/working-plan.md).

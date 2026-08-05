@@ -86,3 +86,11 @@ Testo breve previsto nell'app:
 
 Qualunque funzione futura che richieda dati oggi vietati va trattata come una
 nuova decisione di prodotto e privacy, non come una semplice estensione tecnica.
+
+## Audit di release
+
+La Fase G aggiunge `scripts/audit-privacy.sh` al gate ordinario. Il controllo
+fallisce in presenza di logging runtime inatteso, capability Tauri più ampie di
+`core:default`, colonne SQLite sensibili o DTO non aggregati. Il solo output di
+profilazione ammesso è CPU/RSS aggregato; database personali, eventi e testo non
+devono essere allegati a issue o release report.

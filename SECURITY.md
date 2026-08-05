@@ -35,3 +35,9 @@ review:
 
 TypePulse must never persist or log individual keys, key codes, written text,
 passwords, active applications, window titles or visited sites.
+
+The local and CI quality gate runs `scripts/audit-privacy.sh` to verify the
+aggregate-only schema/DTO boundary, narrow Tauri capability and absence of
+unexpected runtime input logging. Dependency update checks are configured for
+npm, Cargo and GitHub Actions through Dependabot; a private reporting channel
+is still a release blocker because no final GitHub repository is configured.
