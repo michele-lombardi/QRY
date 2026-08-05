@@ -4,55 +4,84 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="TypePulse foundation build and architecture status"
-    />
-    <title>TypePulse — Foundation</title>
+    <meta name="description" content="TypePulse macOS input-monitor diagnostics" />
+    <title>TypePulse — Input diagnostics</title>
     <script type="module" src="/src/main.ts" defer></script>
   </head>
 
   <body>
     <main class="shell">
       <header class="hero">
-        <span class="eyebrow">Phase A · Foundation build</span>
-        <h1>TypePulse</h1>
-        <p class="promise">See your typing rhythm. Not what you type.</p>
+        <span class="eyebrow">Phase B · macOS technical spike</span>
+        <h1>Input diagnostics</h1>
+        <p class="promise">
+          Counts typing-like activity. Never characters or key codes.
+        </p>
       </header>
 
-      <section class="status-card" aria-labelledby="foundation-status">
+      <section class="status-card" aria-labelledby="permission-heading">
         <div>
-          <p class="section-label">Development status</p>
-          <h2 id="foundation-status">The application shell is ready.</h2>
+          <p class="section-label">Input Monitoring permission</p>
+          <h2 id="permission-heading">
+            Access: <strong id="permission-value">checking</strong>
+          </h2>
           <p>
-            This build validates the Tauri, Rust, and TypeScript foundation. It does not
-            monitor keyboard activity yet.
+            macOS controls this permission. The app can request access and open the
+            exact System Settings section, but it cannot grant access itself.
           </p>
         </div>
-        <span class="status" role="status">Foundation ready</span>
+        <div class="actions">
+          <button id="check-permission" type="button">Check</button>
+          <button id="request-permission" type="button">Request access</button>
+          <button id="open-settings" class="secondary" type="button">
+            Open Settings
+          </button>
+        </div>
       </section>
 
-      <section class="layers" aria-label="Architecture layers">
-        <article>
-          <span>01</span>
-          <h2>Portable core</h2>
-          <p>Metrics and sessions stay independent from the operating system.</p>
-        </article>
-        <article>
-          <span>02</span>
-          <h2>macOS adapter</h2>
-          <p>Permissions and global input remain behind a strict privacy boundary.</p>
-        </article>
-        <article>
-          <span>03</span>
-          <h2>Local storage</h2>
-          <p>Only sessions and aggregate statistics will reach SQLite.</p>
-        </article>
+      <section class="monitor-card" aria-labelledby="monitor-heading">
+        <div class="monitor-header">
+          <div>
+            <p class="section-label">Passive event tap</p>
+            <h2 id="monitor-heading">
+              Monitor: <strong id="monitor-value">stopped</strong>
+            </h2>
+          </div>
+          <div class="actions horizontal">
+            <button id="start-monitor" type="button">Start</button>
+            <button id="stop-monitor" class="secondary" type="button" disabled>
+              Stop
+            </button>
+          </div>
+        </div>
+
+        <div class="metrics" aria-label="Monitor metrics">
+          <article>
+            <span>Typing activities</span>
+            <strong id="activity-value">0</strong>
+          </article>
+          <article>
+            <span>Callback cost</span>
+            <strong id="callback-value">0.00 µs avg · 0.00 µs max</strong>
+          </article>
+          <article>
+            <span>Health</span>
+            <strong id="dropped-value">0 dropped · 0 re-enable</strong>
+          </article>
+        </div>
       </section>
+
+      <aside class="privacy-note">
+        <strong>Diagnostic boundary</strong>
+        <p>
+          This temporary Phase B screen receives only an increasing aggregate count and
+          monitor health. It receives no per-key timestamp, key identity, text,
+          application, or window.
+        </p>
+      </aside>
 
       <footer>
-        <p>Next technical milestone: prove privacy-safe input monitoring on macOS.</p>
-        <p id="runtime-status">Frontend initialized.</p>
+        <p id="runtime-status" role="status">Initializing diagnostics…</p>
       </footer>
     </main>
   </body>

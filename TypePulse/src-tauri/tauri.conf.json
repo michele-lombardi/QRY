@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "TypePulse — Foundation",
+        "title": "TypePulse — Input diagnostics",
         "width": 900,
         "height": 620,
         "minWidth": 760,
@@ -28,6 +28,9 @@
   "bundle": {
     "active": true,
     "targets": ["app"],
+    "macOS": {
+      "minimumSystemVersion": "10.15"
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
