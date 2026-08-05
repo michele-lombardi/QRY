@@ -48,6 +48,7 @@ const byId = <T extends HTMLElement>(id: string): T => {
 };
 
 const permissionValue = byId<HTMLElement>("permission-value");
+const accessibilityValue = byId<HTMLElement>("accessibility-value");
 const monitorValue = byId<HTMLElement>("monitor-value");
 const activityValue = byId<HTMLElement>("activity-value");
 const callbackValue = byId<HTMLElement>("callback-value");
@@ -75,6 +76,11 @@ const setMessage = (value: string, isError = false): void => {
 const renderPermission = ({ status }: PermissionStatus): void => {
   permissionValue.textContent = status;
   permissionValue.dataset.state = status;
+};
+
+const renderAccessibilityPermission = ({ status }: PermissionStatus): void => {
+  accessibilityValue.textContent = status;
+  accessibilityValue.dataset.state = status;
 };
 
 const renderMonitor = (status: MonitorStatus): void => {
@@ -114,14 +120,17 @@ const renderToday = (summary: DailySummary): void => {
 const call = async <T>(command: string): Promise<T> => invoke<T>(command);
 
 const refresh = async (): Promise<void> => {
-  const [permission, monitor, startup, overlay, today] = await Promise.all([
-    call<PermissionStatus>("input_permission_status"),
-    call<MonitorStatus>("monitor_status"),
-    call<StartupPreference>("startup_preference"),
-    call<OverlayPreference>("overlay_preference"),
-    call<DailySummary>("today_summary"),
-  ]);
+  const [permission, accessibility, monitor, startup, overlay, today] =
+    await Promise.all([
+      call<PermissionStatus>("input_permission_status"),
+      call<PermissionStatus>("accessibility_permission_status"),
+      call<MonitorStatus>("monitor_status"),
+      call<StartupPreference>("startup_preference"),
+      call<OverlayPreference>("overlay_preference"),
+      call<DailySummary>("today_summary"),
+    ]);
   renderPermission(permission);
+  renderAccessibilityPermission(accessibility);
   renderMonitor(monitor);
   renderStartup(startup);
   renderOverlayPreference(overlay);
@@ -156,6 +165,42 @@ byId<HTMLButtonElement>("open-settings").addEventListener("click", async () => {
     setMessage(String(error), true);
   }
 });
+
+byId<HTMLButtonElement>("check-accessibility").addEventListener("click", async () => {
+  try {
+    renderAccessibilityPermission(
+      await call<PermissionStatus>("accessibility_permission_status"),
+    );
+    setMessage("Accessibility status refreshed.");
+  } catch (error) {
+    setMessage(String(error), true);
+  }
+});
+
+byId<HTMLButtonElement>("request-accessibility").addEventListener("click", async () => {
+  try {
+    renderAccessibilityPermission(
+      await call<PermissionStatus>("request_accessibility_permission"),
+    );
+    setMessage(
+      "Accessibility request opened. Enable TypePulse in System Settings; macOS may require an app restart.",
+    );
+  } catch (error) {
+    setMessage(String(error), true);
+  }
+});
+
+byId<HTMLButtonElement>("open-accessibility-settings").addEventListener(
+  "click",
+  async () => {
+    try {
+      await call<void>("open_accessibility_permission_settings");
+      setMessage("Opened Privacy & Security → Accessibility.");
+    } catch (error) {
+      setMessage(String(error), true);
+    }
+  },
+);
 
 startButton.addEventListener("click", async () => {
   try {

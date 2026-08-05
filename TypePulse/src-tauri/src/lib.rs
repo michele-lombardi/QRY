@@ -7,8 +7,9 @@ mod shell;
 
 use app_state::DiagnosticState;
 use commands::monitoring::{
-    input_permission_status, monitor_status, open_input_settings, request_input_permission,
-    start_input_monitoring, stop_input_monitoring,
+    accessibility_permission_status, input_permission_status, monitor_status,
+    open_accessibility_permission_settings, open_input_settings, request_accessibility_permission,
+    request_input_permission, start_input_monitoring, stop_input_monitoring,
 };
 use commands::preferences::{set_auto_start_enabled, startup_preference};
 use commands::statistics::{
@@ -64,6 +65,9 @@ pub fn run() {
             input_permission_status,
             request_input_permission,
             open_input_settings,
+            accessibility_permission_status,
+            request_accessibility_permission,
+            open_accessibility_permission_settings,
             monitor_status,
             start_input_monitoring,
             stop_input_monitoring,

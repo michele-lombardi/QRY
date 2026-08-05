@@ -165,6 +165,7 @@ input:focus-visible {
 }
 
 #permission-value,
+#accessibility-value,
 #monitor-value {
   text-transform: capitalize;
 }

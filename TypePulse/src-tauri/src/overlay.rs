@@ -20,6 +20,7 @@ use crate::app_state::DiagnosticState;
 pub(crate) const OVERLAY_LABEL: &str = "overlay";
 const OVERLAY_EVENT: &str = "typepulse://overlay-state";
 const DISPLAY_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
+const FOCUSED_DISPLAY_REFRESH_INTERVAL: Duration = Duration::from_millis(250);
 const UPDATE_INTERVAL: Duration = Duration::from_millis(50);
 const FADE_OUT_DURATION: Duration = Duration::from_millis(180);
 const SCREEN_MARGIN_LOGICAL: f64 = 20.0;
@@ -171,6 +172,8 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
     let mut last_tray_status: Option<(bool, u64)> = None;
     let mut last_preferences = runtime.preferences();
     let mut next_display_refresh = Instant::now();
+    let mut next_focused_display_refresh = Instant::now();
+    let mut positioned_activity_count = 0;
 
     while !runtime.stopped.load(Ordering::Acquire) {
         let Some(window) = app.get_webview_window(OVERLAY_LABEL) else {
@@ -182,8 +185,16 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
             preferences.overlay_enabled && snapshot.live_metrics.phase.overlay_visible();
         let now = Instant::now();
 
-        if preferences.overlay_size != last_preferences.overlay_size
+        let preferences_changed = preferences.overlay_size != last_preferences.overlay_size
             || preferences.overlay_position != last_preferences.overlay_position
+            || preferences.overlay_enabled != last_preferences.overlay_enabled;
+        let first_presentation = should_present && !presented;
+        let typing_moved_on = should_present
+            && snapshot.total_activities != positioned_activity_count
+            && now >= next_focused_display_refresh;
+        if preferences_changed
+            || first_presentation
+            || typing_moved_on
             || now >= next_display_refresh
         {
             if let Err(error) = position_window(&app, &window, preferences) {
@@ -192,6 +203,10 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
             }
             last_preferences = preferences;
             next_display_refresh = now + DISPLAY_REFRESH_INTERVAL;
+            if first_presentation || typing_moved_on {
+                positioned_activity_count = snapshot.total_activities;
+                next_focused_display_refresh = now + FOCUSED_DISPLAY_REFRESH_INTERVAL;
+            }
         }
 
         if should_present {
@@ -257,8 +272,10 @@ fn position_window<R: Runtime>(
     window: &WebviewWindow<R>,
     preferences: AppPreferences,
 ) -> tauri::Result<()> {
-    let monitor = app
-        .primary_monitor()?
+    let focused_monitor = typepulse_platform_macos::focused_window_center()
+        .and_then(|point| app.monitor_from_point(point.x, point.y).ok().flatten());
+    let monitor = focused_monitor
+        .or(app.primary_monitor()?)
         .or_else(|| app.available_monitors().ok()?.into_iter().next());
     let Some(monitor) = monitor else {
         return Ok(());

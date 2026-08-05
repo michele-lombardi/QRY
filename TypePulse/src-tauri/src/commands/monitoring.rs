@@ -3,7 +3,10 @@
 use serde::Serialize;
 use tauri::State;
 use typepulse_platform_macos::{
-    input_permission_status as platform_permission_status, open_input_monitoring_settings,
+    accessibility_permission_status as platform_accessibility_permission_status,
+    input_permission_status as platform_permission_status, open_accessibility_settings,
+    open_input_monitoring_settings,
+    request_accessibility_permission as platform_request_accessibility_permission,
     request_input_permission as platform_request_permission, PermissionStatus,
 };
 
@@ -57,6 +60,21 @@ pub(crate) fn request_input_permission() -> PermissionStatusDto {
 #[tauri::command]
 pub(crate) fn open_input_settings() -> Result<(), String> {
     open_input_monitoring_settings().map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub(crate) fn accessibility_permission_status() -> PermissionStatusDto {
+    platform_accessibility_permission_status().into()
+}
+
+#[tauri::command]
+pub(crate) fn request_accessibility_permission() -> PermissionStatusDto {
+    platform_request_accessibility_permission().into()
+}
+
+#[tauri::command]
+pub(crate) fn open_accessibility_permission_settings() -> Result<(), String> {
+    open_accessibility_settings().map_err(|error| error.to_string())
 }
 
 #[tauri::command]
