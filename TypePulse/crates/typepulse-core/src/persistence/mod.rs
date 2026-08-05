@@ -5,7 +5,10 @@ mod model;
 mod repository;
 
 pub use csv::export_daily_csv;
-pub use model::{AppPreferences, CompletedSessionRecord, DailySummary, MetricBucketRecord};
+pub use model::{
+    AppPreferences, CompletedSessionRecord, DailySummary, MetricBucketRecord, OverlayContent,
+    OverlayPosition, OverlaySize,
+};
 pub use repository::{
     InMemoryStatisticsRepository, RepositoryError, RepositoryErrorKind, StatisticsRepository,
 };

@@ -12,9 +12,9 @@ use std::{
 
 use chrono::{DateTime, Datelike, Local, TimeZone};
 use typepulse_core::{
-    AnimationBand, AppPreferences, CompletedSessionRecord, CoreConfig, DailySummary,
-    EngineSnapshot, LocalDate, MetricBucketRecord, SessionPhase, SessionSummary,
-    StatisticsRepository, TypingEngine,
+    AnimationBand, AppPreferences, CompletedSessionRecord, CoreConfig, DailySummary, EngineUpdate,
+    LocalDate, MetricBucketRecord, SessionPhase, SessionSummary, StatisticsRepository,
+    TypingEngine,
 };
 use typepulse_platform_macos::{
     ActivityReceiver, KeyboardMonitor, MonitorConfig, MonitorError, MonitorMetricsSnapshot,
@@ -199,6 +199,7 @@ pub(crate) struct LiveMetrics {
     pub(crate) raw_wpm: f64,
     pub(crate) displayed_wpm: f64,
     pub(crate) animation_band: AnimationBand,
+    pub(crate) celebration_sequence: u64,
 }
 
 impl Default for LiveMetrics {
@@ -208,6 +209,7 @@ impl Default for LiveMetrics {
             raw_wpm: 0.0,
             displayed_wpm: 0.0,
             animation_band: AnimationBand::Still,
+            celebration_sequence: 0,
         }
     }
 }
@@ -234,8 +236,17 @@ fn relay_activity(
     live_metrics: Arc<Mutex<LiveMetrics>>,
     last_error: Arc<Mutex<Option<String>>>,
 ) {
-    let mut engine =
-        TypingEngine::new(CoreConfig::default()).expect("default core config is valid");
+    let personal_best = repository
+        .lock()
+        .ok()
+        .and_then(|repository| repository.personal_best_wpm().ok())
+        .flatten()
+        .filter(|peak| *peak > 0.0);
+    let mut engine = match personal_best {
+        Some(personal_best) => TypingEngine::with_record(CoreConfig::default(), personal_best),
+        None => TypingEngine::new(CoreConfig::default()),
+    }
+    .expect("default core config and stored non-negative record are valid");
     let mut session_context: Option<SessionWallContext> = None;
     let mut bucket: Option<BucketAccumulator> = None;
 
@@ -270,7 +281,7 @@ fn relay_activity(
                             .get_or_insert_with(|| BucketAccumulator::new(wall))
                             .record(update.snapshot.displayed_wpm);
                         total.fetch_add(1, Ordering::Relaxed);
-                        set_live_metrics(&live_metrics, update.snapshot);
+                        set_live_metrics(&live_metrics, update);
                     }
                     Err(error) => set_shared_error(&last_error, error.to_string()),
                 }
@@ -288,7 +299,7 @@ fn relay_activity(
                                 &last_error,
                             );
                         }
-                        set_live_metrics(&live_metrics, update.snapshot);
+                        set_live_metrics(&live_metrics, update);
                     }
                     Err(error) => set_shared_error(&last_error, error.to_string()),
                 }
@@ -376,13 +387,15 @@ fn flush_bucket(
     }
 }
 
-fn set_live_metrics(target: &Arc<Mutex<LiveMetrics>>, snapshot: EngineSnapshot) {
-    *target.lock().unwrap_or_else(|error| error.into_inner()) = LiveMetrics {
-        phase: snapshot.phase,
-        raw_wpm: snapshot.raw_wpm,
-        displayed_wpm: snapshot.displayed_wpm,
-        animation_band: snapshot.animation_band,
-    };
+fn set_live_metrics(target: &Arc<Mutex<LiveMetrics>>, update: EngineUpdate) {
+    let mut metrics = target.lock().unwrap_or_else(|error| error.into_inner());
+    if update.new_record.is_some() {
+        metrics.celebration_sequence = metrics.celebration_sequence.saturating_add(1);
+    }
+    metrics.phase = update.snapshot.phase;
+    metrics.raw_wpm = update.snapshot.raw_wpm;
+    metrics.displayed_wpm = update.snapshot.displayed_wpm;
+    metrics.animation_band = update.snapshot.animation_band;
 }
 
 fn set_shared_error(target: &Arc<Mutex<Option<String>>>, error: String) {

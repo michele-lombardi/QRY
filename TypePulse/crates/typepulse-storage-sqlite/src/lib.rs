@@ -13,11 +13,15 @@ use rusqlite::{params, Connection, OptionalExtension};
 use rusqlite_migration::{Migrations, M};
 use typepulse_core::{
     AppPreferences, CompletedSessionRecord, DailySummary, LocalDate, MetricBucketRecord,
-    RepositoryError, RepositoryErrorKind, StatisticsRepository,
+    OverlayContent, OverlayPosition, OverlaySize, RepositoryError, RepositoryErrorKind,
+    StatisticsRepository,
 };
 
-const LATEST_SCHEMA_VERSION: usize = 1;
-const MIGRATION_LIST: &[M<'_>] = &[M::up(include_str!("../migrations/0001_initial.sql"))];
+const LATEST_SCHEMA_VERSION: usize = 2;
+const MIGRATION_LIST: &[M<'_>] = &[
+    M::up(include_str!("../migrations/0001_initial.sql")),
+    M::up(include_str!("../migrations/0002_overlay_preferences.sql")),
+];
 const MIGRATIONS: Migrations<'_> = Migrations::from_slice(MIGRATION_LIST);
 
 /// SQLite implementation of the aggregate statistics repository.
@@ -110,6 +114,17 @@ impl SqliteStatisticsRepository {
     #[must_use]
     pub fn connection(&self) -> &Connection {
         &self.connection
+    }
+
+    /// Highest completed-session WPM stored locally, if any.
+    pub fn personal_best_wpm(&self) -> Result<Option<f64>, RepositoryError> {
+        let value = self
+            .connection
+            .query_row("SELECT MAX(peak_wpm) FROM completed_sessions", [], |row| {
+                row.get::<_, Option<f64>>(0)
+            })
+            .map_err(query_error)?;
+        value.map(valid_metric).transpose()
     }
 }
 
@@ -288,34 +303,60 @@ impl StatisticsRepository for SqliteStatisticsRepository {
     }
 
     fn load_preferences(&mut self) -> Result<AppPreferences, RepositoryError> {
-        let enabled = self
+        let stored = self
             .connection
             .query_row(
-                "SELECT auto_start_enabled FROM app_preferences WHERE singleton_id = 1",
+                "SELECT auto_start_enabled, overlay_enabled, overlay_position,
+                        overlay_size, overlay_content
+                 FROM app_preferences WHERE singleton_id = 1",
                 [],
-                |row| row.get::<_, i64>(0),
+                |row| {
+                    Ok((
+                        row.get::<_, i64>(0)?,
+                        row.get::<_, i64>(1)?,
+                        row.get::<_, String>(2)?,
+                        row.get::<_, String>(3)?,
+                        row.get::<_, String>(4)?,
+                    ))
+                },
             )
             .optional()
-            .map_err(query_error)?
-            .unwrap_or(0);
-        match enabled {
-            0 => Ok(AppPreferences {
-                auto_start_enabled: false,
-            }),
-            1 => Ok(AppPreferences {
-                auto_start_enabled: true,
-            }),
-            _ => Err(invalid_data("invalid auto-start preference")),
-        }
+            .map_err(query_error)?;
+        let Some((auto_start, overlay_enabled, position, size, content)) = stored else {
+            return Ok(AppPreferences::default());
+        };
+        Ok(AppPreferences {
+            auto_start_enabled: stored_bool(auto_start, "auto-start")?,
+            overlay_enabled: stored_bool(overlay_enabled, "overlay enabled")?,
+            overlay_position: OverlayPosition::from_stored(&position)
+                .ok_or_else(|| invalid_data("invalid overlay position preference"))?,
+            overlay_size: OverlaySize::from_stored(&size)
+                .ok_or_else(|| invalid_data("invalid overlay size preference"))?,
+            overlay_content: OverlayContent::from_stored(&content)
+                .ok_or_else(|| invalid_data("invalid overlay content preference"))?,
+        })
     }
 
     fn save_preferences(&mut self, preferences: AppPreferences) -> Result<(), RepositoryError> {
         self.connection
             .execute(
-                "INSERT INTO app_preferences(singleton_id, auto_start_enabled) VALUES (1, ?1)
+                "INSERT INTO app_preferences(
+                    singleton_id, auto_start_enabled, overlay_enabled,
+                    overlay_position, overlay_size, overlay_content
+                 ) VALUES (1, ?1, ?2, ?3, ?4, ?5)
                  ON CONFLICT(singleton_id) DO UPDATE SET
-                    auto_start_enabled = excluded.auto_start_enabled",
-                [i64::from(preferences.auto_start_enabled)],
+                    auto_start_enabled = excluded.auto_start_enabled,
+                    overlay_enabled = excluded.overlay_enabled,
+                    overlay_position = excluded.overlay_position,
+                    overlay_size = excluded.overlay_size,
+                    overlay_content = excluded.overlay_content",
+                params![
+                    i64::from(preferences.auto_start_enabled),
+                    i64::from(preferences.overlay_enabled),
+                    preferences.overlay_position.as_str(),
+                    preferences.overlay_size.as_str(),
+                    preferences.overlay_content.as_str(),
+                ],
             )
             .map_err(query_error)?;
         Ok(())
@@ -444,6 +485,14 @@ fn invalid_data(message: &str) -> RepositoryError {
     RepositoryError::new(RepositoryErrorKind::InvalidData, message)
 }
 
+fn stored_bool(value: i64, name: &str) -> Result<bool, RepositoryError> {
+    match value {
+        0 => Ok(false),
+        1 => Ok(true),
+        _ => Err(invalid_data(&format!("invalid {name} preference"))),
+    }
+}
+
 fn repository_error(
     kind: RepositoryErrorKind,
     context: &str,
@@ -458,7 +507,8 @@ mod tests {
 
     use tempfile::tempdir;
     use typepulse_core::{
-        AppPreferences, CompletedSessionRecord, LocalDate, MetricBucketRecord, StatisticsRepository,
+        AppPreferences, CompletedSessionRecord, LocalDate, MetricBucketRecord, OverlayContent,
+        OverlayPosition, OverlaySize, StatisticsRepository,
     };
 
     use super::{SqliteStatisticsRepository, LATEST_SCHEMA_VERSION};
@@ -503,6 +553,10 @@ mod tests {
             repository
                 .save_preferences(AppPreferences {
                     auto_start_enabled: true,
+                    overlay_enabled: false,
+                    overlay_position: OverlayPosition::BottomLeft,
+                    overlay_size: OverlaySize::Large,
+                    overlay_content: OverlayContent::Animation,
                 })
                 .unwrap();
         }
@@ -512,7 +566,39 @@ mod tests {
             5.0
         );
         assert_eq!(reopened.metric_buckets(date).unwrap().len(), 1);
-        assert!(reopened.load_preferences().unwrap().auto_start_enabled);
+        assert_eq!(
+            reopened.load_preferences().unwrap(),
+            AppPreferences {
+                auto_start_enabled: true,
+                overlay_enabled: false,
+                overlay_position: OverlayPosition::BottomLeft,
+                overlay_size: OverlaySize::Large,
+                overlay_content: OverlayContent::Animation,
+            }
+        );
+        assert_eq!(reopened.personal_best_wpm().unwrap(), Some(72.0));
+    }
+
+    #[test]
+    fn version_one_database_gains_safe_overlay_defaults() {
+        let directory = tempdir().unwrap();
+        let path = directory.path().join("typepulse.sqlite3");
+        {
+            let connection = rusqlite::Connection::open(&path).unwrap();
+            connection
+                .execute_batch(concat!(
+                    include_str!("../migrations/0001_initial.sql"),
+                    "\nPRAGMA user_version = 1;"
+                ))
+                .unwrap();
+        }
+        let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
+        assert_eq!(repository.schema_version().unwrap(), 2);
+        assert_eq!(
+            repository.load_preferences().unwrap(),
+            AppPreferences::default()
+        );
+        assert!(repository.last_backup_path().is_some());
     }
 
     #[test]

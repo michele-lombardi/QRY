@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Minimal foundation capability for the main window",
-  "windows": ["main"],
+  "description": "Minimal foundation capability for the main and trusted overlay windows",
+  "windows": ["main", "overlay"],
   "permissions": ["core:default"]
 }

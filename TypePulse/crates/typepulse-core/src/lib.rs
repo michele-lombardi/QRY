@@ -15,8 +15,8 @@ pub use date::{DateError, LocalDate};
 pub use metrics::{AnimationBand, AnimationThresholdError, AnimationThresholds};
 pub use persistence::{
     export_daily_csv, AppPreferences, CompletedSessionRecord, DailySummary,
-    InMemoryStatisticsRepository, MetricBucketRecord, RepositoryError, RepositoryErrorKind,
-    StatisticsRepository,
+    InMemoryStatisticsRepository, MetricBucketRecord, OverlayContent, OverlayPosition, OverlaySize,
+    RepositoryError, RepositoryErrorKind, StatisticsRepository,
 };
 pub use session::{
     ActiveSessionMetrics, EngineError, EngineSnapshot, EngineUpdate, NewRecord, SessionPhase,

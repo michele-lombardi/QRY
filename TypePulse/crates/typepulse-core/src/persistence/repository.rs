@@ -285,6 +285,7 @@ mod tests {
         repository
             .save_preferences(AppPreferences {
                 auto_start_enabled: true,
+                ..AppPreferences::default()
             })
             .unwrap();
         assert!(repository.load_preferences().unwrap().auto_start_enabled);

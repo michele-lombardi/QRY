@@ -81,6 +81,7 @@ fn handle_menu_action<R: Runtime>(app: &AppHandle<R>, action: MenuAction) {
             }
         }
         MenuAction::Quit => {
+            app.state::<crate::overlay::OverlayRuntime>().stop();
             let state = app.state::<DiagnosticState>();
             if let Err(error) = state.stop() {
                 state.record_runtime_error(error);

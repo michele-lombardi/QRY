@@ -1,11 +1,9 @@
 //! Persisted startup preference and OS login registration.
 
+use crate::app_state::DiagnosticState;
 use serde::Serialize;
 use tauri::{AppHandle, State};
 use tauri_plugin_autostart::ManagerExt;
-use typepulse_core::AppPreferences;
-
-use crate::app_state::DiagnosticState;
 
 /// Combined persisted preference and operating-system registration state.
 #[derive(Clone, Copy, Debug, Serialize)]
@@ -44,9 +42,9 @@ pub(crate) fn set_auto_start_enabled(
         manager.disable().map_err(|error| error.to_string())?;
     }
 
-    if let Err(error) = state.save_preferences(AppPreferences {
-        auto_start_enabled: enabled,
-    }) {
+    let mut preferences = state.load_preferences()?;
+    preferences.auto_start_enabled = enabled;
+    if let Err(error) = state.save_preferences(preferences) {
         if enabled {
             let _ = manager.disable();
         } else {

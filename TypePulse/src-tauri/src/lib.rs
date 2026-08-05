@@ -2,6 +2,7 @@
 
 mod app_state;
 mod commands;
+mod overlay;
 mod shell;
 
 use app_state::DiagnosticState;
@@ -13,6 +14,7 @@ use commands::preferences::{set_auto_start_enabled, startup_preference};
 use commands::statistics::{
     export_daily_statistics_csv, recent_daily_summaries, reset_today_statistics, today_summary,
 };
+use overlay::{overlay_preference, set_overlay_preference};
 use tauri::Manager;
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 use typepulse_storage_sqlite::SqliteStatisticsRepository;
@@ -37,6 +39,7 @@ pub fn run() {
             let preferences = state.load_preferences().map_err(std::io::Error::other)?;
 
             app.manage(state);
+            overlay::configure(app, preferences)?;
             shell::configure(app)?;
             if preferences.auto_start_enabled {
                 let state = app.state::<DiagnosticState>();
@@ -66,6 +69,8 @@ pub fn run() {
             stop_input_monitoring,
             startup_preference,
             set_auto_start_enabled,
+            overlay_preference,
+            set_overlay_preference,
             today_summary,
             recent_daily_summaries,
             export_daily_statistics_csv,
