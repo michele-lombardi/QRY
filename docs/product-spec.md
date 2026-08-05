@@ -23,7 +23,9 @@ specifiche della piattaforma.
 1. Al primo avvio viene mostrato un onboarding di massimo tre passaggi.
 2. L'utente concede a TypePulse il permesso di monitoraggio input di macOS.
 3. L'app resta in background, fuori dal Dock e da `Cmd + Tab`.
-4. Alla prima attività di scrittura compare l'overlay.
+4. Alla prima attività di scrittura compare l'overlay sul display della finestra
+   focalizzata quando l'utente ha concesso Accessibilità; altrimenti usa il
+   display principale.
 5. WPM e animazione reagiscono al ritmo corrente.
 6. Dopo due secondi senza digitazione l'overlay scompare.
 7. Dopo circa trenta secondi di inattività la sessione termina.
@@ -32,7 +34,8 @@ specifiche della piattaforma.
 
 La card è larga indicativamente 180–220 pt, usa un materiale traslucido macOS,
 non intercetta i click ed è sempre sopra le finestre normali. L'utente può
-scegliere uno dei quattro angoli dello schermo.
+scegliere uno dei quattro angoli dello schermo. Il monitor di destinazione segue
+il centro della finestra focalizzata e non la posizione del mouse.
 
 L'ingresso usa fade-in e un lieve spostamento verticale di circa 150 ms. In
 uscita l'animazione rallenta e la card svanisce.
@@ -84,6 +87,8 @@ conservare ogni evento.
 - contenuto overlay: WPM, animazione o entrambi;
 - aspetto System, Light o Dark;
 - collegamento alle impostazioni di Input Monitoring.
+- stato e collegamento separati al permesso opzionale Accessibilità per seguire
+  il display focalizzato.
 
 Le statistiche di “oggi” cambiano automaticamente alla mezzanotte della data
 locale. Il nuovo giorno parte vuoto e i giorni precedenti restano disponibili

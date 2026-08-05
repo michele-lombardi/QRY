@@ -17,6 +17,7 @@ Menu-bar shell check:
 Phase E overlay check:
 
 - [`phase-e-overlay.md`](phase-e-overlay.md)
+- [`focused-display.md`](focused-display.md)
 
 Phase G release-quality check:
 

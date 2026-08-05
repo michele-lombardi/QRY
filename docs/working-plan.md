@@ -27,7 +27,7 @@ una release macOS stabile.
   Input Monitoring;
 - Fase C: core metrico e Gate C completati con test deterministici;
 - Fase D: persistenza, aggregazioni, CSV e Gate D completati;
-- Fase E: shell e overlay `APP-01`–`OVR-08` implementati e testati nel codice;
+- Fase E: shell e overlay `APP-01`–`OVR-09` implementati e testati nel codice;
   Gate E end-to-end resta una checklist manuale con consenso TCC;
 - brand identity v0.1: nome, mark, icone, token e comportamenti Pip supportati
   integrati; Dance, Sleep, messaggi v2 e superfici finali hanno task dedicati;
@@ -93,7 +93,8 @@ progetto1/
 │       ├── 0003-local-storage.md
 │       ├── 0004-macos-input-monitor.md
 │       ├── 0005-core-metrics-and-sessions.md
-│       └── 0006-local-day-and-automatic-startup.md
+│       ├── 0006-local-day-and-automatic-startup.md
+│       └── 0007-focused-display-accessibility.md
 ├── TypePulse/
 │   ├── Cargo.toml                     # Workspace Rust
 │   ├── Cargo.lock
@@ -159,14 +160,16 @@ progetto1/
 │   │       └── src/
 │   │           ├── lib.rs
 │   │           ├── event_filter.rs
+│   │           ├── focused_window.rs
 │   │           ├── monitor.rs
 │   │           └── permissions.rs
 │   └── tests/
 │       ├── fixtures/
 │       └── manual/
+│           ├── focused-display.md
 │           ├── input-monitoring.md
-│           ├── multi-monitor.md
-│           └── release-smoke-test.md
+│           ├── phase-e-overlay.md
+│           └── release-quality.md
 ├── packaging/
 │   ├── homebrew/
 │   │   └── typepulse.rb               # Template sincronizzato nel tap
@@ -380,10 +383,12 @@ finestre. La prova reale del login item resta nella checklist manuale.
 | OVR-06 | Implementare stati animati misurabili — **Done** | P0 | M | CORE-05, OVR-01 | fasce core tradotte in Walk/Run; Breathe, Tired e record gestiti esplicitamente |
 | OVR-07 | Aggiungere celebrazione record — **Done** | P1 | M | CORE-08, OVR-06 | sequenza monotona ed effetto breve non ripetuto |
 | OVR-08 | Implementare dimensioni e contenuti configurabili — **Done** | P1 | M | OVR-05, OVR-06 | tre dimensioni e tre modalità persistono e si applicano live |
+| OVR-09 | Seguire il display della finestra focalizzata — **Done nel codice; manuale aperto** | P0 | L | OVR-03, MAC-03 | consenso Accessibilità separato, solo centro geometrico effimero, fallback principale e refresh ≤250 ms durante attività |
 
 **Gate E: implementazione completata, prova reale aperta.** Test automatici
-coprono coordinate, preset, DTO, fasce e persistenza. La checklist manuale deve
-confermare focus, click-through e cambio monitor con Input Monitoring concesso.
+coprono coordinate, preset, DTO, fasce e persistenza. Le checklist manuali devono
+confermare focus, click-through e cambio monitor con Input Monitoring e
+Accessibilità concessi, oltre al fallback senza Accessibilità.
 
 ### Brand identity — integrazione e backlog
 
@@ -417,7 +422,7 @@ confermare focus, click-through e cambio monitor con Input Monitoring concesso.
 | UI-06 | Creare settings Overlay | P0 | M | OVR-08 | posizione, dimensione, hide-after e contenuto applicati live |
 | UI-07 | Creare settings Appearance | P1 | S | UI-01 | System, Light e Dark funzionano |
 | UI-08 | Implementare avvio al login — **Done anticipato in D** | P1 | M | UI-05 | login item e monitor automatico seguono la stessa preferenza |
-| UI-09 | Creare onboarding in tre passaggi | P0 | L | MAC-03, MAC-07 | primo avvio spiega privacy e permesso |
+| UI-09 | Creare onboarding in tre passaggi | P0 | L | MAC-03, MAC-07, OVR-09 | primo avvio spiega privacy e i due permessi distinti |
 | UI-10 | Gestire permesso negato/revocato | P0 | M | UI-09, MAC-07 | stato chiaro, nessun dato simulato |
 | UI-11 | Aggiungere dialog export CSV | P0 | M | DB-09 | utente sceglie destinazione e riceve esito |
 | UI-12 | Verificare accessibilità di base | P1 | M | UI-02–UI-11 | tastiera, contrasto e reduced motion verificati |
@@ -433,7 +438,7 @@ e comprendere i dati senza istruzioni esterne.
 | QA-02 | Profilare CPU e memoria idle/typing — **Ready, TCC/manuale** | P0 | M | OVR-06 | overlay pronto; baseline finale TODO manuale |
 | QA-03 | Test sospensione, logout e riavvio — **Blocked da UI-10/TCC** | P0 | M | UI-10 | checklist pronta; prova reale TODO manuale |
 | QA-04 | Test timezone e cambio giorno — **Done automatico** | P1 | M | DB-07 | offset opposti e date isolate testati; mezzanotte naturale resta smoke test |
-| QA-05 | Eseguire smoke test multi-monitor — **Ready, manuale** | P1 | M | OVR-03 | controller pronto; prova su due display TODO manuale |
+| QA-05 | Eseguire smoke test multi-monitor — **Ready, manuale** | P1 | M | OVR-09 | routing finestra focalizzata e fallback pronti; prova su due display TODO manuale |
 | REL-01 | Definire versioning e changelog — **Done** | P0 | S | FND-07 | SemVer, changelog e audit coerenza metadati |
 | REL-02 | Creare workflow release macOS — **Implemented, non pubblicata** | P0 | L | REL-01, Gate F | due architetture, ZIP, checksum e draft Release su tag |
 | REL-03 | Applicare firma ad-hoc dove utile — **Done nel packaging** | P1 | M | REL-02 | identità `-` e `codesign --verify` obbligatorio |

@@ -98,9 +98,16 @@ gli aggregati pendenti.
 L'overlay è una finestra Tauri separata, trasparente, senza decorazioni, sempre
 in primo piano, non focalizzabile e configurata per ignorare il cursore. Un
 controller Rust applica visibilità, dimensione e posizione usando l'area utile
-del display principale; rivaluta periodicamente la topologia per gestire display
-rimossi o riconfigurati. La trasparenza macOS usa il flag Tauri
+del display contenente la finestra focalizzata; rivaluta la destinazione durante
+la digitazione e la topologia per gestire cambi focus, display rimossi o
+riconfigurati. Senza Accessibilità o geometria valida ricade sul display
+principale. La trasparenza macOS usa il flag Tauri
 `macOSPrivateApi`, accettabile perché il Mac App Store è fuori ambito.
+
+Il rilevamento vive in `typepulse-platform-macos`. L'adapter Accessibility
+riduce immediatamente `AXPosition` e `AXSize` a un centro globale in memoria;
+non legge nome applicazione, titolo, valore o contenuto e non espone geometria
+al frontend o allo storage. La decisione completa è nell'ADR 0007.
 
 Il frontend overlay riceve tramite evento soltanto WPM smussato, fascia visuale,
 preferenze di presentazione e una sequenza di record. Il fade-out termina prima
@@ -198,6 +205,10 @@ timeout/disabilitazione del sistema.
 - permesso revocato: interrompere il monitoraggio e non simulare statistiche;
 - archivio non disponibile: continuare la metrica live, mostrare un errore
   discreto per statistiche/export;
+- Accessibilità assente/revocata: continuare le metriche e collocare l'overlay
+  sul display principale;
+- finestra focalizzata senza geometria: usare il display principale senza
+  simulare o memorizzare metadati;
 - display rimosso: ricollocare l'overlay sul display principale.
 
 Su una piattaforma che non consente il monitoraggio globale, l'app deve dichiarare

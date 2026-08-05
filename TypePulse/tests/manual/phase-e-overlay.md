@@ -55,13 +55,14 @@ menu bar or Dock.
 
 ## Multiple displays
 
-1. Attach a second display and repeat all four positions.
-2. Change the primary display and wait up to two seconds.
+1. Complete the focused-window routing cases in `focused-display.md`.
+2. Attach a second display and repeat all four positions.
 3. Disconnect the display currently hosting the overlay while it is visible.
 4. Change scaling or resolution on the remaining display.
 
-Expected: the overlay moves into the new primary display's useful area and does not
-remain at stale or unreachable coordinates.
+Expected: with Accessibility granted the overlay follows the focused window's display.
+Without it, or after revocation/disconnection, it moves into the primary available
+display's useful area and never remains at stale coordinates.
 
 ## Result
 

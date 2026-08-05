@@ -22,6 +22,9 @@ dell'app.
 - quit esplicito con stop del monitor e flush degli aggregati;
 - test unitario della mappatura degli ID del menu;
 - checklist manuale macOS dedicata.
+- stato, richiesta e collegamento Impostazioni per il permesso Accessibilità;
+- spiegazione distinta dei permessi Input Monitoring e Accessibilità;
+- fallback esplicito del PiP quando Accessibilità non è concessa.
 
 ## Fase F ancora aperta
 
@@ -40,7 +43,7 @@ Settings definitiva insieme agli altri pannelli.
 ## Verifiche
 
 - `./scripts/check.sh`: pass;
-- 49 test Rust passati e un benchmark manuale ignorato come previsto;
+- 61 test Rust passati e un benchmark manuale ignorato;
 - bundle debug `TypePulse.app`: costruito e avviato;
 - Launch Services: `ApplicationType = UIElement`, quindi app accessoria senza
   presenza ordinaria nel Dock;

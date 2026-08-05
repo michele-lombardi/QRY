@@ -54,8 +54,11 @@ TypePulse as a macOS menu-bar application. No window is shown automatically.
 Select the TypePulse icon in the upper-right menu bar to open the diagnostic
 window; right-click it for Open, Start monitoring, Pause monitoring and Quit.
 
-Use the window to check/request Input Monitoring, inspect live/today metrics,
-change `Start automatically` and configure the overlay. The startup checkbox
+Use the window to check/request Input Monitoring and the separate optional
+Accessibility permission, inspect live/today metrics, change `Start automatically`
+and configure the overlay. Accessibility lets the PiP follow the display of the
+focused window; without it the primary-display fallback remains functional. The
+startup checkbox
 registers a macOS login item and starts monitoring whenever the app opens.
 Closing the window only hides it; choose Quit from the tray menu to terminate
 the background process cleanly.
@@ -107,9 +110,11 @@ semantics and default parameters are in ADR 0005.
 
 ### `typepulse-platform-macos`
 
-Owns Input Monitoring permission and global macOS event integration. Its public
-boundary emits only `TypingActivity` with a monotonic instant. Raw key
-information is discarded inside the private adapter filter.
+Owns Input Monitoring permission, global macOS event integration and the
+privacy-minimized focused-window geometry adapter. Its input boundary emits only
+`TypingActivity` with a monotonic instant. Raw key information is discarded
+inside the private adapter filter. The separate Accessibility boundary exposes
+only a temporary global center point; it never exposes app, title or content.
 
 ### `typepulse-storage-sqlite`
 
@@ -130,8 +135,10 @@ registration and routing between adapters and the frontend. Domain formulas do
 not belong here.
 
 `overlay.rs` creates a transparent, click-through webview window and controls
-its position/visibility from aggregate snapshots. It polls display topology
-only for placement and never observes input identities. Tauri's
+its position/visibility from aggregate snapshots. On macOS it maps the focused
+window's temporary center to a display before presentation and during active
+typing, then falls back to the primary display. It never observes input
+identities or sends geometry to the frontend. Tauri's
 `macOSPrivateApi` flag is enabled solely for transparent-window support; the
 project does not target the Mac App Store.
 
@@ -191,6 +198,9 @@ cannot observe, including Dock and `Cmd + Tab` visibility.
 
 The overlay focus, click-through, visual state and multi-monitor checklist is in
 `tests/manual/phase-e-overlay.md`.
+
+The focused-display permission, two-display routing, revocation and privacy
+checklist is in `tests/manual/focused-display.md`.
 
 ## Logging rules
 

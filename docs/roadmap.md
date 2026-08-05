@@ -34,6 +34,8 @@ sensibile viene persistito o loggato.
   nella schermata Settings della Fase F;
 - comportamenti Pip supportati e celebrazione record: implementati; Dance e
   Sleep restano backlog misurabile nell'integrazione brand;
+- rilevamento privacy-safe del display della finestra focalizzata: implementato
+  con permesso Accessibilità opzionale e fallback al display principale;
 - completare menu bar e pausa del tracking.
 
 **Uscita:** iniziando a scrivere l'overlay compare rapidamente e scompare dopo

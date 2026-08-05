@@ -29,11 +29,18 @@ toccare il callback dell'event tap. Inoltra al frontend soltanto:
 - dimensione e modalità contenuto;
 - sequenza numerica della celebrazione record.
 
-La posizione è calcolata nell'area utile del display principale, rispettando
-menu bar e Dock. Le quattro opzioni sono `top-left`, `top-right`, `bottom-left`
-e `bottom-right`. La topologia viene rivalutata ogni due secondi: cambio display,
-scala o risoluzione causa una nuova collocazione e la rimozione di uno schermo
-ricade sul nuovo principale.
+La posizione è calcolata nell'area utile del display contenente il centro della
+finestra focalizzata, rispettando menu bar e Dock. Le quattro opzioni sono
+`top-left`, `top-right`, `bottom-left` e `bottom-right`. Il controller rivaluta
+il target prima della comparsa e durante nuova attività, con limite di 250 ms;
+la topologia viene comunque rivalutata ogni due secondi. Permesso Accessibilità
+assente, geometria non disponibile e rimozione dello schermo ricadono sul nuovo
+display principale.
+
+Il nuovo adapter macOS legge soltanto `AXPosition` e `AXSize` della finestra
+focalizzata e restituisce un centro globale effimero. Non legge o conserva nome
+applicazione, titolo, ruolo, valore o contenuto. Input Monitoring e Accessibilità
+restano due consensi distinti nell'interfaccia.
 
 ## Presentazione
 
@@ -74,7 +81,7 @@ database.
 | APP-01…APP-04 | Done | shell menu bar e percorso metriche già integrati |
 | OVR-01 | Done | finestra trasparente, top-most e click-through |
 | OVR-02 | Done | calcolo unit-tested delle quattro posizioni |
-| OVR-03 | Done nel codice | rivalutazione display; smoke test fisico ancora manuale |
+| OVR-03 | Done nel codice | segue display focalizzato, fallback e rivalutazione; smoke test fisico ancora manuale |
 | OVR-04 | Done | transizioni da 150/180 ms senza focus |
 | OVR-05 | Done | DTO riceve il valore smussato del core |
 | OVR-06 | Done | fasce core tradotte nei comportamenti Pip supportati |
@@ -84,7 +91,8 @@ database.
 ## Gate E
 
 L'implementazione automatizzabile è completa. La chiusura end-to-end richiede
-la checklist `TypePulse/tests/manual/phase-e-overlay.md`, perché soltanto una
+le checklist `TypePulse/tests/manual/phase-e-overlay.md` e
+`TypePulse/tests/manual/focused-display.md`, perché soltanto una
 sessione macOS reale può dimostrare che scrivere in un'altra applicazione non
 perde focus, che i click attraversano davvero la finestra e che il cambio di
 monitor funziona sull'hardware dell'utente.
@@ -94,8 +102,7 @@ monitor funziona sull'hardware dell'utente.
 - `./scripts/check.sh`: superato;
 - frontend: Prettier, ESLint, TypeScript e bundle Vite multipagina superati;
 - Rust: rustfmt, Clippy con warning negati, check e test superati;
-- 58 test Rust passati e un benchmark manuale ignorato come previsto dopo
-  l'integrazione della brand identity;
+- 61 test Rust passati e un benchmark manuale ignorato;
 - audit privacy: schema, capability e DTO overlay superati;
 - migrazione simulata da schema v1 a v2 con backup: superata;
 - bundle debug macOS creato e verificato con `codesign --verify --deep --strict`;

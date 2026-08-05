@@ -110,7 +110,8 @@ Controllo completo dalla root:
 2. Verificare manualmente login item, riapertura e rollover della Fase D.
 3. Proseguire la Fase F con statistiche, preferenze e onboarding; la shell menu
    bar senza Dock è già attiva.
-4. Verificare manualmente focus, click-through e multi-monitor della Fase E.
+4. Concedere separatamente Accessibilità e verificare focus, click-through,
+   display focalizzato e fallback multi-monitor della Fase E.
 5. Chiudere le prove manuali della Fase G e configurare il remote GitHub prima
    di creare una Release o il tap Homebrew.
 6. Compilare titolare copyright e contatto pubblico in `NOTICE.md`.

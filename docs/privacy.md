@@ -20,6 +20,10 @@ Testo breve previsto nell'app:
 - inizio e fine delle sessioni;
 - preferenze locali dell'app.
 
+Per collocare il PiP sul display corretto è inoltre ammesso il centro geometrico
+effimero della finestra focalizzata. Vive soltanto durante il calcolo della
+posizione e non viene serializzato, registrato o conservato.
+
 ## Dati vietati
 
 - singoli tasti o key code persistiti;
@@ -85,6 +89,18 @@ Testo breve previsto nell'app:
 - il controller di posizionamento osserva geometria e scala dei display, mai
   applicazione attiva, titolo finestra o contenuto digitato;
 - l'audit DTO include anche le preferenze dell'overlay.
+
+## Display focalizzato e permesso Accessibilità
+
+- Input Monitoring e Accessibilità sono consensi macOS distinti;
+- Accessibilità è opzionale: senza consenso il PiP usa il display principale;
+- l'adapter interroga soltanto applicazione/finestra focalizzata e i due
+  attributi geometrici `AXPosition` e `AXSize`;
+- il risultato pubblico è soltanto il centro globale della finestra;
+- non vengono richiesti titolo, valore, testo, ruolo, URL, nome o bundle ID;
+- il punto non attraversa i DTO, non entra nel frontend e non viene persistito;
+- revoca, timeout o attributi non supportati producono un fallback, non dati
+  simulati né log contenenti metadati della finestra.
 
 ## Checklist per ogni modifica
 

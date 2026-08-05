@@ -20,6 +20,10 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 - TypePulse Pulse mark, application icon and dynamic menu-bar glyph;
 - brand palette, system typography, product voice and Micro-Y text endorsement;
 - identity-aligned Pip renderer with Walk, Run, Tired and one-shot Jump/Cheer.
+- optional macOS Accessibility flow that places the PiP on the focused window's
+  display without collecting app, title or content metadata;
+- immediate focused-display placement with primary-display fallback and a
+  dedicated two-monitor privacy checklist.
 
 ## [0.1.0] - 2026-08-05
 
