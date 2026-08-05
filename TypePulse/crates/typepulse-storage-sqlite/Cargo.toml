@@ -3,10 +3,16 @@ name = "typepulse-storage-sqlite"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
+license.workspace = true
 description = "SQLite persistence adapter for TypePulse"
 
 [dependencies]
+rusqlite = { version = "0.40.1", features = ["bundled"] }
+rusqlite_migration = "2.6.0"
 typepulse-core = { path = "../typepulse-core" }
+
+[dev-dependencies]
+tempfile = "3.23.0"
 
 [lints]
 workspace = true

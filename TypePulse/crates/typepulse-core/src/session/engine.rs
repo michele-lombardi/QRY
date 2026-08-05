@@ -121,6 +121,17 @@ impl<C: Clock> TypingEngine<C> {
         self.config
     }
 
+    /// Completes the active session immediately, for shutdown or day rollover.
+    ///
+    /// The summary still ends at the last activity and excludes trailing idle
+    /// time. Calling this while idle returns `None`.
+    pub fn finish_active_session(&mut self) -> Option<SessionSummary> {
+        let summary = self.active_session.take().map(ActiveSession::summary);
+        self.rolling_wpm.reset();
+        self.smoother.reset();
+        summary
+    }
+
     fn ensure_not_before_last_activity(&self, instant: Instant) -> Result<(), EngineError> {
         if self
             .active_session
@@ -426,6 +437,19 @@ mod tests {
             assert!(engine.record_now().unwrap().new_record.is_none());
             clock.advance(Duration::from_millis(10)).unwrap();
         }
+    }
+
+    #[test]
+    fn explicit_finish_supports_shutdown_and_day_rollover() {
+        let (clock, mut engine) = engine();
+        engine.record_now().unwrap();
+        clock.advance(Duration::from_secs(1)).unwrap();
+        engine.record_now().unwrap();
+        let summary = engine.finish_active_session().unwrap();
+        assert_eq!(summary.estimated_character_count, 2);
+        assert_eq!(summary.elapsed_duration, Duration::from_secs(1));
+        assert!(engine.finish_active_session().is_none());
+        assert_eq!(engine.tick().unwrap().snapshot.phase, SessionPhase::Idle);
     }
 
     #[test]

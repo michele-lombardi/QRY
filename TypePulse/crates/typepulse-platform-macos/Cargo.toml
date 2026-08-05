@@ -3,6 +3,7 @@ name = "typepulse-platform-macos"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
+license.workspace = true
 description = "macOS platform adapter for TypePulse"
 
 [dependencies]
