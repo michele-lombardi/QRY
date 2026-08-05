@@ -25,7 +25,7 @@ impl From<PermissionStatus> for PermissionStatusDto {
 }
 
 /// Serializable monitor health snapshot.
-#[derive(Clone, Copy, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct MonitorStatusDto {
     state: &'static str,
@@ -37,6 +37,11 @@ pub(crate) struct MonitorStatusDto {
     average_callback_ns: u64,
     max_callback_ns: u64,
     reenable_attempts: u64,
+    session_phase: &'static str,
+    raw_wpm: f64,
+    displayed_wpm: f64,
+    animation_band: &'static str,
+    last_error: Option<String>,
 }
 
 #[tauri::command]
@@ -56,17 +61,22 @@ pub(crate) fn open_input_settings() -> Result<(), String> {
 
 #[tauri::command]
 pub(crate) fn monitor_status(state: State<'_, DiagnosticState>) -> MonitorStatusDto {
-    let (run_state, metrics, total_activities) = state.snapshot();
+    let snapshot = state.snapshot();
     MonitorStatusDto {
-        state: run_state.as_str(),
-        total_activities,
-        events_seen: metrics.events_seen,
-        activities_emitted: metrics.activities_emitted,
-        activities_dropped: metrics.activities_dropped,
-        callback_count: metrics.callback_count,
-        average_callback_ns: metrics.average_callback_ns,
-        max_callback_ns: metrics.max_callback_ns,
-        reenable_attempts: metrics.reenable_attempts,
+        state: snapshot.run_state.as_str(),
+        total_activities: snapshot.total_activities,
+        events_seen: snapshot.monitor_metrics.events_seen,
+        activities_emitted: snapshot.monitor_metrics.activities_emitted,
+        activities_dropped: snapshot.monitor_metrics.activities_dropped,
+        callback_count: snapshot.monitor_metrics.callback_count,
+        average_callback_ns: snapshot.monitor_metrics.average_callback_ns,
+        max_callback_ns: snapshot.monitor_metrics.max_callback_ns,
+        reenable_attempts: snapshot.monitor_metrics.reenable_attempts,
+        session_phase: snapshot.live_metrics.phase.as_str(),
+        raw_wpm: snapshot.live_metrics.raw_wpm,
+        displayed_wpm: snapshot.live_metrics.displayed_wpm,
+        animation_band: snapshot.live_metrics.animation_band.as_str(),
+        last_error: snapshot.last_error,
     }
 }
 

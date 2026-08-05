@@ -133,7 +133,7 @@ button:focus-visible {
 
 .metrics {
   display: grid;
-  grid-template-columns: 1.1fr 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-top: 22px;
 }
@@ -156,6 +156,39 @@ button:focus-visible {
 }
 .metrics article:first-child strong {
   font-size: 2.3rem;
+}
+
+.metrics.daily article:first-child strong {
+  font-size: 1.15rem;
+}
+
+.startup-toggle {
+  display: flex;
+  max-width: 360px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgb(54 80 63 / 18%);
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.startup-toggle input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: #245f39;
+}
+
+.startup-toggle span,
+.startup-toggle small {
+  display: block;
+}
+
+.startup-toggle small {
+  margin-top: 3px;
+  color: #536258;
+  line-height: 1.35;
 }
 
 .privacy-note {

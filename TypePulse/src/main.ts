@@ -12,6 +12,26 @@ type MonitorStatus = {
   averageCallbackNs: number;
   maxCallbackNs: number;
   reenableAttempts: number;
+  sessionPhase: string;
+  rawWpm: number;
+  displayedWpm: number;
+  animationBand: string;
+  lastError: string | null;
+};
+
+type StartupPreference = {
+  autoStartEnabled: boolean;
+  loginItemRegistered: boolean;
+};
+
+type DailySummary = {
+  date: string;
+  estimatedCharacterCount: number;
+  estimatedWordCount: number;
+  averageWpm: number;
+  peakWpm: number;
+  activeTypingSeconds: number;
+  sessionCount: number;
 };
 
 const byId = <T extends HTMLElement>(id: string): T => {
@@ -25,6 +45,13 @@ const monitorValue = byId<HTMLElement>("monitor-value");
 const activityValue = byId<HTMLElement>("activity-value");
 const callbackValue = byId<HTMLElement>("callback-value");
 const droppedValue = byId<HTMLElement>("dropped-value");
+const wpmValue = byId<HTMLElement>("wpm-value");
+const todayDate = byId<HTMLElement>("today-date");
+const todayWords = byId<HTMLElement>("today-words");
+const todayWpm = byId<HTMLElement>("today-wpm");
+const todayActive = byId<HTMLElement>("today-active");
+const todaySessions = byId<HTMLElement>("today-sessions");
+const autoStart = byId<HTMLInputElement>("auto-start");
 const message = byId<HTMLElement>("runtime-status");
 const startButton = byId<HTMLButtonElement>("start-monitor");
 const stopButton = byId<HTMLButtonElement>("stop-monitor");
@@ -45,19 +72,40 @@ const renderMonitor = (status: MonitorStatus): void => {
   activityValue.textContent = status.totalActivities.toLocaleString();
   callbackValue.textContent = `${(status.averageCallbackNs / 1_000).toFixed(2)} µs avg · ${(status.maxCallbackNs / 1_000).toFixed(2)} µs max`;
   droppedValue.textContent = `${status.activitiesDropped.toLocaleString()} dropped · ${status.reenableAttempts.toLocaleString()} re-enable`;
+  wpmValue.textContent = `${status.displayedWpm.toFixed(1)} · ${status.animationBand}`;
   startButton.disabled = status.state === "running" || status.state === "starting";
   stopButton.disabled = status.state === "stopped";
+  if (status.lastError) setMessage(status.lastError, true);
+};
+
+const renderStartup = (preference: StartupPreference): void => {
+  autoStart.checked = preference.autoStartEnabled;
+  autoStart.dataset.registered = String(preference.loginItemRegistered);
+};
+
+const renderToday = (summary: DailySummary): void => {
+  todayDate.textContent = summary.date;
+  todayWords.textContent = summary.estimatedWordCount.toFixed(2);
+  todayWpm.textContent = `${summary.averageWpm.toFixed(1)} / ${summary.peakWpm.toFixed(1)} WPM`;
+  const minutes = Math.floor(summary.activeTypingSeconds / 60);
+  const seconds = Math.floor(summary.activeTypingSeconds % 60);
+  todayActive.textContent = `${minutes}m ${seconds}s`;
+  todaySessions.textContent = summary.sessionCount.toLocaleString();
 };
 
 const call = async <T>(command: string): Promise<T> => invoke<T>(command);
 
 const refresh = async (): Promise<void> => {
-  const [permission, monitor] = await Promise.all([
+  const [permission, monitor, startup, today] = await Promise.all([
     call<PermissionStatus>("input_permission_status"),
     call<MonitorStatus>("monitor_status"),
+    call<StartupPreference>("startup_preference"),
+    call<DailySummary>("today_summary"),
   ]);
   renderPermission(permission);
   renderMonitor(monitor);
+  renderStartup(startup);
+  renderToday(today);
 };
 
 byId<HTMLButtonElement>("check-permission").addEventListener("click", async () => {
@@ -108,13 +156,39 @@ stopButton.addEventListener("click", async () => {
   }
 });
 
+autoStart.addEventListener("change", async () => {
+  autoStart.disabled = true;
+  try {
+    const preference = await invoke<StartupPreference>("set_auto_start_enabled", {
+      enabled: autoStart.checked,
+    });
+    renderStartup(preference);
+    setMessage(
+      preference.autoStartEnabled
+        ? "Automatic login launch and monitoring enabled."
+        : "Automatic startup disabled.",
+    );
+  } catch (error) {
+    setMessage(String(error), true);
+    await refresh();
+  } finally {
+    autoStart.disabled = false;
+  }
+});
+
 window.addEventListener("DOMContentLoaded", async () => {
   try {
     await refresh();
     setMessage(
-      "Phase B diagnostics initialized. The interface receives one aggregate snapshot per second.",
+      "Local metrics initialized. Daily totals roll over automatically at the local date change.",
     );
-    window.setInterval(() => void refresh(), 1_000);
+    window.setInterval(
+      () =>
+        void refresh().catch((error) => {
+          setMessage(`Refresh failed: ${String(error)}`, true);
+        }),
+      1_000,
+    );
   } catch (error) {
     setMessage(`Tauri diagnostics unavailable: ${String(error)}`, true);
   }

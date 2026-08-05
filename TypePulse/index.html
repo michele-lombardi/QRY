@@ -4,16 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="TypePulse macOS input-monitor diagnostics" />
-    <title>TypePulse — Input diagnostics</title>
+    <meta name="description" content="TypePulse local metrics diagnostics" />
+    <title>TypePulse — Local metrics</title>
     <script type="module" src="/src/main.ts" defer></script>
   </head>
 
   <body>
     <main class="shell">
       <header class="hero">
-        <span class="eyebrow">Phase B · macOS technical spike</span>
-        <h1>Input diagnostics</h1>
+        <span class="eyebrow">Phase D · local metrics</span>
+        <h1>TypePulse diagnostics</h1>
         <p class="promise">
           Counts typing-like activity. Never characters or key codes.
         </p>
@@ -61,6 +61,10 @@
             <strong id="activity-value">0</strong>
           </article>
           <article>
+            <span>Live WPM</span>
+            <strong id="wpm-value">0.0 · still</strong>
+          </article>
+          <article>
             <span>Callback cost</span>
             <strong id="callback-value">0.00 µs avg · 0.00 µs max</strong>
           </article>
@@ -71,12 +75,47 @@
         </div>
       </section>
 
+      <section class="monitor-card" aria-labelledby="today-heading">
+        <div class="monitor-header">
+          <div>
+            <p class="section-label">Automatic local-day rollover</p>
+            <h2 id="today-heading">Today · <strong id="today-date">—</strong></h2>
+          </div>
+          <label class="startup-toggle">
+            <input id="auto-start" type="checkbox" />
+            <span>
+              <strong>Start automatically</strong>
+              <small>Open at login and start monitoring when TypePulse opens.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="metrics daily" aria-label="Today's aggregate statistics">
+          <article>
+            <span>Estimated words</span>
+            <strong id="today-words">0.00</strong>
+          </article>
+          <article>
+            <span>Average / peak</span>
+            <strong id="today-wpm">0.0 / 0.0 WPM</strong>
+          </article>
+          <article>
+            <span>Active time</span>
+            <strong id="today-active">0m 0s</strong>
+          </article>
+          <article>
+            <span>Completed sessions</span>
+            <strong id="today-sessions">0</strong>
+          </article>
+        </div>
+      </section>
+
       <aside class="privacy-note">
         <strong>Diagnostic boundary</strong>
         <p>
-          This temporary Phase B screen receives only an increasing aggregate count and
-          monitor health. It receives no per-key timestamp, key identity, text,
-          application, or window.
+          The interface receives live WPM and local aggregates. SQLite stores sessions,
+          minute buckets and preferences—never key identity, text, application, or
+          window metadata.
         </p>
       </aside>
 
