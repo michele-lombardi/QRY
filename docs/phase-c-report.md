@@ -11,9 +11,9 @@
 stato overlay, fascia visuale, aggregati di sessione e notifica record. Non
 importa Tauri, macOS, SQLite o codice frontend.
 
-Il core è pronto per essere collegato al monitor nella futura `APP-04`. Questo
-collegamento non è stato anticipato: la Fase C resta testabile senza permessi
-macOS e senza thread reali.
+Al momento della chiusura della Fase C il core era pronto per `APP-04` e restava
+testabile senza permessi macOS o thread reali. Il collegamento monitor → core è
+stato poi completato nella Fase D senza modificare quel confine.
 
 ## Output implementati
 
@@ -80,10 +80,10 @@ Gli input pubblici del motore sono `TypingActivity` e tempo monotono. Gli output
 contengono soltanto conteggi, durate, WPM, stati e aggregati. Nessun tipo del core
 ha campi per contenuto, identità del tasto, applicazione o finestra.
 
-## TODO demandati alle fasi corrette
+## Attività demandate e stato successivo
 
-- Fase D: repository, SQLite, data/ora civile e arrotondamento pubblico delle
-  parole stimate;
-- Fase E / `APP-04`: collegare il receiver macOS al `TypingEngine` e pubblicare
-  DTO verso tray/overlay;
+- Fase D: repository, SQLite, data civile e CSV — completati;
+- `APP-04`: receiver macOS collegato al `TypingEngine` e ai DTO diagnostici —
+  completato in anticipo nella Fase D;
+- Fase E: restano tray e overlay definitivi;
 - TODO manuale precedente: completare Gate B con consenso TCC.

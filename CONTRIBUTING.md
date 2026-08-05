@@ -3,12 +3,11 @@
 Thanks for helping build TypePulse. The project is in its foundation stage and
 targets macOS first, with a portable Rust core for future Linux support.
 
-## License status
+## License
 
-The open-source license is still a project-owner decision. Until the `LICENSE`
-TODO is replaced with an approved license, source visibility does not grant
-permission to reuse or redistribute the code. Contributions should not be
-accepted publicly before this is resolved.
+TypePulse is licensed under `GPL-3.0-only`. By contributing, you agree that your
+contribution is distributed under the same license. Copyright-holder and
+public-contact placeholders are tracked in `NOTICE.md`.
 
 ## Prerequisites
 

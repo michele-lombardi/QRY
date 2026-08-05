@@ -25,8 +25,14 @@ From the repository root:
 - `typepulse-storage-sqlite`: local persistence boundary;
 - `src-tauri`: desktop composition root.
 
-The Phase C workspace includes the portable WPM/session engine. The temporary macOS
-diagnostic window still exercises only the Phase B monitor; engine wiring belongs to the
-later application-integration phase. Statistics are not persisted yet.
+The Phase D workspace includes the portable WPM/session engine, SQLite aggregate
+persistence, local-day rollover, CSV output and the macOS automatic-start preference.
+The temporary diagnostic window wires the real monitor to live and daily metrics; tray
+and overlay behavior belong to Phase E.
 
 See [`../docs/development.md`](../docs/development.md) for the complete guide.
+
+## License
+
+TypePulse is licensed under `GPL-3.0-only`. Copyright-holder and public-contact
+placeholders are kept in [`../NOTICE.md`](../NOTICE.md).

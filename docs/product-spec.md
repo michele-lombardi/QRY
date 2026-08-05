@@ -67,7 +67,8 @@ conservare ogni evento.
 
 ## Impostazioni
 
-- avvio al login;
+- `Start automatically`: avvio al login e avvio immediato del monitor ogni volta
+  che TypePulse viene aperto;
 - icona menu bar visibile;
 - pausa del monitoraggio;
 - reset delle statistiche di oggi;
@@ -75,6 +76,10 @@ conservare ogni evento.
 - contenuto overlay: WPM, animazione o entrambi;
 - aspetto System, Light o Dark;
 - collegamento alle impostazioni di Input Monitoring.
+
+Le statistiche di “oggi” cambiano automaticamente alla mezzanotte della data
+locale. Il nuovo giorno parte vuoto e i giorni precedenti restano disponibili
+per storico ed export; non è un'eliminazione automatica dei dati.
 
 ## Calcolo WPM
 
@@ -106,7 +111,7 @@ L'export V1 contiene solo riepiloghi giornalieri:
 
 ```csv
 date,estimated_words,average_wpm,peak_wpm,typing_minutes
-2026-08-05,3840,58.2,104,52
+2026-08-05,3840.00,58.2,104.0,52.00
 ```
 
 ## Fuori ambito

@@ -94,6 +94,6 @@ checklist TCC non viene firmata con esito positivo.
 ## TODO ancora aperti
 
 - eseguire e registrare le tre prove manuali TCC;
-- scegliere la licenza open source e sostituire `UNLICENSED`/placeholder;
+- compilare titolare del copyright e contatto pubblico in `NOTICE.md`;
 - verificare la CI dopo il primo push GitHub;
 - sostituire icone e bundle identifier prima della release.

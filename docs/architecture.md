@@ -81,9 +81,9 @@ con snapshot, eventuale sessione conclusa ed eventuale nuovo record. I clock di
 produzione e test sono separati; nessun polling UI modifica la semantica delle
 metriche.
 
-Gli aggregati di sessione sono definiti nell'ADR 0005. Restano monotoni nel core:
-la futura persistenza associa data e fuso orario nel layer applicativo senza
-portare dipendenze civili o di piattaforma nel dominio live.
+Gli aggregati di sessione sono definiti nell'ADR 0005. Restano monotoni nel core;
+il layer applicativo della Fase D associa la data civile locale tramite un
+`LocalDate` portabile, senza portare `chrono` nel dominio live.
 
 ### DesktopShell
 
@@ -96,9 +96,11 @@ L'UI riceve uno stato già pronto e non calcola le metriche.
 
 ### Persistence
 
-Un repository Rust salva sessioni concluse e aggregati temporali in SQLite.
-Tutte le scritture avvengono fuori dal percorso critico dell'evento. Una
-migrazione esplicita accompagna ogni modifica dello schema.
+`StatisticsRepository` vive nel core e ha implementazioni in memoria e SQLite.
+L'adapter usa `rusqlite` bundled, `rusqlite_migration`, WAL e busy timeout. Tutte
+le scritture avvengono nel relay delle metriche, fuori dal callback critico
+dell'event tap. Una migrazione SQL esplicita accompagna ogni modifica dello
+schema; prima di migrare un database non vuoto viene creata una copia `.bak`.
 
 Schema logico minimo:
 
@@ -119,12 +121,29 @@ MetricBucket
 - estimatedCharacterCount
 - averageWPM
 - peakWPM
+
+AppPreferences
+- autoStartEnabled
 ```
+
+Il database applicativo macOS è `typepulse.sqlite3` nella directory dati
+risolta da Tauri. Il cambio della data locale non cancella righe: la query di
+“oggi” passa semplicemente alla nuova data, che parte vuota. La sessione attiva
+viene chiusa prima di registrare attività sul nuovo giorno; i bucket da 60
+secondi non attraversano la data civile.
 
 ### CSVExporter
 
 Legge aggregati giornalieri e produce il formato pubblico documentato. Non deve
 accedere agli eventi live.
+
+### Automatic startup
+
+Una singola preferenza controlla sia il login item macOS (`LaunchAgent`) sia
+l'avvio del monitor quando TypePulse si apre. L'abilitazione avvia subito il
+monitor; la disabilitazione rimuove il login item ma non interrompe una sessione
+già attiva. Errori del login item o del permesso vengono mostrati senza impedire
+l'apertura dell'app.
 
 ## Confini di concorrenza
 
@@ -172,12 +191,9 @@ direttamente dispositivi di input senza un modello di consenso comprensibile.
 
 ## Decisioni ancora aperte
 
-1. Libreria SQLite e strategia di migrazione.
-2. Intervallo di aggregazione: 30 o 60 secondi.
-3. Formato dell'artefatto GitHub: `.app.zip`, `.tar.gz` o entrambi.
-4. Risultato manuale end-to-end del Gate B dopo il consenso TCC.
-5. Rappresentazione persistita delle parole frazionarie e conversione tra
-   `Instant` e data civile nella Fase D.
+1. Formato dell'artefatto GitHub: `.app.zip`, `.tar.gz` o entrambi.
+2. Risultato manuale end-to-end del Gate B dopo il consenso TCC.
+3. Titolare copyright e contatto pubblico in `NOTICE.md`.
 
 ## Riferimenti tecnici
 

@@ -62,6 +62,20 @@ Testo breve previsto nell'app:
   disco;
 - test patologici verificano che non escano `NaN`, infiniti o valori negativi.
 
+## Garanzie implementate nella Fase D
+
+- SQLite contiene soltanto `completed_sessions`, `metric_buckets` e
+  `app_preferences`;
+- lo schema non ha colonne per key code, testo, contenuto, applicazione o titolo
+  della finestra, e un test automatico ne impedisce l'introduzione accidentale;
+- i bucket persistiti sono aggregati da 60 secondi, non eventi individuali;
+- il CSV legge soltanto riepiloghi giornalieri ed espone valori aggregati;
+- il giorno nuovo parte automaticamente da zero tramite una nuova chiave data,
+  senza cancellare lo storico;
+- il login item salva un booleano locale e non amplia i dati osservati;
+- le copie `.bak` pre-migrazione contengono gli stessi soli aggregati locali del
+  database sorgente.
+
 ## Checklist per ogni modifica
 
 - Il nuovo dato è davvero necessario per una funzione promessa?

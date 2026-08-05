@@ -26,10 +26,13 @@ una release macOS stabile.
 - Gate B end-to-end: `TODO manuale`, il Mac di sviluppo non ha ancora concesso
   Input Monitoring;
 - Fase C: core metrico e Gate C completati con test deterministici;
-- licenza open source: `TODO`, decisione del proprietario necessaria;
-- persistenza e aggregazioni giornaliere: non iniziate;
-- prossimo lavoro automatico: Fase D; resta raccomandata la checklist TCC di
-  Fase B prima dell'integrazione applicativa.
+- Fase D: persistenza, aggregazioni, CSV e Gate D completati;
+- rollover: automatico sulla data civile locale, con storico conservato;
+- avvio automatico: preferenza e login item macOS implementati in anticipo;
+- licenza open source: GNU GPLv3 only; restano placeholder anagrafici in
+  `NOTICE.md`;
+- prossimo lavoro: Fase E; restano manuali la checklist TCC di Fase B e la prova
+  del login item dopo logout/login.
 
 ### Priorità
 
@@ -81,7 +84,8 @@ progetto1/
 │       ├── 0002-input-privacy-boundary.md
 │       ├── 0003-local-storage.md
 │       ├── 0004-macos-input-monitor.md
-│       └── 0005-core-metrics-and-sessions.md
+│       ├── 0005-core-metrics-and-sessions.md
+│       └── 0006-local-day-and-automatic-startup.md
 ├── TypePulse/
 │   ├── Cargo.toml                     # Workspace Rust
 │   ├── Cargo.lock
@@ -247,7 +251,7 @@ Stato Fase A:
 
 | Task | Stato | Nota |
 | --- | --- | --- |
-| FND-01 | TODO | placeholder `LICENSE`; scelta OSI riservata al proprietario |
+| FND-01 | Done | GPL-3.0-only sincronizzata in LICENSE, npm, Cargo e documentazione |
 | FND-02 | Done | contribution guide, condotta e security policy presenti |
 | FND-03 | Done | Tauri 2 + Vite + TypeScript avviabili tramite npm |
 | FND-04 | Done | workspace Cargo unico in `TypePulse/Cargo.toml` |
@@ -335,21 +339,22 @@ report di Fase C.
 
 ### Fase D — Persistenza e aggregazioni
 
-| ID | Task | Prio | Taglia | Dipende da | Criterio di accettazione |
-| --- | --- | --- | --- | --- | --- |
-| DB-01 | Definire trait del repository nel core | P0 | S | CORE-07 | core testabile con repository in memoria |
-| DB-02 | Disegnare schema SQLite iniziale | P0 | M | DB-01 | schema contiene solo sessioni, bucket e preferenze necessarie |
-| DB-03 | Creare prima migrazione | P0 | M | DB-02 | database nuovo e aggiornato arrivano alla stessa versione |
-| DB-04 | Salvare sessioni concluse | P0 | M | DB-03, CORE-06 | riavvio dell'app conserva il riepilogo |
-| DB-05 | Salvare bucket da 30/60 secondi | P0 | M | DB-03, CORE-07 | nessun evento individuale è presente nel database |
-| DB-06 | Implementare riepilogo giornaliero | P0 | M | DB-04, DB-05 | parole, media, picco e minuti corrispondono ai fixture |
-| DB-07 | Implementare ultimi sette giorni | P0 | S | DB-06 | giorni mancanti e cambio data gestiti |
-| DB-08 | Implementare reset di oggi | P1 | M | DB-06 | elimina solo dati del giorno locale selezionato |
-| DB-09 | Implementare export CSV | P0 | M | DB-06 | header, locale, escaping e ordinamento sono testati |
-| DB-10 | Definire strategia backup/migrazione fallita | P1 | Spike | DB-03 | errore non distruttivo e messaggio UI documentati |
+| ID | Task | Stato | Prio | Taglia | Dipende da | Evidenza di completamento |
+| --- | --- | --- | --- | --- | --- | --- |
+| DB-01 | Definire trait del repository nel core | Done | P0 | S | CORE-07 | trait portabile e repository in memoria testato |
+| DB-02 | Disegnare schema SQLite iniziale | Done | P0 | M | DB-01 | solo sessioni, bucket aggregati e preferenza necessaria |
+| DB-03 | Creare prima migrazione | Done | P0 | M | DB-02 | migrazione embedded e `user_version = 1` testato |
+| DB-04 | Salvare sessioni concluse | Done | P0 | M | DB-03, CORE-06 | idempotenza e riapertura database testate |
+| DB-05 | Salvare bucket da 60 secondi | Done | P0 | M | DB-03, CORE-07 | upsert pesato; nessun evento individuale nello schema |
+| DB-06 | Implementare riepilogo giornaliero | Done | P0 | M | DB-04, DB-05 | conteggi, parole, media, picco e tempo attivo testati |
+| DB-07 | Implementare ultimi sette giorni | Done | P0 | S | DB-06 | sequenza cronologica con giorni mancanti vuoti |
+| DB-08 | Implementare rollover automatico del giorno locale | Done | P1 | M | DB-06 | nuova data vuota senza cancellare lo storico; sessioni/bucket non mescolati |
+| DB-09 | Implementare export CSV | Done | P0 | M | DB-06 | header, decimali e ordinamento stabili testati |
+| DB-10 | Definire strategia backup/migrazione fallita | Done | P1 | Spike | DB-03 | copia `.bak` pre-migrazione ed errore categorizzato |
 
-**Gate D:** statistiche e CSV sopravvivono al riavvio; ispezionando SQLite non
-si trovano tasti, testo, app o titoli di finestre.
+**Gate D: chiuso.** Statistiche e preferenze sopravvivono alla riapertura;
+l'audit automatico dello schema SQLite esclude tasti, testo, app e titoli di
+finestre. La prova reale del login item resta nella checklist manuale.
 
 ### Fase E — Shell Tauri, tray e overlay
 
@@ -358,7 +363,7 @@ si trovano tasti, testo, app o titoli di finestre.
 | APP-01 | Configurare app senza finestra principale all'avvio | P0 | M | FND-03 | avvio silenzioso e nessuna finestra grande |
 | APP-02 | Nascondere app da Dock e `Cmd + Tab` | P0 | M | APP-01 | comportamento verificato dopo avvio e riapertura |
 | APP-03 | Creare icona tray e menu minimo | P0 | M | APP-01 | menu permette pausa, settings e quit |
-| APP-04 | Collegare monitor, core e stato applicazione | P0 | L | MAC-07, CORE-07 | evento reale aggiorna uno stato diagnostico |
+| APP-04 | Collegare monitor, core e stato applicazione — **Done anticipato in D** | P0 | L | MAC-07, CORE-07 | evento reale aggiorna stato diagnostico, bucket e sessioni |
 | OVR-01 | Creare finestra overlay trasparente | P0 | L | APP-01 | niente bordo, always-on-top e click-through |
 | OVR-02 | Implementare quattro posizioni | P0 | M | OVR-01 | coordinate corrette su display principale |
 | OVR-03 | Gestire multi-monitor e cambio display | P1 | L | OVR-02 | overlay ricollocato se un display scompare |
@@ -382,7 +387,7 @@ rubare focus o intercettare click.
 | UI-05 | Creare settings General | P0 | M | APP-03 | pausa e preferenze persistono |
 | UI-06 | Creare settings Overlay | P0 | M | OVR-08 | posizione, dimensione, hide-after e contenuto applicati live |
 | UI-07 | Creare settings Appearance | P1 | S | UI-01 | System, Light e Dark funzionano |
-| UI-08 | Implementare avvio al login | P1 | M | UI-05 | attivazione e disattivazione sono idempotenti |
+| UI-08 | Implementare avvio al login — **Done anticipato in D** | P1 | M | UI-05 | login item e monitor automatico seguono la stessa preferenza |
 | UI-09 | Creare onboarding in tre passaggi | P0 | L | MAC-03, MAC-07 | primo avvio spiega privacy e permesso |
 | UI-10 | Gestire permesso negato/revocato | P0 | M | UI-09, MAC-07 | stato chiaro, nessun dato simulato |
 | UI-11 | Aggiungere dialog export CSV | P0 | M | DB-09 | utente sceglie destinazione e riceve esito |
@@ -546,12 +551,12 @@ Non sono requisiti per la V1:
 
 | Decisione | Quando serve | Default proposto |
 | --- | --- | --- |
-| Licenza | prima dello scaffold pubblico | MIT, da confermare |
-| Versione minima macOS | prima di FND-03 | scegliere in base al Mac di sviluppo e alle API richieste |
+| Licenza | completata | GPL-3.0-only; TODO titolare e contatto in NOTICE.md |
+| Versione minima macOS | completata | macOS 10.15 |
 | Frontend build tool | durante FND-03 | Vite + TypeScript senza framework UI |
 | Binding macOS | durante MAC-01 | Rust diretto; bridge minimo solo se necessario |
-| SQLite crate | prima di DB-03 | valutare semplicità, migrazioni e build Tauri |
-| Bucket metriche | prima di DB-05 | 60 secondi per la V1 |
+| SQLite crate | completata | `rusqlite` bundled + `rusqlite_migration` |
+| Bucket metriche | completata | 60 secondi per la V1 |
 | Artefatto macOS | prima di REL-02 | `.app.tar.gz` o `.app.zip` per il cask |
 | Architetture macOS | prima di REL-02 | Apple Silicon prima; Intel se la CI resta semplice |
 

@@ -11,8 +11,9 @@ TypePulse dispone ora di una base macOS compilabile e riproducibile con Tauri 2,
 Rust e TypeScript. L'applicazione mostra una finestra diagnostica di fondazione,
 ma non richiede permessi e non osserva ancora la tastiera.
 
-Il Gate A ingegneristico è chiuso. Rimane aperta la scelta della licenza, che è
-una decisione del proprietario e non è stata inventata durante lo sviluppo.
+Il Gate A ingegneristico è chiuso. La licenza, inizialmente lasciata aperta, è
+stata successivamente scelta dal proprietario come `GPL-3.0-only` e sincronizzata
+dopo la Fase C.
 
 ## Output prodotti
 
@@ -111,7 +112,7 @@ una release e non deve essere pubblicato come tale.
 
 | Task | Esito |
 | --- | --- |
-| FND-01 | TODO: licenza non scelta; placeholder legale presente |
+| FND-01 | completato successivamente: GPL-3.0-only |
 | FND-02 | completato |
 | FND-03 | completato e avviato localmente |
 | FND-04 | completato |
@@ -125,8 +126,7 @@ una release e non deve essere pubblicato come tale.
 
 ### Prima di rendere pubblico il repository
 
-- scegliere una licenza OSI e sostituire il placeholder `LICENSE`;
-- sostituire `license: UNLICENSED` nel package npm;
+- compilare titolare del copyright e contatto pubblico in `NOTICE.md`;
 - abilitare GitHub private vulnerability reporting;
 - sostituire gli URL `TODO` dei Security Advisories;
 - indicare un contatto privato per sicurezza e condotta;
@@ -150,9 +150,9 @@ una release e non deve essere pubblicato come tale.
 - GitHub Release e Homebrew: Fase G;
 - Linux/X11: Fase H.
 
-## Prossimo passo consigliato
+## Stato successivo
 
-Iniziare `MAC-01` con uno spike limitato: confrontare i binding Rust disponibili
-per Core Graphics/Application Services e decidere se è necessario un bridge
-nativo minimo. Lo spike deve produrre una nota tecnica prima di aggiungere il
-permesso o un listener globale.
+Le Fasi B, C e D sono state completate dopo questo report. Lo spike `MAC-01` ha
+scelto binding Rust diretti; monitor, core metrico e persistenza SQLite sono ora
+integrati. Il prossimo sviluppo è la Fase E (tray e overlay), mentre le prove
+TCC e login item restano checklist manuali sul Mac del proprietario.

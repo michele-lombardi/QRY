@@ -37,10 +37,13 @@ l'inattività configurata.
 
 ## 3. Dati locali
 
-- salvare sessioni e bucket aggregati;
-- calcolare riepilogo giornaliero e ultimi sette giorni;
+- salvare sessioni e bucket aggregati: completato nella Fase D;
+- calcolare riepilogo giornaliero e ultimi sette giorni: completato;
+- rollover automatico della data locale con storico conservato: completato;
+- export CSV aggregato e reset selettivo del giorno: completati nel backend;
+- preferenza di avvio al login + monitor automatico: completata in anticipo;
 - creare schermata statistiche e grafico;
-- implementare reset di oggi ed export CSV.
+- collegare reset/export ai dialog definitivi della UI.
 
 **Uscita:** i valori sopravvivono al riavvio e il CSV rispetta lo schema pubblico.
 

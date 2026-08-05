@@ -2,10 +2,11 @@
 
 ## Current milestone
 
-Phase C implements the portable metric and session engine. The next milestone is
-Phase D, local persistence and daily aggregation. The Phase B diagnostic window
-remains available; its TCC checklist should be completed before application
-integration in Phase E.
+Phase D implements local SQLite persistence, daily aggregation, CSV output,
+automatic local-day rollover and the macOS automatic-start preference. The next
+milestone is Phase E, the tray and overlay shell. The Phase B diagnostic window
+remains available and now exposes live core metrics and today's completed
+sessions; its TCC checklist still requires a real user grant.
 
 ## Toolchain
 
@@ -49,9 +50,10 @@ npm run tauri dev
 ```
 
 Tauri starts Vite on port 1420, compiles the Rust workspace and opens the input
-diagnostic window. Use it to check/request Input Monitoring, open System
-Settings, start/stop the passive monitor and view aggregate health. That window
-is temporary: tray-only behavior arrives in Phase E.
+diagnostic window. Use it to check/request Input Monitoring, start/stop the
+passive monitor, inspect live/today metrics and change `Start automatically`.
+That checkbox registers a macOS login item and starts monitoring whenever the
+app opens. The window is temporary: tray-only behavior arrives in Phase E.
 
 The app cannot grant TCC permission itself. After changing Input Monitoring in
 System Settings, macOS may require a quit/restart. Unsigned debug rebuilds can
@@ -102,9 +104,15 @@ information is discarded inside the private adapter filter.
 
 ### `typepulse-storage-sqlite`
 
-Owns migrations and local persistence. It depends on domain models, never on the
-macOS adapter. Phase A wires the crate only; SQLite dependencies arrive with the
-database design in Phase D.
+Owns `rusqlite` queries, embedded migrations, pre-migration backup and local
+persistence. It depends on domain models, never on the macOS adapter. Its schema
+contains only completed-session aggregates, 60-second buckets and preferences.
+
+On macOS the database is stored under the Tauri application-data directory as
+`typepulse.sqlite3`. A sibling file named
+`typepulse.sqlite3.pre-migration-vN-TIMESTAMP.bak` may be created before a
+schema upgrade. Today is resolved from the local date on every query: midnight
+starts a new empty summary automatically and keeps older dates intact.
 
 ### `src-tauri`
 
@@ -145,6 +153,9 @@ macOS checklists live under `TypePulse/tests/`.
 
 Automated tests must not require Input Monitoring permission. Clock, event source
 and persistence boundaries will be injectable so CI remains deterministic.
+
+Phase D storage and rollover checks are automated. Login-item behavior requires
+a real macOS login session; follow `tests/manual/phase-d-persistence-startup.md`.
 
 Manual Phase B checks live in `tests/manual/`. The release hot-path reference is:
 
@@ -210,9 +221,21 @@ platform adapter.
 Run `npm run format` and `cargo fmt --all`, review the resulting diff, then rerun
 `./scripts/check.sh`.
 
+### Today's values stay at zero while typing
+
+The public daily summary contains completed sessions. Stop monitoring or wait
+for the 30-second session timeout to flush the current session. Live WPM remains
+visible while the session is active.
+
+### Automatic startup is checked but monitoring does not start
+
+Confirm TypePulse is present in macOS Login Items and has Input Monitoring
+permission. The preference cannot grant TCC consent. Read the runtime error in
+the diagnostic window, then use the Phase D manual checklist.
+
 ## TODO decisions
 
-- choose the actual open-source license;
+- fill the copyright-holder and public-contact placeholders in `NOTICE.md`;
 - replace the provisional bundle identifier if the GitHub owner requires it;
 - complete the Phase B TCC, revocation and Secure Input checklists;
 - replace generated Tauri icons before the first release;

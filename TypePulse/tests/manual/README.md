@@ -6,6 +6,10 @@ Phase B checks:
 - [`secure-input.md`](secure-input.md)
 - [`callback-performance.md`](callback-performance.md)
 
+Phase D checks:
+
+- [`phase-d-persistence-startup.md`](phase-d-persistence-startup.md)
+
 Multi-monitor and release-installation checks arrive with their implementing phases.
 
 Never record or attach raw keyboard-event logs to a test result.

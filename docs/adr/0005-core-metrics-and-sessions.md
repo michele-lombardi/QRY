@@ -69,5 +69,5 @@ la prima sessione stabilisce il riferimento senza celebrare ogni incremento.
 - core, macOS, Tauri, SQLite e WebView restano disaccoppiati;
 - nessun output contiene caratteri, key code, applicazioni o finestre;
 - `Instant` e i tipi live non vengono serializzati direttamente;
-- la Fase D dovrà associare il riepilogo monotono a una data civile locale e
-  decidere come persistere le parole frazionarie.
+- la Fase D associa il riepilogo monotono a `LocalDate` nel layer applicativo e
+  persiste le parole frazionarie come `REAL`, esportandole con due decimali.

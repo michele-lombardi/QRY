@@ -12,12 +12,13 @@ portabile di WPM/sessioni sono presenti. Il Gate C è chiuso con test
 deterministici. Sul Mac di sviluppo il consenso TCC è ancora negato, quindi il
 Gate B end-to-end resta una checklist manuale prima dell'integrazione.
 
-La licenza è ancora un `TODO`. Finché non viene scelta una licenza OSI, il codice
-è visibile ma non concede diritti di utilizzo o redistribuzione.
+TypePulse è software libero distribuito con licenza GNU GPL versione 3 soltanto
+(`GPL-3.0-only`). Il nome del titolare del copyright e il contatto pubblico
+restano da compilare in [`NOTICE.md`](NOTICE.md).
 
 Decisioni attuali:
 
-- progetto destinato a diventare open source su GitHub dopo la scelta licenza;
+- progetto open source destinato alla pubblicazione su GitHub con GPLv3;
 - macOS è la prima piattaforma e la V1 di riferimento;
 - Linux verrà affrontato dopo una release macOS stabile;
 - Tauri 2 per l'app desktop;
@@ -104,7 +105,8 @@ Controllo completo dalla root:
 ## Prossimi passi tecnici
 
 1. Concedere Input Monitoring e completare le checklist manuali della Fase B.
-2. Iniziare la Fase D: repository, SQLite e aggregazioni locali.
-3. Scegliere la licenza OSI prima di rendere pubblico il repository.
+2. Verificare manualmente login item, riapertura e rollover della Fase D.
+3. Iniziare la Fase E: tray, finestra invisibile e overlay.
+4. Compilare titolare copyright e contatto pubblico in `NOTICE.md`.
 
 Il piano aggiornato è in [`docs/working-plan.md`](docs/working-plan.md).
