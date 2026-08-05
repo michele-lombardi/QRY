@@ -267,7 +267,10 @@ mod platform {
     };
 
     use super::{
-        super::{event_filter::counts_as_typing, input_permission_status, PermissionStatus},
+        super::{
+            event_filter::{counts_as_typing, RepetitionGuard},
+            input_permission_status, PermissionStatus,
+        },
         KeyboardMonitor, MonitorConfig, MonitorError, MonitorRunState, SharedMonitor,
         TypingActivity,
     };
@@ -326,6 +329,8 @@ mod platform {
         let reenable_requested = Arc::new(AtomicBool::new(false));
         let callback_reenable = Arc::clone(&reenable_requested);
         let callback_shared = Arc::clone(shared);
+        let repetition_guard = RepetitionGuard::new();
+        let repetition_origin = Instant::now();
 
         let event_tap = CGEventTap::new(
             CGEventTapLocation::Session,
@@ -344,9 +349,24 @@ mod platform {
                         let key_code = event
                             .get_integer_value_field(EventField::KEYBOARD_EVENT_KEYCODE)
                             as u16;
+                        let is_auto_repeat = event
+                            .get_integer_value_field(EventField::KEYBOARD_EVENT_AUTOREPEAT)
+                            != 0;
+                        let occurred_at = Instant::now();
+                        let elapsed_ms = occurred_at
+                            .saturating_duration_since(repetition_origin)
+                            .as_millis()
+                            .min(u128::from(u64::MAX))
+                            as u64;
                         process_key_event(
-                            key_code,
-                            event.get_flags(),
+                            KeyEventMetadata {
+                                key_code,
+                                flags: event.get_flags(),
+                                is_auto_repeat,
+                                occurred_at,
+                                elapsed_ms,
+                            },
+                            &repetition_guard,
                             &activity_sender,
                             &callback_shared,
                         );
@@ -414,18 +434,28 @@ mod platform {
             .fetch_max(elapsed_ns, Ordering::Relaxed);
     }
 
-    fn process_key_event(
+    struct KeyEventMetadata {
         key_code: u16,
         flags: CGEventFlags,
+        is_auto_repeat: bool,
+        occurred_at: Instant,
+        elapsed_ms: u64,
+    }
+
+    fn process_key_event(
+        event: KeyEventMetadata,
+        repetition_guard: &RepetitionGuard,
         activity_sender: &mpsc::SyncSender<TypingActivity>,
         shared: &SharedMonitor,
     ) {
         shared.metrics.events_seen.fetch_add(1, Ordering::Relaxed);
-        if !counts_as_typing(key_code, flags) {
+        if !counts_as_typing(event.key_code, event.flags, event.is_auto_repeat)
+            || !repetition_guard.accepts(event.key_code, event.elapsed_ms)
+        {
             return;
         }
 
-        match activity_sender.try_send(TypingActivity::at(Instant::now())) {
+        match activity_sender.try_send(TypingActivity::at(event.occurred_at)) {
             Ok(()) => {
                 shared
                     .metrics
@@ -450,7 +480,34 @@ mod platform {
 
         use core_graphics::event::{CGEventFlags, KeyCode};
 
-        use super::{mpsc, process_key_event, SharedMonitor};
+        use crate::event_filter::RepetitionGuard;
+
+        use super::{mpsc, process_key_event, KeyEventMetadata, SharedMonitor};
+
+        #[test]
+        fn callback_filter_drops_auto_repeat_and_third_identical_key() {
+            let shared = Arc::new(SharedMonitor::new());
+            let (sender, receiver) = mpsc::sync_channel(8);
+            let guard = RepetitionGuard::new();
+            let now = Instant::now();
+            for (elapsed_ms, is_auto_repeat) in
+                [(0, false), (100, false), (200, false), (300, true)]
+            {
+                process_key_event(
+                    KeyEventMetadata {
+                        key_code: KeyCode::ANSI_A,
+                        flags: CGEventFlags::empty(),
+                        is_auto_repeat,
+                        occurred_at: now,
+                        elapsed_ms,
+                    },
+                    &guard,
+                    &sender,
+                    &shared,
+                );
+            }
+            assert_eq!(receiver.try_iter().count(), 2);
+        }
 
         #[test]
         #[ignore = "manual release-mode performance reference"]
@@ -459,9 +516,26 @@ mod platform {
             let shared = Arc::new(SharedMonitor::new());
             let (sender, _receiver) = mpsc::sync_channel(SAMPLES);
             let started = Instant::now();
+            let guard = RepetitionGuard::new();
 
-            for _ in 0..SAMPLES {
-                process_key_event(KeyCode::ANSI_A, CGEventFlags::empty(), &sender, &shared);
+            for index in 0..SAMPLES {
+                let key_code = if index % 2 == 0 {
+                    KeyCode::ANSI_A
+                } else {
+                    KeyCode::ANSI_S
+                };
+                process_key_event(
+                    KeyEventMetadata {
+                        key_code,
+                        flags: CGEventFlags::empty(),
+                        is_auto_repeat: false,
+                        occurred_at: started,
+                        elapsed_ms: index as u64,
+                    },
+                    &guard,
+                    &sender,
+                    &shared,
+                );
             }
 
             let average_ns = started.elapsed().as_nanos() / SAMPLES as u128;

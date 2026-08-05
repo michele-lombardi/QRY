@@ -1,9 +1,12 @@
-//! Fixed-duration rolling WPM calculation.
+//! Adaptive warm-up and fixed-lookback rolling WPM calculation.
 
 use std::{
     collections::VecDeque,
     time::{Duration, Instant},
 };
+
+const MIN_ESTIMATE_SPAN: Duration = Duration::from_millis(250);
+const MAX_LIVE_WPM: f64 = 300.0;
 
 /// Counts activity in a fixed rolling window using five characters per word.
 #[derive(Clone, Debug)]
@@ -41,6 +44,12 @@ impl RollingWpm {
         self.activities.clear();
     }
 
+    /// Whether at least one reliable inter-activity interval is available.
+    #[must_use]
+    pub fn is_ready(&self) -> bool {
+        self.estimate().is_some()
+    }
+
     /// Number of activities currently held in the rolling window.
     #[cfg(test)]
     #[must_use]
@@ -62,14 +71,22 @@ impl RollingWpm {
     }
 
     fn value(&self) -> f64 {
-        let words = self.activities.len() as f64 / 5.0;
-        let window_minutes = self.window.as_secs_f64() / 60.0;
-        let wpm = words / window_minutes;
-        if wpm.is_finite() {
-            wpm.max(0.0)
-        } else {
-            0.0
+        self.estimate().unwrap_or(0.0)
+    }
+
+    fn estimate(&self) -> Option<f64> {
+        let first = self.activities.front()?;
+        let last = self.activities.back()?;
+        let interval_count = self.activities.len().checked_sub(1)?;
+        let observed = last.checked_duration_since(*first)?;
+        if interval_count == 0 || observed < MIN_ESTIMATE_SPAN {
+            return None;
         }
+
+        let estimated_words = interval_count as f64 / 5.0;
+        let observed_minutes = observed.as_secs_f64() / 60.0;
+        let wpm = estimated_words / observed_minutes;
+        wpm.is_finite().then(|| wpm.clamp(0.0, MAX_LIVE_WPM))
     }
 }
 
@@ -77,7 +94,7 @@ impl RollingWpm {
 mod tests {
     use std::time::{Duration, Instant};
 
-    use super::RollingWpm;
+    use super::{RollingWpm, MAX_LIVE_WPM};
 
     #[test]
     fn empty_window_is_zero() {
@@ -86,14 +103,24 @@ mod tests {
     }
 
     #[test]
-    fn fifty_characters_in_ten_seconds_is_sixty_wpm() {
+    fn warm_up_becomes_reactive_after_a_short_reliable_span() {
         let origin = Instant::now();
         let mut metric = RollingWpm::new(Duration::from_secs(10));
-        for offset_ms in (0..50).map(|index| index * 190) {
+        assert_eq!(metric.record(origin), 0.0);
+        assert_eq!(metric.record(origin + Duration::from_millis(200)), 0.0);
+        assert_eq!(metric.record(origin + Duration::from_millis(400)), 60.0);
+        assert!(metric.is_ready());
+    }
+
+    #[test]
+    fn steady_five_characters_per_second_is_sixty_wpm() {
+        let origin = Instant::now();
+        let mut metric = RollingWpm::new(Duration::from_secs(10));
+        for offset_ms in (0..=50).map(|index| index * 200) {
             metric.record(origin + Duration::from_millis(offset_ms));
         }
         assert_eq!(metric.activity_count(), 50);
-        assert!((metric.at(origin + Duration::from_millis(9_500)) - 60.0).abs() < f64::EPSILON);
+        assert!((metric.at(origin + Duration::from_secs(10)) - 60.0).abs() < 1e-9);
     }
 
     #[test]
@@ -101,17 +128,21 @@ mod tests {
         let origin = Instant::now();
         let mut metric = RollingWpm::new(Duration::from_secs(10));
         metric.record(origin);
-        metric.record(origin + Duration::from_secs(5));
-        assert!((metric.at(origin + Duration::from_secs(10)) - 1.2).abs() < 1e-9);
+        assert!((metric.record(origin + Duration::from_secs(5)) - 2.4).abs() < 1e-9);
+        assert_eq!(metric.at(origin + Duration::from_secs(10)), 0.0);
         assert_eq!(metric.at(origin + Duration::from_secs(15)), 0.0);
     }
 
     #[test]
-    fn burst_is_finite_and_uses_the_fixed_window() {
+    fn simultaneous_burst_is_zero_and_later_extreme_rate_is_capped() {
         let origin = Instant::now();
         let mut metric = RollingWpm::new(Duration::from_secs(10));
         let value = (0..1_000).fold(0.0, |_, _| metric.record(origin));
         assert!(value.is_finite());
-        assert_eq!(value, 1_200.0);
+        assert_eq!(value, 0.0);
+        assert_eq!(
+            metric.record(origin + Duration::from_millis(300)),
+            MAX_LIVE_WPM
+        );
     }
 }

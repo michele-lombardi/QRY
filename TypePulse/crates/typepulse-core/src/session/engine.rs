@@ -82,7 +82,12 @@ impl<C: Clock> TypingEngine<C> {
         }
 
         let raw_wpm = self.rolling_wpm.record(occurred_at);
-        let displayed_wpm = self.smoother.update(raw_wpm);
+        let displayed_wpm = if self.rolling_wpm.is_ready() {
+            self.smoother.update(raw_wpm)
+        } else {
+            self.smoother.reset();
+            0.0
+        };
         let active_session = self.active_session.as_mut().expect("session was created");
         active_session.record(occurred_at, displayed_wpm, self.config.active_gap_limit);
 
@@ -422,10 +427,10 @@ mod tests {
         .unwrap();
 
         assert!(engine.record_now().unwrap().new_record.is_none());
-        clock.advance(Duration::from_millis(20)).unwrap();
+        clock.advance(Duration::from_millis(300)).unwrap();
         let record = engine.record_now().unwrap().new_record.unwrap();
         assert_eq!(record.previous_wpm, 2.0);
-        assert!((record.new_wpm - 2.4).abs() < 1e-9);
+        assert!((record.new_wpm - 40.0).abs() < 1e-9);
         clock.advance(Duration::from_millis(20)).unwrap();
         assert!(engine.record_now().unwrap().new_record.is_none());
     }
@@ -460,9 +465,9 @@ mod tests {
             clock.advance(Duration::from_millis(100)).unwrap();
             update = engine.record_now().unwrap();
         }
-        assert_eq!(update.snapshot.raw_wpm, 60.0);
-        assert_eq!(update.snapshot.animation_band, AnimationBand::Steady);
-        assert!(update.snapshot.displayed_wpm > 50.0);
+        assert!((update.snapshot.raw_wpm - 120.0).abs() < 1e-9);
+        assert_eq!(update.snapshot.animation_band, AnimationBand::Intense);
+        assert!(update.snapshot.displayed_wpm > 110.0);
     }
 
     #[test]
