@@ -7,9 +7,10 @@ scrittura senza registrare ciò che viene scritto.
 
 ## Stato del progetto
 
-La Fase A è implementata: scaffold Tauri, frontend TypeScript, workspace Rust,
-crate architetturali, controlli locali e CI macOS sono presenti. La build attuale
-mostra una finestra diagnostica e non monitora ancora la tastiera.
+Le Fasi A e B sono implementate: fondazioni, permesso Input Monitoring, event
+tap passivo, filtro privacy-safe, diagnostica e test sono presenti. Sul Mac di
+sviluppo il consenso TCC è ancora negato, quindi il Gate B end-to-end resta una
+checklist manuale del proprietario prima di iniziare le metriche WPM.
 
 La licenza è ancora un `TODO`. Finché non viene scelta una licenza OSI, il codice
 è visibile ma non concede diritti di utilizzo o redistribuzione.
@@ -72,6 +73,7 @@ anche:
 - [`docs/working-plan.md`](docs/working-plan.md)
 - [`docs/development.md`](docs/development.md)
 - [`docs/phase-a-report.md`](docs/phase-a-report.md)
+- [`docs/phase-b-report.md`](docs/phase-b-report.md)
 
 ## Sviluppo locale
 
@@ -98,8 +100,10 @@ Controllo completo dalla root:
 - **Testabilità:** tempo, eventi di input e persistenza devono essere iniettabili.
 - **Scope ridotto:** una sola animazione con quattro livelli di intensità.
 
-## Prossimo passo tecnico
+## Prossimi passi tecnici
 
-Completare la Fase B con uno spike limitato sul monitoraggio globale macOS:
-binding Rust, stato del permesso, event tap, filtro e misurazione dell'overhead.
-Il piano è in [`docs/working-plan.md`](docs/working-plan.md).
+1. Concedere Input Monitoring e completare le checklist manuali della Fase B.
+2. Iniziare la Fase C: finestra mobile, WPM, smoothing e sessioni nel core.
+3. Scegliere la licenza OSI prima di rendere pubblico il repository.
+
+Il piano aggiornato è in [`docs/working-plan.md`](docs/working-plan.md).

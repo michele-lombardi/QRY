@@ -2,10 +2,10 @@
 
 ## Current milestone
 
-Phase A establishes a reproducible Tauri/Rust/TypeScript project. It does not
-monitor keyboard activity or implement product features. The next milestone is
-the limited macOS input-monitoring spike described as Phase B in the working
-plan.
+Phase B implements the privacy-safe macOS input-monitoring spike and a temporary
+diagnostic window. The next implementation milestone is Phase C, the portable
+metric/session core. Before Phase C, the Mac owner should complete the manual
+TCC checklist so Gate B is verified end to end.
 
 ## Toolchain
 
@@ -41,16 +41,22 @@ The command installs the frontend dependencies and the project-local Tauri CLI.
 Cargo downloads Rust dependencies on the first build. Application lockfiles are
 committed to keep builds reproducible.
 
-## Run the foundation app
+## Run the Phase B diagnostic app
 
 ```bash
 cd TypePulse
 npm run tauri dev
 ```
 
-Tauri starts Vite on port 1420, compiles the Rust workspace and opens the
-foundation window. That window is intentionally temporary: tray-only behavior
-is implemented in Phase E after the monitor and core are proven.
+Tauri starts Vite on port 1420, compiles the Rust workspace and opens the input
+diagnostic window. Use it to check/request Input Monitoring, open System
+Settings, start/stop the passive monitor and view aggregate health. That window
+is temporary: tray-only behavior arrives in Phase E.
+
+The app cannot grant TCC permission itself. After changing Input Monitoring in
+System Settings, macOS may require a quit/restart. Unsigned debug rebuilds can
+also appear as a new identity. Follow `tests/manual/input-monitoring.md`; never
+edit the TCC database.
 
 ## Useful commands
 
@@ -87,8 +93,8 @@ SQLite or platform frameworks.
 ### `typepulse-platform-macos`
 
 Owns Input Monitoring permission and global macOS event integration. Its public
-boundary will emit only an activity timestamp. Raw key information must be
-discarded inside the adapter.
+boundary emits only `TypingActivity` with a monotonic instant. Raw key
+information is discarded inside the private adapter filter.
 
 ### `typepulse-storage-sqlite`
 
@@ -123,7 +129,7 @@ direction is an architectural regression.
 
 ## Tauri capabilities
 
-Phase A grants the main window only `core:default`. No opener, filesystem, shell,
+The app grants the main window only `core:default`. No opener, filesystem, shell,
 network or global-shortcut plugin permission is enabled. New permissions require
 a concrete feature, the narrowest available capability and documentation in the
 pull request.
@@ -135,6 +141,13 @@ macOS checklists live under `TypePulse/tests/`.
 
 Automated tests must not require Input Monitoring permission. Clock, event source
 and persistence boundaries will be injectable so CI remains deterministic.
+
+Manual Phase B checks live in `tests/manual/`. The release hot-path reference is:
+
+```bash
+cargo test -p typepulse-platform-macos --release \
+  typing_callback_hot_path_reference -- --ignored --nocapture
+```
 
 ## Logging rules
 
@@ -197,6 +210,6 @@ Run `npm run format` and `cargo fmt --all`, review the resulting diff, then reru
 
 - choose the actual open-source license;
 - replace the provisional bundle identifier if the GitHub owner requires it;
-- choose the minimum macOS version during the Phase B API spike;
+- complete the Phase B TCC, revocation and Secure Input checklists;
 - replace generated Tauri icons before the first release;
 - add a private security contact before public contributions.

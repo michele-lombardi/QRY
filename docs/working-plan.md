@@ -22,9 +22,13 @@ una release macOS stabile.
 
 - specifica, architettura, privacy, distribuzione e roadmap: completate;
 - Fase A: implementata e verificata localmente;
+- Fase B: codice, test e diagnostica implementati;
+- Gate B end-to-end: `TODO manuale`, il Mac di sviluppo non ha ancora concesso
+  Input Monitoring;
 - licenza open source: `TODO`, decisione del proprietario necessaria;
-- funzionalità di prodotto: non iniziata, come previsto dal Gate A;
-- prossimo lavoro: fase B, spike sul monitoraggio globale macOS.
+- metriche WPM, sessioni e persistenza: non iniziate;
+- prossimo lavoro automatico: Fase C; prima è raccomandata la checklist TCC di
+  Fase B.
 
 ### Priorità
 
@@ -74,7 +78,8 @@ progetto1/
 │   └── adr/
 │       ├── 0001-desktop-stack.md
 │       ├── 0002-input-privacy-boundary.md
-│       └── 0003-local-storage.md
+│       ├── 0003-local-storage.md
+│       └── 0004-macos-input-monitor.md
 ├── TypePulse/
 │   ├── Cargo.toml                     # Workspace Rust
 │   ├── Cargo.lock
@@ -270,6 +275,25 @@ in attesa della pubblicazione e del primo push su GitHub.
 **Gate B:** TypePulse conta attività globale su macOS senza esporre o registrare
 contenuto. Se questo gate fallisce, si ferma lo sviluppo UI e si rivaluta
 l'approccio tecnico.
+
+Stato Fase B:
+
+| Task | Stato | Evidenza / residuo |
+| --- | --- | --- |
+| MAC-01 | Done | ADR 0004; binding Rust diretti, nessun bridge Swift necessario |
+| MAC-02 | Done code | preflight reale restituisce `denied`; passaggio a `granted` TODO proprietario |
+| MAC-03 | Done | deep link eseguito localmente con exit code 0 |
+| MAC-04 | Done code | tap `Session`/`ListenOnly`; ricezione esterna TODO dopo consenso TCC |
+| MAC-05 | Done | filtro privato con test automatici su categorie e shortcut |
+| MAC-06 | Done | API pubblica emette solo `TypingActivity` non serializzabile |
+| MAC-07 | Done code | stop/revoca/re-enable implementati; prova revoca reale TODO manuale |
+| MAC-08 | Done design | comportamento non invasivo documentato; prova Secure Input TODO manuale |
+| MAC-09 | Done | benchmark release 31 ns/hot path; misura callback reale TODO manuale |
+
+Il codice della Fase B è completo. Il Gate B end-to-end resta `TODO manuale`:
+TCC è `denied` sul Mac di sviluppo e il permesso non può essere auto-concesso.
+Le checklist sono in `TypePulse/tests/manual/` e il dettaglio è nel report di
+Fase B.
 
 ### Fase C — Core delle metriche
 

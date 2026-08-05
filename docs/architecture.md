@@ -36,9 +36,10 @@ TypingEngine ── WPM live + stato sessione
     └──→ Aggregator ──→ Repository SQLite ──→ Statistics / CSV
 ```
 
-Il monitor non espone il carattere digitato. Produce soltanto un evento minimo,
-per esempio timestamp e indicazione `countsAsTyping`. Il dato grezzo vive in
-memoria per il tempo necessario alla finestra mobile e poi viene eliminato.
+Il monitor non espone il carattere digitato. Il suo unico output è
+`TypingActivity`, che contiene un `Instant` monotono non serializzabile. Il key
+code viene usato solo nel modulo privato del filtro e distrutto prima del
+confine pubblico.
 
 ## Componenti
 
@@ -58,9 +59,9 @@ Non importa Tauri e non conosce finestre, tray o permessi macOS.
 - emette soltanto attività conteggiabile, mai key code o testo verso gli altri
   componenti.
 
-L'implementazione macOS vive in `typepulse-platform-macos` e usa le API native
-tramite binding Rust o FFI. Un piccolo bridge Swift/Objective-C è ammesso soltanto
-se un'API non è accessibile in modo affidabile da Rust.
+L'implementazione macOS vive in `typepulse-platform-macos`: `core-graphics`
+gestisce event tap e run loop; `objc2-core-graphics` espone le API del permesso.
+La Fase B ha dimostrato che non serve un bridge Swift/Objective-C.
 
 ### TypingEngine
 
@@ -122,11 +123,17 @@ inoltrato a un task Rust dedicato tramite un canale limitato; gli aggiornamenti
 UI passano attraverso eventi Tauri e la persistenza lavora separatamente. Nessuna
 operazione su disco o WebView deve bloccare il callback globale.
 
+Su macOS il tap è `Session` e `ListenOnly`, vive su un thread con `CFRunLoop` e
+usa `try_send`. Un consumer lento causa un drop misurabile, mai un blocco. Il
+worker controlla la revoca del permesso e riabilita il tap dopo le notifiche di
+timeout/disabilitazione del sistema.
+
 ## Confini di piattaforma
 
 ### macOS V1
 
 - target principale e unico criterio di rilascio iniziale;
+- versione minima: macOS 10.15;
 - monitoraggio globale tramite API macOS e permesso Input Monitoring;
 - build `.app` prodotta su un runner o computer macOS;
 - distribuzione tramite GitHub Releases e Homebrew Cask personale.
@@ -153,15 +160,12 @@ Su una piattaforma che non consente il monitoraggio globale, l'app deve dichiara
 la funzione non disponibile: non deve chiedere privilegi elevati o leggere
 direttamente dispositivi di input senza un modello di consenso comprensibile.
 
-## Decisioni aperte prima del codice
+## Decisioni ancora aperte
 
-1. Versione minima di macOS.
-2. API/binding Rust definitivo per il monitoraggio globale e comportamento con
-   Secure Input.
-3. Tool frontend minimo: TypeScript diretto oppure Vite come solo build tool.
-4. Libreria SQLite e strategia di migrazione.
-5. Intervallo di aggregazione: 30 o 60 secondi.
-6. Formato dell'artefatto GitHub: `.app.zip`, `.tar.gz` o entrambi.
+1. Libreria SQLite e strategia di migrazione.
+2. Intervallo di aggregazione: 30 o 60 secondi.
+3. Formato dell'artefatto GitHub: `.app.zip`, `.tar.gz` o entrambi.
+4. Risultato manuale end-to-end del Gate B dopo il consenso TCC.
 
 ## Riferimenti tecnici
 

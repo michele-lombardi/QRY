@@ -40,6 +40,18 @@ Testo breve previsto nell'app:
 8. L'adapter Linux futuro non deve richiedere accesso privilegiato ai dispositivi
    di input per aggirare le protezioni del desktop.
 
+## Garanzie implementate nella Fase B
+
+- il tap macOS è passivo (`ListenOnly`) e non può modificare la digitazione;
+- key code e modificatori sono confinati in `event_filter.rs`, che non è
+  pubblico;
+- `TypingActivity` contiene solo un `Instant` monotono e non implementa
+  serializzazione;
+- il frontend diagnostico riceve solo conteggi e metriche aggregate;
+- il callback usa un canale limitato non bloccante e non effettua I/O o log;
+- Secure Input viene rispettato: dati non osservabili restano non osservati;
+- revoca del permesso ferma il worker e non genera dati simulati.
+
 ## Checklist per ogni modifica
 
 - Il nuovo dato è davvero necessario per una funzione promessa?

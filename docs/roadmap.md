@@ -17,8 +17,8 @@ locale e in CI.
 
 ## 1. Segnale e metrica
 
-- implementare l'adapter macOS e il permesso Input Monitoring;
-- filtrare gli eventi conteggiabili senza conservarne il contenuto;
+- adapter macOS, permesso e filtro privacy-safe: implementati nella Fase B;
+- verifica end-to-end TCC/revoca/Secure Input: TODO manuale del proprietario;
 - implementare finestra mobile, smoothing e sessioni;
 - aggiungere test deterministici per soglie e inattività.
 
