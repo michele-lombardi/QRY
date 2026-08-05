@@ -21,8 +21,8 @@ keys, application names or window titles.
 - [ ] No sustained idle CPU loop is visible.
 - [ ] No unbounded memory growth is visible.
 
-Record the first distributed-build baseline here; it will define comparison
-thresholds for later betas.
+Record the first distributed-build baseline here; it will define comparison thresholds
+for later betas.
 
 ## Suspend, logout and restart (QA-03)
 
@@ -46,7 +46,8 @@ for this test.
 
 - [ ] With Accessibility enabled, Pip follows the focused window across two displays.
 - [ ] Moving directly between displays with different scale factors keeps Pip visible.
-- [ ] Revoking Accessibility keeps the last valid display, then uses the documented fallback.
+- [ ] Revoking Accessibility keeps the last valid display, then uses the documented
+      fallback.
 
 ## Release artifact and Gatekeeper
 
