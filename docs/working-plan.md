@@ -27,8 +27,8 @@ una release macOS stabile.
   Input Monitoring;
 - Fase C: core metrico e Gate C completati con test deterministici;
 - Fase D: persistenza, aggregazioni, CSV e Gate D completati;
-- Fase E: `APP-01`, `APP-02` e `APP-03` completati come prerequisito della
-  Fase F; tray menu macOS attivo e app rimossa dal Dock;
+- Fase E: shell e overlay `APP-01`–`OVR-08` implementati e testati nel codice;
+  Gate E end-to-end resta una checklist manuale con consenso TCC;
 - Fase F: avviata dal pannello menu bar e dal ciclo finestra in background;
 - Fase G: automazione qualità/release avviata; audit privacy, SemVer, packaging,
   workflow draft Release e template cask implementati;
@@ -36,9 +36,9 @@ una release macOS stabile.
 - avvio automatico: preferenza e login item macOS implementati in anticipo;
 - licenza open source: GNU GPLv3 only; restano placeholder anagrafici in
   `NOTICE.md`;
-- prossimo lavoro: completare le schermate della Fase F; overlay e animazione
-  della Fase E restano una linea separata. Gate G rimane aperto fino a queste
-  dipendenze, alle prove manuali e alla configurazione del remote GitHub.
+- prossimo lavoro: completare le schermate della Fase F e svolgere le checklist
+  reali TCC/overlay. Gate G rimane aperto fino a queste dipendenze, alle prove
+  manuali e alla configurazione del remote GitHub.
 
 ### Priorità
 
@@ -370,17 +370,18 @@ finestre. La prova reale del login item resta nella checklist manuale.
 | APP-02 | Nascondere app da Dock e `Cmd + Tab` — **Done** | P0 | M | APP-01 | activation policy macOS `Accessory` e `skipTaskbar` |
 | APP-03 | Creare icona tray e menu minimo — **Done** | P0 | M | APP-01 | click apre l'app; menu permette start, pausa e quit |
 | APP-04 | Collegare monitor, core e stato applicazione — **Done anticipato in D** | P0 | L | MAC-07, CORE-07 | evento reale aggiorna stato diagnostico, bucket e sessioni |
-| OVR-01 | Creare finestra overlay trasparente | P0 | L | APP-01 | niente bordo, always-on-top e click-through |
-| OVR-02 | Implementare quattro posizioni | P0 | M | OVR-01 | coordinate corrette su display principale |
-| OVR-03 | Gestire multi-monitor e cambio display | P1 | L | OVR-02 | overlay ricollocato se un display scompare |
-| OVR-04 | Implementare fade-in e fade-out | P0 | M | OVR-01, CORE-06 | transizioni rispettano timeout e non rubano focus |
-| OVR-05 | Mostrare WPM live | P0 | S | APP-04, OVR-01 | valore UI segue lo stato smussato del core |
-| OVR-06 | Implementare quattro stati animati | P0 | M | CORE-05, OVR-01 | ogni fascia produce lo stato visuale corretto |
-| OVR-07 | Aggiungere celebrazione record | P1 | M | CORE-08, OVR-06 | effetto breve, non ripetuto continuamente |
-| OVR-08 | Implementare dimensioni e contenuti configurabili | P1 | M | OVR-05, OVR-06 | small/medium/large e modalità contenuto funzionano |
+| OVR-01 | Creare finestra overlay trasparente — **Done** | P0 | L | APP-01 | niente bordo, always-on-top e click-through |
+| OVR-02 | Implementare quattro posizioni — **Done** | P0 | M | OVR-01 | coordinate corrette su area utile del display principale |
+| OVR-03 | Gestire multi-monitor e cambio display — **Done nel codice; manuale aperto** | P1 | L | OVR-02 | topologia rivalutata e fallback al display principale |
+| OVR-04 | Implementare fade-in e fade-out — **Done** | P0 | M | OVR-01, CORE-06 | transizioni rispettano timeout e non chiedono focus |
+| OVR-05 | Mostrare WPM live — **Done** | P0 | S | APP-04, OVR-01 | valore UI segue lo stato smussato del core |
+| OVR-06 | Implementare quattro stati animati — **Done** | P0 | M | CORE-05, OVR-01 | still, steady, fast e intense mappati alle fasce core |
+| OVR-07 | Aggiungere celebrazione record — **Done** | P1 | M | CORE-08, OVR-06 | sequenza monotona ed effetto breve non ripetuto |
+| OVR-08 | Implementare dimensioni e contenuti configurabili — **Done** | P1 | M | OVR-05, OVR-06 | tre dimensioni e tre modalità persistono e si applicano live |
 
-**Gate E:** scrivendo in un'altra applicazione, overlay e tray funzionano senza
-rubare focus o intercettare click.
+**Gate E: implementazione completata, prova reale aperta.** Test automatici
+coprono coordinate, preset, DTO, fasce e persistenza. La checklist manuale deve
+confermare focus, click-through e cambio monitor con Input Monitoring concesso.
 
 ### Fase F — Schermate e preferenze
 
@@ -407,10 +408,10 @@ e comprendere i dati senza istruzioni esterne.
 | ID | Task | Prio | Taglia | Dipende da | Criterio di accettazione |
 | --- | --- | --- | --- | --- | --- |
 | QA-01 | Audit log e database — **Done automatico** | P0 | M | DB-09, APP-04 | script nel gate: niente log eventi, capability minima, schema/DTO aggregati |
-| QA-02 | Profilare CPU e memoria idle/typing — **Blocked da OVR-06/TCC** | P0 | M | OVR-06 | script di campionamento pronto; baseline finale TODO manuale |
+| QA-02 | Profilare CPU e memoria idle/typing — **Ready, TCC/manuale** | P0 | M | OVR-06 | overlay pronto; baseline finale TODO manuale |
 | QA-03 | Test sospensione, logout e riavvio — **Blocked da UI-10/TCC** | P0 | M | UI-10 | checklist pronta; prova reale TODO manuale |
 | QA-04 | Test timezone e cambio giorno — **Done automatico** | P1 | M | DB-07 | offset opposti e date isolate testati; mezzanotte naturale resta smoke test |
-| QA-05 | Eseguire smoke test multi-monitor — **Blocked da OVR-03** | P1 | M | OVR-03 | checklist predisposta, overlay ancora assente |
+| QA-05 | Eseguire smoke test multi-monitor — **Ready, manuale** | P1 | M | OVR-03 | controller pronto; prova su due display TODO manuale |
 | REL-01 | Definire versioning e changelog — **Done** | P0 | S | FND-07 | SemVer, changelog e audit coerenza metadati |
 | REL-02 | Creare workflow release macOS — **Implemented, non pubblicata** | P0 | L | REL-01, Gate F | due architetture, ZIP, checksum e draft Release su tag |
 | REL-03 | Applicare firma ad-hoc dove utile — **Done nel packaging** | P1 | M | REL-02 | identità `-` e `codesign --verify` obbligatorio |

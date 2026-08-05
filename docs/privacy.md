@@ -76,6 +76,16 @@ Testo breve previsto nell'app:
 - le copie `.bak` pre-migrazione contengono gli stessi soli aggregati locali del
   database sorgente.
 
+## Garanzie implementate nella Fase E
+
+- l'evento frontend dell'overlay contiene soltanto visibilità, WPM aggregato,
+  fascia di animazione, preferenze visuali e un contatore di celebrazione;
+- le nuove colonne SQLite rappresentano esclusivamente abilitazione, posizione,
+  dimensione e contenuto visuale dell'overlay;
+- il controller di posizionamento osserva geometria e scala dei display, mai
+  applicazione attiva, titolo finestra o contenuto digitato;
+- l'audit DTO include anche le preferenze dell'overlay.
+
 ## Checklist per ogni modifica
 
 - Il nuovo dato è davvero necessario per una funzione promessa?

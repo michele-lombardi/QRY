@@ -29,9 +29,10 @@ sensibile viene persistito o loggato.
 
 - shell menu bar, avvio nascosto e assenza dal Dock: completati come fondazione
   della Fase F;
-- costruire overlay non cliccabile e sempre in primo piano;
-- aggiungere quattro posizioni, tre dimensioni e ritardo configurabile;
-- implementare i quattro stati dell'animazione e la celebrazione record;
+- overlay non cliccabile e sempre in primo piano: implementato;
+- quattro posizioni e tre dimensioni: implementate; ritardo configurabile resta
+  nella schermata Settings della Fase F;
+- quattro stati dell'animazione e celebrazione record: implementati;
 - completare menu bar e pausa del tracking.
 
 **Uscita:** iniziando a scrivere l'overlay compare rapidamente e scompare dopo

@@ -2,11 +2,11 @@
 
 ## Current milestone
 
-Phase D implements local SQLite persistence, daily aggregation, CSV output,
-automatic local-day rollover and the macOS automatic-start preference. The next
-milestone is Phase E, the tray and overlay shell. The Phase B diagnostic window
-remains available and now exposes live core metrics and today's completed
-sessions; its TCC checklist still requires a real user grant.
+Phase E now implements the macOS menu-bar shell and a separate live overlay with
+four positions, three sizes, configurable content and four animation bands. The
+next milestone is completion of the Phase F screens and onboarding. The Phase B
+TCC checklist and the real Phase E focus/click-through checks still require a
+real user grant.
 
 ## Toolchain
 
@@ -54,10 +54,11 @@ TypePulse as a macOS menu-bar application. No window is shown automatically.
 Select the TypePulse icon in the upper-right menu bar to open the diagnostic
 window; right-click it for Open, Start monitoring, Pause monitoring and Quit.
 
-Use the window to check/request Input Monitoring, inspect live/today metrics and
-change `Start automatically`. That checkbox registers a macOS login item and
-starts monitoring whenever the app opens. Closing the window only hides it;
-choose Quit from the tray menu to terminate the background process cleanly.
+Use the window to check/request Input Monitoring, inspect live/today metrics,
+change `Start automatically` and configure the overlay. The startup checkbox
+registers a macOS login item and starts monitoring whenever the app opens.
+Closing the window only hides it; choose Quit from the tray menu to terminate
+the background process cleanly.
 
 The app cannot grant TCC permission itself. After changing Input Monitoring in
 System Settings, macOS may require a quit/restart. Unsigned debug rebuilds can
@@ -128,6 +129,12 @@ Composition root for the desktop runtime. It owns window/tray lifecycle, command
 registration and routing between adapters and the frontend. Domain formulas do
 not belong here.
 
+`overlay.rs` creates a transparent, click-through webview window and controls
+its position/visibility from aggregate snapshots. It polls display topology
+only for placement and never observes input identities. Tauri's
+`macOSPrivateApi` flag is enabled solely for transparent-window support; the
+project does not target the Mac App Store.
+
 ### `src`
 
 Vanilla TypeScript, HTML and CSS. The frontend receives prepared DTOs and emits
@@ -149,10 +156,10 @@ direction is an architectural regression.
 
 ## Tauri capabilities
 
-The app grants the main window only `core:default`. No opener, filesystem, shell,
-network or global-shortcut plugin permission is enabled. New permissions require
-a concrete feature, the narrowest available capability and documentation in the
-pull request.
+The app grants the trusted main and overlay windows only `core:default`. No
+opener, filesystem, shell, network or global-shortcut plugin permission is
+enabled. New permissions require a concrete feature, the narrowest available
+capability and documentation in the pull request.
 
 ## Tests
 
@@ -175,6 +182,9 @@ cargo test -p typepulse-platform-macos --release \
 The menu-bar lifecycle checklist is in
 `tests/manual/menu-bar-shell.md`. It verifies macOS UI behavior that unit tests
 cannot observe, including Dock and `Cmd + Tab` visibility.
+
+The overlay focus, click-through, visual state and multi-monitor checklist is in
+`tests/manual/phase-e-overlay.md`.
 
 ## Logging rules
 

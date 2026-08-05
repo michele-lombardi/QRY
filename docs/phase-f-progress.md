@@ -33,9 +33,9 @@ dell'app.
 - dialog di export CSV;
 - audit accessibilità.
 
-Le impostazioni Overlay dipendono ancora dal completamento dell'overlay della
-Fase E. Le altre schermate possono procedere usando repository, comandi e shell
-già disponibili.
+Il backend e i controlli diagnostici delle impostazioni Overlay sono ora
+disponibili grazie alla Fase E. In Fase F resta da inserirli nella schermata
+Settings definitiva insieme agli altri pannelli.
 
 ## Verifiche
 

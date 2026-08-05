@@ -7,10 +7,10 @@ scrittura senza registrare ciò che viene scritto.
 
 ## Stato del progetto
 
-Le Fasi A, B e C sono implementate: fondazioni, monitor macOS privacy-safe e core
-portabile di WPM/sessioni sono presenti. Il Gate C è chiuso con test
-deterministici. Sul Mac di sviluppo il consenso TCC è ancora negato, quindi il
-Gate B end-to-end resta una checklist manuale prima dell'integrazione.
+Le Fasi A–E sono implementate nel codice: fondazioni, monitor macOS
+privacy-safe, core WPM/sessioni, persistenza e overlay sono presenti. I Gate C e
+D sono chiusi automaticamente; i Gate B/E end-to-end restano checklist manuali
+finché il Mac di sviluppo non concede Input Monitoring.
 
 TypePulse è software libero distribuito con licenza GNU GPL versione 3 soltanto
 (`GPL-3.0-only`). Il nome del titolare del copyright e il contatto pubblico
@@ -76,6 +76,7 @@ anche:
 - [`docs/phase-a-report.md`](docs/phase-a-report.md)
 - [`docs/phase-b-report.md`](docs/phase-b-report.md)
 - [`docs/phase-c-report.md`](docs/phase-c-report.md)
+- [`docs/phase-e-report.md`](docs/phase-e-report.md)
 
 ## Sviluppo locale
 
@@ -108,7 +109,7 @@ Controllo completo dalla root:
 2. Verificare manualmente login item, riapertura e rollover della Fase D.
 3. Proseguire la Fase F con statistiche, preferenze e onboarding; la shell menu
    bar senza Dock è già attiva.
-4. Completare separatamente l'overlay animato della Fase E.
+4. Verificare manualmente focus, click-through e multi-monitor della Fase E.
 5. Chiudere le prove manuali della Fase G e configurare il remote GitHub prima
    di creare una Release o il tap Homebrew.
 6. Compilare titolare copyright e contatto pubblico in `NOTICE.md`.

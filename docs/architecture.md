@@ -95,9 +95,17 @@ con il click sinistro e torna nascosta quando l'utente la chiude. Il click destr
 offre apertura, start, pausa e quit; quit ferma prima il monitor per scaricare
 gli aggregati pendenti.
 
-L'overlay resta una finestra Tauri separata, trasparente, senza decorazioni,
-sempre in primo piano e configurata per ignorare il cursore. Dove il
-comportamento differisce tra sistemi, il dettaglio rimane nell'adapter.
+L'overlay è una finestra Tauri separata, trasparente, senza decorazioni, sempre
+in primo piano, non focalizzabile e configurata per ignorare il cursore. Un
+controller Rust applica visibilità, dimensione e posizione usando l'area utile
+del display principale; rivaluta periodicamente la topologia per gestire display
+rimossi o riconfigurati. La trasparenza macOS usa il flag Tauri
+`macOSPrivateApi`, accettabile perché il Mac App Store è fuori ambito.
+
+Il frontend overlay riceve tramite evento soltanto WPM smussato, fascia visuale,
+preferenze di presentazione e una sequenza di record. Il fade-out termina prima
+che il controller nasconda la finestra nativa; né show né hide richiedono focus.
+Dove il comportamento differisce tra sistemi, il dettaglio rimane nell'adapter.
 
 L'UI riceve uno stato già pronto e non calcola le metriche.
 

@@ -34,10 +34,10 @@
 | Task | Stato | Motivo residuo |
 | --- | --- | --- |
 | QA-01 | Done automatico | audit incluso nel gate |
-| QA-02 | Blocked | overlay/TCC e baseline reale mancanti |
+| QA-02 | Ready, manuale | overlay pronto; servono TCC e baseline reale |
 | QA-03 | Blocked | onboarding/revoca e prova lifecycle reale mancanti |
 | QA-04 | Done automatico | smoke test mezzanotte naturale ancora manuale |
-| QA-05 | Blocked | overlay multi-monitor non implementato |
+| QA-05 | Ready, manuale | controller pronto; servono due display reali |
 | REL-01 | Done | SemVer, changelog e audit pronti |
 | REL-02 | Implemented | nessun remote/tag su cui eseguirla |
 | REL-03 | Done nel packaging | verifica Intel ancora affidata a CI/hardware compatibile |
@@ -50,14 +50,15 @@
 ## Perché Gate G resta aperto
 
 La pipeline non sostituisce il prodotto completo. In questo repository non è
-configurato alcun remote Git; inoltre Gate F, overlay e test TCC sono ancora
-aperti. Pubblicare ora `v0.1.0` come stabile produrrebbe un artefatto installabile
+configurato alcun remote Git; inoltre Gate F, Gate E manuale e test TCC sono
+ancora aperti. Pubblicare ora `v0.1.0` come stabile produrrebbe un artefatto installabile
 ma non conforme ai criteri V1 definiti dal progetto.
 
 ## Verifiche locali eseguite
 
 - `./scripts/check.sh`: pass, incluso audit privacy;
-- 50 test Rust passati e un benchmark manuale ignorato come previsto;
+- 55 test Rust passati e un benchmark manuale ignorato come previsto dopo la
+  successiva integrazione della Fase E;
 - `./scripts/release-audit.sh v0.1.0`: metadati coerenti;
 - YAML delle workflow e Dependabot: parsing riuscito;
 - renderer Cask con owner/hash fittizi validi: sintassi Ruby riuscita;
@@ -78,6 +79,6 @@ resta quindi TODO al primo tag eseguito su GitHub Actions.
 - repository pubblico `homebrew-typepulse`;
 - contatto security privato;
 - consenso TCC e test lifecycle/risorse su macOS reale;
-- Gate F e overlay completati;
+- Gate F completato e Gate E verificato manualmente;
 - checksum dei due artefatti creati dalla prima Release;
 - decisione umana di pubblicare release candidate e, successivamente, V1.

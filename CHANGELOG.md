@@ -8,7 +8,15 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 ### Planned
 
 - complete statistics, settings, onboarding and accessibility in Phase F;
-- complete the animated overlay before a stable macOS release.
+- complete real TCC, overlay and multi-monitor validation before a stable macOS release.
+
+### Added
+
+- transparent click-through macOS overlay with live WPM and four visual bands;
+- four screen positions, three size presets and three content modes;
+- one-shot personal-record celebration and reduced-motion behavior;
+- SQLite schema v2 for persisted visual preferences and safe v1 migration;
+- automatic primary-display repositioning and multi-monitor fallback.
 
 ## [0.1.0] - 2026-08-05
 
