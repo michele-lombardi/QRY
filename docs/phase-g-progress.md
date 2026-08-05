@@ -57,8 +57,8 @@ ma non conforme ai criteri V1 definiti dal progetto.
 ## Verifiche locali eseguite
 
 - `./scripts/check.sh`: pass, incluso audit privacy;
-- 55 test Rust passati e un benchmark manuale ignorato come previsto dopo la
-  successiva integrazione della Fase E;
+- 58 test Rust passati e un benchmark manuale ignorato come previsto dopo la
+  successiva integrazione della Fase E e della brand identity;
 - `./scripts/release-audit.sh v0.1.0`: metadati coerenti;
 - YAML delle workflow e Dependabot: parsing riuscito;
 - renderer Cask con owner/hash fittizi validi: sintassi Ruby riuscita;

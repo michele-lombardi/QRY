@@ -29,6 +29,8 @@ una release macOS stabile.
 - Fase D: persistenza, aggregazioni, CSV e Gate D completati;
 - Fase E: shell e overlay `APP-01`–`OVR-08` implementati e testati nel codice;
   Gate E end-to-end resta una checklist manuale con consenso TCC;
+- brand identity v0.1: nome, mark, icone, token e comportamenti Pip supportati
+  integrati; Dance, Sleep, messaggi v2 e superfici finali hanno task dedicati;
 - Fase F: avviata dal pannello menu bar e dal ciclo finestra in background;
 - Fase G: automazione qualità/release avviata; audit privacy, SemVer, packaging,
   workflow draft Release e template cask implementati;
@@ -375,13 +377,33 @@ finestre. La prova reale del login item resta nella checklist manuale.
 | OVR-03 | Gestire multi-monitor e cambio display — **Done nel codice; manuale aperto** | P1 | L | OVR-02 | topologia rivalutata e fallback al display principale |
 | OVR-04 | Implementare fade-in e fade-out — **Done** | P0 | M | OVR-01, CORE-06 | transizioni rispettano timeout e non chiedono focus |
 | OVR-05 | Mostrare WPM live — **Done** | P0 | S | APP-04, OVR-01 | valore UI segue lo stato smussato del core |
-| OVR-06 | Implementare quattro stati animati — **Done** | P0 | M | CORE-05, OVR-01 | still, steady, fast e intense mappati alle fasce core |
+| OVR-06 | Implementare stati animati misurabili — **Done** | P0 | M | CORE-05, OVR-01 | fasce core tradotte in Walk/Run; Breathe, Tired e record gestiti esplicitamente |
 | OVR-07 | Aggiungere celebrazione record — **Done** | P1 | M | CORE-08, OVR-06 | sequenza monotona ed effetto breve non ripetuto |
 | OVR-08 | Implementare dimensioni e contenuti configurabili — **Done** | P1 | M | OVR-05, OVR-06 | tre dimensioni e tre modalità persistono e si applicano live |
 
 **Gate E: implementazione completata, prova reale aperta.** Test automatici
 coprono coordinate, preset, DTO, fasce e persistenza. La checklist manuale deve
 confermare focus, click-through e cambio monitor con Input Monitoring concesso.
+
+### Brand identity — integrazione e backlog
+
+| ID | Task | Stato | Prio | Dipende da | Criterio di accettazione |
+| --- | --- | --- | --- | --- | --- |
+| BRD-01 | Adottare TypePulse e Pulse mark come identità canonica | Done | P0 | identity v0.1 | nome e geometria unici nel prodotto |
+| BRD-02 | Generare icona app e glifi menu bar | Done | P0 | BRD-01 | squircle cyan/scuro; Pulse attivo, flatline idle e WPM nativo |
+| BRD-03 | Applicare palette, SF Pro/system stack e voce | Done sulla UI corrente | P0 | BRD-01 | token e copy correnti rispettano l'identity |
+| BRD-04 | Implementare anatomia Pip | Done | P0 | OVR-06 | cerchio, occhi, piedi; niente bocca, ombre o accessori |
+| BRD-05 | Implementare Breathe, Walk, Run, Jump/Cheer e Tired | Done nel renderer | P0 | CORE-05, CORE-08 | trigger misurabili, record one-shot e tempo attivo aggregato |
+| BRD-06 | Applicare pulse dinamico e reduced motion | Done | P1 | BRD-05 | 1.6–0.4 s; modalità ridotta senza moto continuo |
+| BRD-07 | Misurare stabilità del ritmo e attivare Dance | Todo futuro | P1 | nuovo task core | trigger deterministico dopo oltre due minuti stabili |
+| BRD-08 | Progettare Sleep a cinque minuti | Todo futuro | P1 | lifecycle/UI-02 | nessun conflitto con hide 2 s e fine sessione 30 s |
+| BRD-09 | Trasformare il Pulse mark nel grafico live | Todo F | P1 | UI-04 | wave accessibile senza libreria chart |
+| BRD-10 | Messaggi compagno, massimo tre al giorno | Todo v2 | P2 | UI-02 | solo popover, nessuna notifica di sistema |
+| BRD-11 | Onboarding e insights conformi all'identity | Todo F | P0 | UI-03, UI-09 | token, Pip e voce applicati alle schermate finali |
+| BRD-12 | Confermare endorsement legale Micro-Y nell'About | Todo owner | P1 | dato esterno | solo testo in-app, formulazione autorizzata |
+| BRD-13 | Verificare nome, dominio e marchio TypePulse | Todo pre-release | P0 | ricerca/owner | decisione registrata prima della V1 |
+| BRD-14 | Preparare sito, lockup e GIF prodotto | Todo futuro | P2 | sito pubblico | clear-space e motion identity rispettati |
+| BRD-15 | Visual regression e contrast audit | Todo RC | P0 | Gate F | light/dark, tray, overlay e reduce motion verificati |
 
 ### Fase F — Schermate e preferenze
 

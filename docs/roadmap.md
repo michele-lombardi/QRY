@@ -32,7 +32,8 @@ sensibile viene persistito o loggato.
 - overlay non cliccabile e sempre in primo piano: implementato;
 - quattro posizioni e tre dimensioni: implementate; ritardo configurabile resta
   nella schermata Settings della Fase F;
-- quattro stati dell'animazione e celebrazione record: implementati;
+- comportamenti Pip supportati e celebrazione record: implementati; Dance e
+  Sleep restano backlog misurabile nell'integrazione brand;
 - completare menu bar e pausa del tracking.
 
 **Uscita:** iniziando a scrivere l'overlay compare rapidamente e scompare dopo

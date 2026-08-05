@@ -11,7 +11,7 @@ It does not require typing or recording any keyboard input.
 ## Acceptance checks
 
 - [ ] TypePulse starts without opening a large window.
-- [ ] A TypePulse status icon appears in the upper-right macOS menu bar.
+- [ ] An idle TypePulse flatline glyph appears in the upper-right macOS menu bar.
 - [ ] TypePulse has no Dock icon.
 - [ ] TypePulse does not appear in `Cmd + Tab`.
 - [ ] Left-clicking the status icon opens and focuses the TypePulse window.
@@ -19,8 +19,11 @@ It does not require typing or recording any keyboard input.
 - [ ] Right-clicking the status icon shows Open, Start monitoring, Pause monitoring and
       Quit TypePulse.
 - [ ] Start/Pause affect the same monitor state shown in the window.
+- [ ] Typing changes the flatline to the three-beat Pulse mark and shows rounded live
+      WPM beside it; stopping returns it to the flatline without a stale number.
 - [ ] Quit TypePulse removes the status icon and terminates the process.
 - [ ] Reopening TypePulse recreates exactly one status icon.
+- [ ] Light and dark menu bars both render the glyph as a native monochrome template.
 
 ## Result
 

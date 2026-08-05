@@ -39,15 +39,19 @@ menu bar or Dock.
 
 ## Visual states and record
 
-1. Type at a slow, normal and fast rhythm and confirm the character visibly progresses
-   from still to steady, fast and intense. Exact 30/60/90 WPM boundaries are covered by
-   deterministic core tests.
-2. Complete a baseline session by waiting at least 30 seconds.
-3. Start a faster session and exceed the stored peak.
-4. Confirm the star/glow celebration occurs once, then does not loop while the value
+1. Confirm Pip has one circular body, two eyes and two capsule feet, with no mouth,
+   outline, character shadow or accessories.
+2. Type below and above 70 WPM and confirm Pip changes from Walk to Run; Run leans
+   forward and shows cyan dash lines. Internal 30/60/90 WPM core bands remain covered by
+   deterministic tests and make Walk/pulse tempo progress smoothly.
+3. Complete a baseline session by waiting at least 30 seconds.
+4. Start a faster session and exceed the stored peak.
+5. Confirm Pip jumps, turns green and cheers once, then does not loop while the value
    remains above the old record.
-5. Enable **Reduce motion** in macOS Accessibility settings and repeat. Values must
+6. Enable **Reduce motion** in macOS Accessibility settings and repeat. Values must
    remain readable without continuous motion.
+7. Tired activates only after 90 aggregate active-typing minutes in one session; use a
+   real long-session check rather than synthetic input before release.
 
 ## Multiple displays
 
@@ -68,7 +72,8 @@ remain at stale or unreachable coordinates.
 - click-through: PASS / FAIL
 - fade and timeout: PASS / FAIL
 - positions/sizes/content: PASS / FAIL
-- four visual bands: PASS / FAIL
+- Walk / Run brand behavior: PASS / FAIL
+- Tired long-session behavior: PASS / FAIL / NOT RUN
 - one-shot record celebration: PASS / FAIL
 - reduced motion: PASS / FAIL
 - multi-monitor fallback: PASS / FAIL

@@ -77,6 +77,7 @@ anche:
 - [`docs/phase-b-report.md`](docs/phase-b-report.md)
 - [`docs/phase-c-report.md`](docs/phase-c-report.md)
 - [`docs/phase-e-report.md`](docs/phase-e-report.md)
+- [`docs/brand-implementation.md`](docs/brand-implementation.md)
 
 ## Sviluppo locale
 

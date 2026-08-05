@@ -29,8 +29,10 @@ The Phase D workspace includes the portable WPM/session engine, SQLite aggregate
 persistence, local-day rollover, CSV output and the macOS automatic-start preference.
 The Phase E shell launches as a macOS menu-bar accessory without a Dock icon. Its tray
 opens the temporary diagnostic window and exposes start, pause and quit actions. A
-separate transparent, click-through overlay renders live WPM, four animation bands and
-persisted visual options. Final Phase F statistics/settings screens remain in progress.
+separate transparent, click-through overlay renders live WPM and identity-aligned Pip
+behaviors with persisted visual options. The Pulse mark, app icon, dynamic tray glyph,
+palette and product voice follow the supplied brand identity. Final Phase F
+statistics/settings screens remain in progress.
 
 See [`../docs/development.md`](../docs/development.md) for the complete guide.
 

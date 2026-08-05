@@ -37,15 +37,17 @@ scegliere uno dei quattro angoli dello schermo.
 L'ingresso usa fade-in e un lieve spostamento verticale di circa 150 ms. In
 uscita l'animazione rallenta e la card svanisce.
 
-| WPM | Stato visuale |
+| Trigger | Stato Pip |
 | ---: | --- |
-| 0–29 | quasi fermo |
-| 30–59 | movimento regolare |
-| 60–89 | movimento rapido |
-| 90+ | movimento intenso |
-| nuovo record | breve celebrazione |
+| 0 WPM | Breathe; normalmente non visibile perché l'overlay idle è nascosto |
+| 1–69 WPM | Walk; passo più rapido nella fascia core fast |
+| 70+ WPM | Run, inclinazione e dash lines |
+| 90+ minuti attivi nella sessione | Tired, senza giudicare l'utente |
+| nuovo record | Jump e Cheer verde, una sola volta |
 
-Per la V1 basta un solo personaggio con quattro stati, più l'effetto record.
+Per la V1 basta un solo Pip con questi comportamenti misurabili. Dance e Sleep
+sono backlog esplicito perché richiedono rispettivamente una metrica di stabilità
+e una decisione sul lifecycle idle.
 
 ## Menu bar
 

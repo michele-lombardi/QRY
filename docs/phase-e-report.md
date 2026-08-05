@@ -41,7 +41,8 @@ La UI `overlay.html` implementa:
 
 - fade-in con lieve spostamento e fade-out prima dell'hide nativo;
 - WPM live;
-- un personaggio CSS con stati `still`, `steady`, `fast` e `intense`;
+- Pip in SVG conforme all'identity con Breathe, Walk, Run e Tired;
+- Jump/Cheer verde one-shot per il nuovo record;
 - celebrazione breve quando il core supera un record già esistente;
 - contenuto `wpm`, `animation` o `both`;
 - dimensioni `small`, `medium` e `large`;
@@ -76,7 +77,7 @@ database.
 | OVR-03 | Done nel codice | rivalutazione display; smoke test fisico ancora manuale |
 | OVR-04 | Done | transizioni da 150/180 ms senza focus |
 | OVR-05 | Done | DTO riceve il valore smussato del core |
-| OVR-06 | Done | quattro fasce visuali già definite dal core |
+| OVR-06 | Done | fasce core tradotte nei comportamenti Pip supportati |
 | OVR-07 | Done | sequenza record monotona, effetto non ripetuto |
 | OVR-08 | Done | tre dimensioni e tre modalità contenuto persistenti |
 
@@ -93,7 +94,8 @@ monitor funziona sull'hardware dell'utente.
 - `./scripts/check.sh`: superato;
 - frontend: Prettier, ESLint, TypeScript e bundle Vite multipagina superati;
 - Rust: rustfmt, Clippy con warning negati, check e test superati;
-- 55 test Rust passati e un benchmark manuale ignorato come previsto;
+- 58 test Rust passati e un benchmark manuale ignorato come previsto dopo
+  l'integrazione della brand identity;
 - audit privacy: schema, capability e DTO overlay superati;
 - migrazione simulata da schema v1 a v2 con backup: superata;
 - bundle debug macOS creato e verificato con `codesign --verify --deep --strict`;

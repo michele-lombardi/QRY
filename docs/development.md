@@ -140,6 +140,12 @@ project does not target the Mac App Store.
 Vanilla TypeScript, HTML and CSS. The frontend receives prepared DTOs and emits
 user intentions. It never sees key codes and never queries SQLite directly.
 
+Brand SVG sources live under `assets/brand`; generated application/tray icons
+live under `src-tauri/icons`. Follow `docs/brand-implementation.md` before
+changing colors, the Pulse mark, Pip anatomy, thresholds, motion or product
+copy. The original identity reference is retained in the repository-level
+`brand identity/` directory.
+
 ## Dependency direction
 
 ```text

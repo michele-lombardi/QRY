@@ -16,7 +16,10 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 - four screen positions, three size presets and three content modes;
 - one-shot personal-record celebration and reduced-motion behavior;
 - SQLite schema v2 for persisted visual preferences and safe v1 migration;
-- automatic primary-display repositioning and multi-monitor fallback.
+- automatic primary-display repositioning and multi-monitor fallback;
+- TypePulse Pulse mark, application icon and dynamic menu-bar glyph;
+- brand palette, system typography, product voice and Micro-Y text endorsement;
+- identity-aligned Pip renderer with Walk, Run, Tired and one-shot Jump/Cheer.
 
 ## [0.1.0] - 2026-08-05
 

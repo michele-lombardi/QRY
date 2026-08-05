@@ -79,7 +79,7 @@ Testo breve previsto nell'app:
 ## Garanzie implementate nella Fase E
 
 - l'evento frontend dell'overlay contiene soltanto visibilità, WPM aggregato,
-  fascia di animazione, preferenze visuali e un contatore di celebrazione;
+  fascia/comportamento visuale, preferenze e un contatore di celebrazione;
 - le nuove colonne SQLite rappresentano esclusivamente abilitazione, posizione,
   dimensione e contenuto visuale dell'overlay;
 - il controller di posizionamento osserva geometria e scala dei display, mai
