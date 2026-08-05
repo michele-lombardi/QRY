@@ -23,7 +23,11 @@ It does not require typing or recording any keyboard input.
       WPM beside it; stopping returns it to the flatline without a stale number.
 - [ ] Quit TypePulse removes the status icon and terminates the process.
 - [ ] Reopening TypePulse recreates exactly one status icon.
-- [ ] Light and dark menu bars both render the glyph as a native monochrome template.
+- [ ] With TypePulse idle, switch macOS from Light to Dark appearance and back: the
+      flatline becomes light on the dark menu bar and dark on the light menu bar.
+- [ ] Repeat the appearance switch while typing: both the Pulse glyph and native WPM
+      title change contrast automatically without restarting TypePulse or flashing a
+      stale-color icon.
 
 ## Result
 

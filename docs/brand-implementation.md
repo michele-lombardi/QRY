@@ -37,6 +37,12 @@ platform PNG, ICNS and ICO files remain in `TypePulse/src-tauri/icons/`.
 The menu-bar icon changes between flatline and Pulse. During live typing it also
 shows the rounded WPM value as the native status-item title.
 
+Both PNGs are monochrome alpha masks installed as native macOS template images.
+Every runtime icon replacement updates image and template status atomically, so
+AppKit renders the mark light on a dark menu bar and dark on a light menu bar.
+The WPM string remains the native status-item title and follows the same system
+appearance without application-defined foreground colors.
+
 ## Pip behavior mapping
 
 Pip is implemented as inline SVG: one circle, two eyes and two capsule feet. It

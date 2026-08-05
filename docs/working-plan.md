@@ -395,7 +395,7 @@ Accessibilità concessi, oltre al fallback senza Accessibilità.
 | ID | Task | Stato | Prio | Dipende da | Criterio di accettazione |
 | --- | --- | --- | --- | --- | --- |
 | BRD-01 | Adottare TypePulse e Pulse mark come identità canonica | Done | P0 | identity v0.1 | nome e geometria unici nel prodotto |
-| BRD-02 | Generare icona app e glifi menu bar | Done | P0 | BRD-01 | squircle cyan/scuro; Pulse attivo, flatline idle e WPM nativo |
+| BRD-02 | Generare icona app e glifi menu bar | Done | P0 | BRD-01 | Pulse/flatline restano template adattivi nei cambi runtime; WPM usa il titolo nativo |
 | BRD-03 | Applicare palette, SF Pro/system stack e voce | Done sulla UI corrente | P0 | BRD-01 | token e copy correnti rispettano l'identity |
 | BRD-04 | Implementare anatomia Pip | Done | P0 | OVR-06 | cerchio, occhi, piedi; niente bocca, ombre o accessori |
 | BRD-05 | Implementare Breathe, Walk, Run, Jump/Cheer e Tired | Done nel renderer | P0 | CORE-05, CORE-08 | trigger misurabili, record one-shot e tempo attivo aggregato |

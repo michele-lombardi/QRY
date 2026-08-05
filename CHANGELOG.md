@@ -25,6 +25,12 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 - immediate focused-display placement with primary-display fallback and a
   dedicated two-monitor privacy checklist.
 
+### Fixed
+
+- macOS menu-bar Pulse and flatline icons now preserve native template rendering
+  after runtime state changes, keeping both the glyph and WPM title readable in
+  Light and Dark appearances.
+
 ## [0.1.0] - 2026-08-05
 
 ### Added

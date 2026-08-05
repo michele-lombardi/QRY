@@ -25,6 +25,8 @@ dell'app.
 - stato, richiesta e collegamento Impostazioni per il permesso Accessibilità;
 - spiegazione distinta dei permessi Input Monitoring e Accessibilità;
 - fallback esplicito del PiP quando Accessibilità non è concessa.
+- icona menu bar mantenuta come template anche nei cambi idle/attivo, con logo e
+  titolo WPM adattivi fra aspetto Light e Dark.
 
 ## Fase F ancora aperta
 

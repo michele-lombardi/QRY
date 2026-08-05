@@ -70,7 +70,7 @@ pub(crate) fn update_brand_status<R: Runtime>(
         } else {
             include_bytes!("../icons/tray-idle.png").as_slice()
         };
-        tray.set_icon(Some(Image::from_bytes(bytes)?))?;
+        tray.set_icon_with_as_template(Some(Image::from_bytes(bytes)?), cfg!(target_os = "macos"))?;
     }
     tray.set_title(active.then(|| displayed_wpm.to_string()))
 }
@@ -149,13 +149,18 @@ mod tests {
     }
 
     #[test]
-    fn brand_tray_assets_are_valid_three_to_two_pngs() {
+    fn brand_tray_assets_are_valid_monochrome_three_to_two_pngs() {
         for bytes in [
             include_bytes!("../icons/tray-active.png").as_slice(),
             include_bytes!("../icons/tray-idle.png").as_slice(),
         ] {
             let image = Image::from_bytes(bytes).unwrap();
             assert_eq!((image.width(), image.height()), (48, 32));
+            assert!(image.rgba().chunks_exact(4).any(|pixel| pixel[3] > 0));
+            for pixel in image.rgba().chunks_exact(4).filter(|pixel| pixel[3] > 0) {
+                assert_eq!(pixel[0], pixel[1]);
+                assert_eq!(pixel[1], pixel[2]);
+            }
         }
     }
 }
