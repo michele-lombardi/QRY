@@ -448,6 +448,7 @@ mod tests {
     fn preference_dto_contains_only_visual_configuration() {
         let value = serde_json::to_value(OverlayPreferenceDto::from(AppPreferences {
             auto_start_enabled: true,
+            menu_bar_wpm_enabled: false,
             overlay_enabled: true,
             overlay_position: OverlayPosition::BottomRight,
             overlay_size: OverlaySize::Large,

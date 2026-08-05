@@ -191,6 +191,8 @@ impl OverlayContent {
 pub struct AppPreferences {
     /// Launch at OS login and automatically start monitoring when the app opens.
     pub auto_start_enabled: bool,
+    /// Whether the menu-bar item reserves and displays its live WPM slot.
+    pub menu_bar_wpm_enabled: bool,
     /// Whether live typing may present the overlay.
     pub overlay_enabled: bool,
     /// Corner of the active primary display work area.
@@ -205,6 +207,7 @@ impl Default for AppPreferences {
     fn default() -> Self {
         Self {
             auto_start_enabled: false,
+            menu_bar_wpm_enabled: true,
             overlay_enabled: true,
             overlay_position: OverlayPosition::TopRight,
             overlay_size: OverlaySize::Medium,
@@ -220,6 +223,7 @@ mod tests {
     #[test]
     fn overlay_defaults_and_storage_values_are_stable() {
         let defaults = AppPreferences::default();
+        assert!(defaults.menu_bar_wpm_enabled);
         assert!(defaults.overlay_enabled);
         assert_eq!(defaults.overlay_position, OverlayPosition::TopRight);
         assert_eq!(defaults.overlay_size, OverlaySize::Medium);

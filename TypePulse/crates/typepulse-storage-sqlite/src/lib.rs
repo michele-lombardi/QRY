@@ -17,10 +17,11 @@ use typepulse_core::{
     StatisticsRepository,
 };
 
-const LATEST_SCHEMA_VERSION: usize = 2;
+const LATEST_SCHEMA_VERSION: usize = 3;
 const MIGRATION_LIST: &[M<'_>] = &[
     M::up(include_str!("../migrations/0001_initial.sql")),
     M::up(include_str!("../migrations/0002_overlay_preferences.sql")),
+    M::up(include_str!("../migrations/0003_menu_bar_wpm.sql")),
 ];
 const MIGRATIONS: Migrations<'_> = Migrations::from_slice(MIGRATION_LIST);
 
@@ -306,27 +307,30 @@ impl StatisticsRepository for SqliteStatisticsRepository {
         let stored = self
             .connection
             .query_row(
-                "SELECT auto_start_enabled, overlay_enabled, overlay_position,
-                        overlay_size, overlay_content
+                "SELECT auto_start_enabled, menu_bar_wpm_enabled, overlay_enabled,
+                        overlay_position, overlay_size, overlay_content
                  FROM app_preferences WHERE singleton_id = 1",
                 [],
                 |row| {
                     Ok((
                         row.get::<_, i64>(0)?,
                         row.get::<_, i64>(1)?,
-                        row.get::<_, String>(2)?,
+                        row.get::<_, i64>(2)?,
                         row.get::<_, String>(3)?,
                         row.get::<_, String>(4)?,
+                        row.get::<_, String>(5)?,
                     ))
                 },
             )
             .optional()
             .map_err(query_error)?;
-        let Some((auto_start, overlay_enabled, position, size, content)) = stored else {
+        let Some((auto_start, menu_bar_wpm, overlay_enabled, position, size, content)) = stored
+        else {
             return Ok(AppPreferences::default());
         };
         Ok(AppPreferences {
             auto_start_enabled: stored_bool(auto_start, "auto-start")?,
+            menu_bar_wpm_enabled: stored_bool(menu_bar_wpm, "menu-bar WPM")?,
             overlay_enabled: stored_bool(overlay_enabled, "overlay enabled")?,
             overlay_position: OverlayPosition::from_stored(&position)
                 .ok_or_else(|| invalid_data("invalid overlay position preference"))?,
@@ -341,17 +345,19 @@ impl StatisticsRepository for SqliteStatisticsRepository {
         self.connection
             .execute(
                 "INSERT INTO app_preferences(
-                    singleton_id, auto_start_enabled, overlay_enabled,
-                    overlay_position, overlay_size, overlay_content
-                 ) VALUES (1, ?1, ?2, ?3, ?4, ?5)
+                    singleton_id, auto_start_enabled, menu_bar_wpm_enabled,
+                    overlay_enabled, overlay_position, overlay_size, overlay_content
+                 ) VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6)
                  ON CONFLICT(singleton_id) DO UPDATE SET
                     auto_start_enabled = excluded.auto_start_enabled,
+                    menu_bar_wpm_enabled = excluded.menu_bar_wpm_enabled,
                     overlay_enabled = excluded.overlay_enabled,
                     overlay_position = excluded.overlay_position,
                     overlay_size = excluded.overlay_size,
                     overlay_content = excluded.overlay_content",
                 params![
                     i64::from(preferences.auto_start_enabled),
+                    i64::from(preferences.menu_bar_wpm_enabled),
                     i64::from(preferences.overlay_enabled),
                     preferences.overlay_position.as_str(),
                     preferences.overlay_size.as_str(),
@@ -553,6 +559,7 @@ mod tests {
             repository
                 .save_preferences(AppPreferences {
                     auto_start_enabled: true,
+                    menu_bar_wpm_enabled: false,
                     overlay_enabled: false,
                     overlay_position: OverlayPosition::BottomLeft,
                     overlay_size: OverlaySize::Large,
@@ -570,6 +577,7 @@ mod tests {
             reopened.load_preferences().unwrap(),
             AppPreferences {
                 auto_start_enabled: true,
+                menu_bar_wpm_enabled: false,
                 overlay_enabled: false,
                 overlay_position: OverlayPosition::BottomLeft,
                 overlay_size: OverlaySize::Large,
@@ -580,7 +588,7 @@ mod tests {
     }
 
     #[test]
-    fn version_one_database_gains_safe_overlay_defaults() {
+    fn version_one_database_gains_safe_visual_defaults() {
         let directory = tempdir().unwrap();
         let path = directory.path().join("typepulse.sqlite3");
         {
@@ -593,11 +601,36 @@ mod tests {
                 .unwrap();
         }
         let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
-        assert_eq!(repository.schema_version().unwrap(), 2);
+        assert_eq!(repository.schema_version().unwrap(), 3);
         assert_eq!(
             repository.load_preferences().unwrap(),
             AppPreferences::default()
         );
+        assert!(repository.last_backup_path().is_some());
+    }
+
+    #[test]
+    fn version_two_database_preserves_overlay_and_enables_menu_bar_wpm() {
+        let directory = tempdir().unwrap();
+        let path = directory.path().join("typepulse.sqlite3");
+        {
+            let connection = rusqlite::Connection::open(&path).unwrap();
+            connection
+                .execute_batch(concat!(
+                    include_str!("../migrations/0001_initial.sql"),
+                    "\n",
+                    include_str!("../migrations/0002_overlay_preferences.sql"),
+                    "\nUPDATE app_preferences SET overlay_enabled = 0, overlay_size = 'large';",
+                    "\nPRAGMA user_version = 2;"
+                ))
+                .unwrap();
+        }
+        let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
+        let preferences = repository.load_preferences().unwrap();
+        assert_eq!(repository.schema_version().unwrap(), 3);
+        assert!(preferences.menu_bar_wpm_enabled);
+        assert!(!preferences.overlay_enabled);
+        assert_eq!(preferences.overlay_size, OverlaySize::Large);
         assert!(repository.last_backup_path().is_some());
     }
 

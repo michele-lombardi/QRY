@@ -40,7 +40,7 @@ pub fn run() {
             let preferences = state.load_preferences().map_err(std::io::Error::other)?;
 
             app.manage(state);
-            shell::configure(app)?;
+            shell::configure(app, preferences)?;
             overlay::configure(app, preferences)?;
             if preferences.auto_start_enabled {
                 let state = app.state::<DiagnosticState>();
