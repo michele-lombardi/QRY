@@ -33,5 +33,6 @@ cargo test -p typepulse-storage-sqlite schema_has_no_sensitive_input_columns
 cargo test -p typepulse-app dto_contains_only_daily_aggregates
 cargo test -p typepulse-app permission_dto_contains_only_the_status
 cargo test -p typepulse-app preference_dto_contains_only_visual_configuration
+cargo test -p typepulse-app overlay_event_dto_contains_only_aggregate_presentation_state
 
 printf 'Privacy audit passed: no runtime event logs, narrow capability, aggregate-only schema and DTOs.\n'

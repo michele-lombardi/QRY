@@ -1,6 +1,7 @@
 //! macOS menu-bar shell and background window lifecycle.
 
 use tauri::{
+    image::Image,
     menu::MenuBuilder,
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     App, AppHandle, Manager, Runtime,
@@ -28,11 +29,12 @@ pub(crate) fn configure(app: &mut App) -> tauri::Result<()> {
         .text(QUIT_ID, "Quit TypePulse")
         .build()?;
 
-    let mut tray = TrayIconBuilder::with_id(TRAY_ID)
+    let tray = TrayIconBuilder::with_id(TRAY_ID)
         .menu(&menu)
         .show_menu_on_left_click(false)
         .icon_as_template(cfg!(target_os = "macos"))
         .tooltip("TypePulse")
+        .icon(Image::from_bytes(include_bytes!("../icons/tray-idle.png"))?)
         .on_menu_event(|app, event| {
             handle_menu_action(app, MenuAction::from_id(event.id().as_ref()))
         })
@@ -48,11 +50,29 @@ pub(crate) fn configure(app: &mut App) -> tauri::Result<()> {
                 show_main_window(tray.app_handle());
             }
         });
-    if let Some(icon) = app.default_window_icon() {
-        tray = tray.icon(icon.clone());
-    }
     tray.build(app)?;
     Ok(())
+}
+
+/// Applies the compact Pulse mark and live WPM title to the menu-bar item.
+pub(crate) fn update_brand_status<R: Runtime>(
+    app: &AppHandle<R>,
+    active: bool,
+    displayed_wpm: u64,
+    icon_changed: bool,
+) -> tauri::Result<()> {
+    let Some(tray) = app.tray_by_id(TRAY_ID) else {
+        return Ok(());
+    };
+    if icon_changed {
+        let bytes = if active {
+            include_bytes!("../icons/tray-active.png").as_slice()
+        } else {
+            include_bytes!("../icons/tray-idle.png").as_slice()
+        };
+        tray.set_icon(Some(Image::from_bytes(bytes)?))?;
+    }
+    tray.set_title(active.then(|| displayed_wpm.to_string()))
 }
 
 /// Hides the main window instead of terminating the background process.
@@ -115,6 +135,8 @@ impl MenuAction {
 
 #[cfg(test)]
 mod tests {
+    use tauri::image::Image;
+
     use super::MenuAction;
 
     #[test]
@@ -124,5 +146,16 @@ mod tests {
         assert_eq!(MenuAction::from_id("pause"), MenuAction::Pause);
         assert_eq!(MenuAction::from_id("quit"), MenuAction::Quit);
         assert_eq!(MenuAction::from_id("unexpected"), MenuAction::Unknown);
+    }
+
+    #[test]
+    fn brand_tray_assets_are_valid_three_to_two_pngs() {
+        for bytes in [
+            include_bytes!("../icons/tray-active.png").as_slice(),
+            include_bytes!("../icons/tray-idle.png").as_slice(),
+        ] {
+            let image = Image::from_bytes(bytes).unwrap();
+            assert_eq!((image.width(), image.height()), (48, 32));
+        }
     }
 }

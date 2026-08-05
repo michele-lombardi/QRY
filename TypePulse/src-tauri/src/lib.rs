@@ -39,8 +39,8 @@ pub fn run() {
             let preferences = state.load_preferences().map_err(std::io::Error::other)?;
 
             app.manage(state);
-            overlay::configure(app, preferences)?;
             shell::configure(app)?;
+            overlay::configure(app, preferences)?;
             if preferences.auto_start_enabled {
                 let state = app.state::<DiagnosticState>();
                 if let Err(error) = app.autolaunch().enable() {

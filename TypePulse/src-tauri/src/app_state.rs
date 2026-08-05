@@ -199,6 +199,7 @@ pub(crate) struct LiveMetrics {
     pub(crate) raw_wpm: f64,
     pub(crate) displayed_wpm: f64,
     pub(crate) animation_band: AnimationBand,
+    pub(crate) active_typing_seconds: f64,
     pub(crate) celebration_sequence: u64,
 }
 
@@ -209,6 +210,7 @@ impl Default for LiveMetrics {
             raw_wpm: 0.0,
             displayed_wpm: 0.0,
             animation_band: AnimationBand::Still,
+            active_typing_seconds: 0.0,
             celebration_sequence: 0,
         }
     }
@@ -396,6 +398,10 @@ fn set_live_metrics(target: &Arc<Mutex<LiveMetrics>>, update: EngineUpdate) {
     metrics.raw_wpm = update.snapshot.raw_wpm;
     metrics.displayed_wpm = update.snapshot.displayed_wpm;
     metrics.animation_band = update.snapshot.animation_band;
+    metrics.active_typing_seconds = update
+        .snapshot
+        .active_session
+        .map_or(0.0, |session| session.active_typing_duration.as_secs_f64());
 }
 
 fn set_shared_error(target: &Arc<Mutex<Option<String>>>, error: String) {

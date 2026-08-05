@@ -62,6 +62,7 @@ struct OverlayEventDto {
     visible: bool,
     displayed_wpm: f64,
     animation_band: &'static str,
+    behavior: &'static str,
     content: &'static str,
     size: &'static str,
     celebration_sequence: u64,
@@ -167,6 +168,7 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
     let mut presented = false;
     let mut hide_after: Option<Instant> = None;
     let mut last_payload: Option<OverlayEventDto> = None;
+    let mut last_tray_status: Option<(bool, u64)> = None;
     let mut last_preferences = runtime.preferences();
     let mut next_display_refresh = Instant::now();
 
@@ -210,10 +212,28 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
             visible: should_present,
             displayed_wpm: (snapshot.live_metrics.displayed_wpm * 10.0).round() / 10.0,
             animation_band: snapshot.live_metrics.animation_band.as_str(),
+            behavior: pip_behavior(
+                snapshot.live_metrics.displayed_wpm,
+                snapshot.live_metrics.active_typing_seconds,
+            ),
             content: preferences.overlay_content.as_str(),
             size: preferences.overlay_size.as_str(),
             celebration_sequence: snapshot.live_metrics.celebration_sequence,
         };
+        let tray_status = (
+            snapshot.live_metrics.phase.overlay_visible(),
+            snapshot.live_metrics.displayed_wpm.round().max(0.0) as u64,
+        );
+        if last_tray_status != Some(tray_status) {
+            let icon_changed = last_tray_status.is_none_or(|previous| previous.0 != tray_status.0);
+            if let Err(error) =
+                crate::shell::update_brand_status(&app, tray_status.0, tray_status.1, icon_changed)
+            {
+                app.state::<DiagnosticState>()
+                    .record_runtime_error(format!("menu-bar brand status failed: {error}"));
+            }
+            last_tray_status = Some(tray_status);
+        }
         if last_payload.as_ref() != Some(&payload) {
             let _ = app.emit_to(OVERLAY_LABEL, OVERLAY_EVENT, payload.clone());
             last_payload = Some(payload);
@@ -275,6 +295,18 @@ fn logical_to_physical(value: f64, scale: f64) -> u32 {
     (value * scale).round().clamp(0.0, f64::from(u32::MAX)) as u32
 }
 
+fn pip_behavior(displayed_wpm: f64, active_typing_seconds: f64) -> &'static str {
+    if active_typing_seconds.is_finite() && active_typing_seconds >= 90.0 * 60.0 {
+        "tired"
+    } else if !displayed_wpm.is_finite() || displayed_wpm <= 0.0 {
+        "breathe"
+    } else if displayed_wpm >= 70.0 {
+        "run"
+    } else {
+        "walk"
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 fn corner_position(
     work_x: i32,
@@ -316,7 +348,7 @@ mod tests {
     use serde_json::Value;
     use typepulse_core::{AppPreferences, OverlayContent, OverlayPosition, OverlaySize};
 
-    use super::{corner_position, dimensions, OverlayPreferenceDto};
+    use super::{corner_position, dimensions, pip_behavior, OverlayEventDto, OverlayPreferenceDto};
 
     #[test]
     fn positions_all_corners_inside_a_negative_origin_work_area() {
@@ -385,6 +417,17 @@ mod tests {
     }
 
     #[test]
+    fn brand_behaviors_have_measurable_boundaries_and_tired_precedence() {
+        assert_eq!(pip_behavior(0.0, 0.0), "breathe");
+        assert_eq!(pip_behavior(1.0, 0.0), "walk");
+        assert_eq!(pip_behavior(69.999, 0.0), "walk");
+        assert_eq!(pip_behavior(70.0, 0.0), "run");
+        assert_eq!(pip_behavior(120.0, 5_399.999), "run");
+        assert_eq!(pip_behavior(120.0, 5_400.0), "tired");
+        assert_eq!(pip_behavior(f64::NAN, 0.0), "breathe");
+    }
+
+    #[test]
     fn preference_dto_contains_only_visual_configuration() {
         let value = serde_json::to_value(OverlayPreferenceDto::from(AppPreferences {
             auto_start_enabled: true,
@@ -402,5 +445,34 @@ mod tests {
         assert!(object.contains_key("position"));
         assert!(object.contains_key("size"));
         assert!(object.contains_key("content"));
+    }
+
+    #[test]
+    fn overlay_event_dto_contains_only_aggregate_presentation_state() {
+        let value = serde_json::to_value(OverlayEventDto {
+            visible: true,
+            displayed_wpm: 82.0,
+            animation_band: "fast",
+            behavior: "run",
+            content: "both",
+            size: "medium",
+            celebration_sequence: 1,
+        })
+        .unwrap();
+        let Value::Object(object) = value else {
+            panic!("overlay event must serialize as an object");
+        };
+        assert_eq!(object.len(), 7);
+        for expected in [
+            "visible",
+            "displayedWpm",
+            "animationBand",
+            "behavior",
+            "content",
+            "size",
+            "celebrationSequence",
+        ] {
+            assert!(object.contains_key(expected));
+        }
     }
 }
