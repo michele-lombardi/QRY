@@ -10,7 +10,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 use tauri::{
-    App, AppHandle, Emitter, LogicalSize, Manager, PhysicalPosition, Runtime, State, WebviewUrl,
+    App, AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, Runtime, State, WebviewUrl,
     WebviewWindow, WebviewWindowBuilder,
 };
 use typepulse_core::{AppPreferences, OverlayContent, OverlayPosition, OverlaySize};
@@ -301,7 +301,17 @@ fn position_window<R: Runtime>(
         margin,
         preferences.overlay_position,
     );
-    window.set_position(PhysicalPosition::new(position.0, position.1))
+    let logical_position = target_logical_position(position, scale);
+    window.set_position(LogicalPosition::new(logical_position.0, logical_position.1))
+}
+
+fn target_logical_position(position: (i32, i32), target_scale: f64) -> (f64, f64) {
+    let scale = if target_scale.is_finite() && target_scale > 0.0 {
+        target_scale
+    } else {
+        1.0
+    };
+    (f64::from(position.0) / scale, f64::from(position.1) / scale)
 }
 
 fn select_monitor<T>(
@@ -379,8 +389,8 @@ mod tests {
     use typepulse_core::{AppPreferences, OverlayContent, OverlayPosition, OverlaySize};
 
     use super::{
-        corner_position, dimensions, pip_behavior, select_monitor, OverlayEventDto,
-        OverlayPreferenceDto,
+        corner_position, dimensions, pip_behavior, select_monitor, target_logical_position,
+        OverlayEventDto, OverlayPreferenceDto,
     };
 
     #[test]
@@ -398,6 +408,16 @@ mod tests {
             ),
             Some("focused")
         );
+    }
+
+    #[test]
+    fn position_conversion_uses_the_target_monitor_scale() {
+        assert_eq!(
+            target_logical_position((-3_820, -78), 1.0),
+            (-3_820.0, -78.0)
+        );
+        assert_eq!(target_logical_position((2_564, 40), 2.0), (1_282.0, 20.0));
+        assert_eq!(target_logical_position((100, 50), 0.0), (100.0, 50.0));
     }
 
     #[test]
