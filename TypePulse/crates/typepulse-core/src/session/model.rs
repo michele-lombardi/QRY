@@ -44,9 +44,9 @@ pub struct ActiveSessionMetrics {
     pub estimated_character_count: u64,
     /// Character count divided by five.
     pub estimated_word_count: f64,
-    /// Arithmetic mean of displayed WPM samples taken on activity.
+    /// Arithmetic mean of displayed WPM samples after record qualification.
     pub average_wpm: f64,
-    /// Highest displayed WPM reached by the session.
+    /// Highest qualified displayed WPM reached by the session.
     pub peak_wpm: f64,
     /// Sum of inter-activity gaps no longer than the configured active limit.
     pub active_typing_duration: Duration,
@@ -65,9 +65,9 @@ pub struct SessionSummary {
     pub estimated_character_count: u64,
     /// Character count divided by five.
     pub estimated_word_count: f64,
-    /// Mean displayed WPM sampled at each activity.
+    /// Mean displayed WPM sampled after record qualification.
     pub average_wpm: f64,
-    /// Highest displayed WPM reached by the session.
+    /// Highest qualified displayed WPM reached by the session.
     pub peak_wpm: f64,
     /// Sum of short inter-activity gaps, excluding idle pauses.
     pub active_typing_duration: Duration,

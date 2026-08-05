@@ -17,9 +17,9 @@ pub struct CompletedSessionRecord {
     pub estimated_character_count: u64,
     /// Aggregate word estimate.
     pub estimated_word_count: f64,
-    /// Mean displayed WPM sampled on activity.
+    /// Mean displayed WPM sampled after record qualification.
     pub average_wpm: f64,
-    /// Maximum displayed WPM.
+    /// Maximum qualified displayed WPM.
     pub peak_wpm: f64,
     /// Active typing time excluding long idle gaps.
     pub active_typing_duration: Duration,

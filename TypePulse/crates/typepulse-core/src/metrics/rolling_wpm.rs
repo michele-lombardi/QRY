@@ -6,6 +6,8 @@ use std::{
 };
 
 const MIN_ESTIMATE_SPAN: Duration = Duration::from_millis(250);
+const LIVE_WARM_UP_FLOOR: Duration = Duration::from_secs(1);
+const RECORD_MIN_SPAN: Duration = Duration::from_secs(3);
 const MAX_LIVE_WPM: f64 = 300.0;
 
 /// Counts activity in a fixed rolling window using five characters per word.
@@ -50,6 +52,13 @@ impl RollingWpm {
         self.estimate().is_some()
     }
 
+    /// Whether the observation is long enough for persisted statistics and records.
+    #[must_use]
+    pub fn is_record_ready(&self) -> bool {
+        self.observed_span()
+            .is_some_and(|span| span >= RECORD_MIN_SPAN)
+    }
+
     /// Number of activities currently held in the rolling window.
     #[cfg(test)]
     #[must_use]
@@ -75,18 +84,22 @@ impl RollingWpm {
     }
 
     fn estimate(&self) -> Option<f64> {
-        let first = self.activities.front()?;
-        let last = self.activities.back()?;
         let interval_count = self.activities.len().checked_sub(1)?;
-        let observed = last.checked_duration_since(*first)?;
+        let observed = self.observed_span()?;
         if interval_count == 0 || observed < MIN_ESTIMATE_SPAN {
             return None;
         }
 
         let estimated_words = interval_count as f64 / 5.0;
-        let observed_minutes = observed.as_secs_f64() / 60.0;
+        let observed_minutes = observed.max(LIVE_WARM_UP_FLOOR).as_secs_f64() / 60.0;
         let wpm = estimated_words / observed_minutes;
         wpm.is_finite().then(|| wpm.clamp(0.0, MAX_LIVE_WPM))
+    }
+
+    fn observed_span(&self) -> Option<Duration> {
+        self.activities
+            .back()?
+            .checked_duration_since(*self.activities.front()?)
     }
 }
 
@@ -108,8 +121,11 @@ mod tests {
         let mut metric = RollingWpm::new(Duration::from_secs(10));
         assert_eq!(metric.record(origin), 0.0);
         assert_eq!(metric.record(origin + Duration::from_millis(200)), 0.0);
-        assert_eq!(metric.record(origin + Duration::from_millis(400)), 60.0);
+        assert_eq!(metric.record(origin + Duration::from_millis(400)), 24.0);
         assert!(metric.is_ready());
+        assert!(!metric.is_record_ready());
+        metric.record(origin + Duration::from_secs(3));
+        assert!(metric.is_record_ready());
     }
 
     #[test]

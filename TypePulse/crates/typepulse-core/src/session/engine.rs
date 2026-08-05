@@ -88,14 +88,24 @@ impl<C: Clock> TypingEngine<C> {
             self.smoother.reset();
             0.0
         };
+        let record_ready = self.rolling_wpm.is_record_ready();
         let active_session = self.active_session.as_mut().expect("session was created");
-        active_session.record(occurred_at, displayed_wpm, self.config.active_gap_limit);
-
-        let new_record = active_session.take_record(displayed_wpm);
-        self.personal_best_wpm = Some(
-            self.personal_best_wpm
-                .map_or(displayed_wpm, |best| best.max(displayed_wpm)),
+        active_session.record(
+            occurred_at,
+            displayed_wpm,
+            self.config.active_gap_limit,
+            record_ready,
         );
+
+        let new_record = record_ready
+            .then(|| active_session.take_record(displayed_wpm))
+            .flatten();
+        if record_ready {
+            self.personal_best_wpm = Some(
+                self.personal_best_wpm
+                    .map_or(displayed_wpm, |best| best.max(displayed_wpm)),
+            );
+        }
 
         Ok(EngineUpdate {
             snapshot: self.snapshot_at(occurred_at),
@@ -221,7 +231,13 @@ impl ActiveSession {
         }
     }
 
-    fn record(&mut self, occurred_at: Instant, displayed_wpm: f64, active_gap_limit: Duration) {
+    fn record(
+        &mut self,
+        occurred_at: Instant,
+        displayed_wpm: f64,
+        active_gap_limit: Duration,
+        record_ready: bool,
+    ) {
         if self.estimated_character_count > 0 {
             let gap = elapsed_since(occurred_at, self.last_activity_at);
             if gap <= active_gap_limit {
@@ -230,9 +246,11 @@ impl ActiveSession {
         }
         self.last_activity_at = occurred_at;
         self.estimated_character_count = self.estimated_character_count.saturating_add(1);
-        self.displayed_wpm_samples = self.displayed_wpm_samples.saturating_add(1);
-        self.displayed_wpm_total = finite_add(self.displayed_wpm_total, displayed_wpm);
-        self.peak_wpm = self.peak_wpm.max(displayed_wpm);
+        if record_ready {
+            self.displayed_wpm_samples = self.displayed_wpm_samples.saturating_add(1);
+            self.displayed_wpm_total = finite_add(self.displayed_wpm_total, displayed_wpm);
+            self.peak_wpm = self.peak_wpm.max(displayed_wpm);
+        }
     }
 
     fn take_record(&mut self, displayed_wpm: f64) -> Option<NewRecord> {
@@ -428,11 +446,36 @@ mod tests {
 
         assert!(engine.record_now().unwrap().new_record.is_none());
         clock.advance(Duration::from_millis(300)).unwrap();
+        let warm_up = engine.record_now().unwrap();
+        assert!(warm_up.new_record.is_none());
+        assert_eq!(warm_up.snapshot.personal_best_wpm, Some(2.0));
+        clock.advance(Duration::from_millis(2_700)).unwrap();
         let record = engine.record_now().unwrap().new_record.unwrap();
         assert_eq!(record.previous_wpm, 2.0);
-        assert!((record.new_wpm - 40.0).abs() < 1e-9);
+        assert!((record.new_wpm - 8.0).abs() < 1e-9);
         clock.advance(Duration::from_millis(20)).unwrap();
         assert!(engine.record_now().unwrap().new_record.is_none());
+    }
+
+    #[test]
+    fn warm_up_spike_is_live_only_and_cannot_change_the_record_or_session_peak() {
+        let clock = ManualClock::new(Instant::now());
+        let mut engine =
+            TypingEngine::with_clock_and_record(CoreConfig::default(), clock.clone(), Some(50.0))
+                .unwrap();
+
+        let mut update = engine.record_now().unwrap();
+        for _ in 1..20 {
+            clock.advance(Duration::from_millis(100)).unwrap();
+            update = engine.record_now().unwrap();
+        }
+        assert!(update.snapshot.displayed_wpm > 90.0);
+        assert_eq!(update.snapshot.personal_best_wpm, Some(50.0));
+        assert!(update.new_record.is_none());
+
+        let summary = engine.finish_active_session().unwrap();
+        assert_eq!(summary.peak_wpm, 0.0);
+        assert_eq!(summary.average_wpm, 0.0);
     }
 
     #[test]
