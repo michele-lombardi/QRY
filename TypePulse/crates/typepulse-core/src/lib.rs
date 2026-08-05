@@ -1,11 +1,19 @@
 //! Platform-independent domain logic for TypePulse.
-//!
-//! Phase A establishes the crate boundary. Typing metrics and session logic are
-//! intentionally implemented in Phase C.
 
 mod activity;
+mod clock;
+mod config;
+mod metrics;
+mod session;
 
 pub use activity::TypingActivity;
+pub use clock::{Clock, ClockError, ManualClock, SystemClock};
+pub use config::{ConfigError, CoreConfig};
+pub use metrics::{AnimationBand, AnimationThresholdError, AnimationThresholds};
+pub use session::{
+    ActiveSessionMetrics, EngineError, EngineSnapshot, EngineUpdate, NewRecord, SessionPhase,
+    SessionSummary, TypingEngine,
+};
 
 /// Reports whether the core crate is available to the application workspace.
 #[must_use]
