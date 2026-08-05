@@ -33,10 +33,12 @@ and quit actions. The optional number uses a stable three-digit slot, so the ico
 not shift as WPM changes. A separate transparent, click-through overlay renders a
 responsive live estimate and identity-aligned Pip behaviors with persisted visual
 options. With optional macOS Accessibility consent it follows the display containing the
-focused window while exposing only temporary geometry; otherwise it falls back to the
-primary display. The Pulse mark, app icon, dynamic tray glyph, palette and product voice
-follow the supplied brand identity. Final Phase F statistics/settings screens remain in
-progress.
+focused window while exposing only temporary geometry. Transient read failures preserve
+the current valid display; a cold start falls back to the primary display. Live WPM
+ramps during its first second, while statistics and personal records accept samples only
+after three seconds. The Pulse mark, app icon, dynamic tray glyph, palette and product
+voice follow the supplied brand identity. Final Phase F statistics/settings screens
+remain in progress.
 
 See [`../docs/development.md`](../docs/development.md) for the complete guide.
 

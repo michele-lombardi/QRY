@@ -79,7 +79,8 @@ reali.
 
 La Fase C implementa `TypingEngine<C: Clock>`. Il motore riceve soltanto
 `TypingActivity`, usa un lookback massimo di 10 secondi con stima adattiva dopo
-almeno 250 ms e produce `EngineUpdate`
+almeno 250 ms, rampa iniziale di un secondo e qualificazione statistica dopo 3
+secondi, quindi produce `EngineUpdate`
 con snapshot, eventuale sessione conclusa ed eventuale nuovo record. I clock di
 produzione e test sono separati; nessun polling UI modifica la semantica delle
 metriche.

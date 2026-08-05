@@ -34,8 +34,9 @@ finestra focalizzata, rispettando menu bar e Dock. Le quattro opzioni sono
 `top-left`, `top-right`, `bottom-left` e `bottom-right`. Il controller rivaluta
 il target prima della comparsa e durante nuova attività, con limite di 250 ms;
 la topologia viene comunque rivalutata ogni due secondi. Permesso Accessibilità
-assente, geometria non disponibile e rimozione dello schermo ricadono sul nuovo
-display principale.
+assente o geometria temporaneamente non disponibile conservano il monitor
+corrente quando esiste; all'avvio il fallback resta il display principale. Una
+lettura focalizzata valida torna immediatamente ad avere precedenza.
 
 Il nuovo adapter macOS legge soltanto `AXPosition` e `AXSize` della finestra
 focalizzata e restituisce un centro globale effimero. Non legge o conserva nome
@@ -55,8 +56,9 @@ La UI `overlay.html` implementa:
 - dimensioni `small`, `medium` e `large`;
 - rispetto di `prefers-reduced-motion`.
 
-Il record iniziale del motore viene caricato dal massimo storico delle sessioni
-concluse. La prima sessione in assoluto stabilisce il riferimento senza una
+Il record iniziale del motore viene caricato dal massimo storico qualificato
+delle sessioni concluse. Il warm-up live dei primi 3 secondi non può modificare
+media, picco o best score. La prima sessione in assoluto stabilisce il riferimento senza una
 celebrazione artificiale; un record successivo incrementa una sequenza e viene
 animato una sola volta.
 
@@ -105,7 +107,7 @@ monitor funziona sull'hardware dell'utente.
 - `./scripts/check.sh`: superato;
 - frontend: Prettier, ESLint, TypeScript e bundle Vite multipagina superati;
 - Rust: rustfmt, Clippy con warning negati, check e test superati;
-- 67 test Rust passati e un benchmark manuale ignorato;
+- 69 test Rust passati e un benchmark manuale ignorato;
 - audit privacy: schema, capability e DTO overlay superati;
 - migrazione simulata da schema v1/v2 a v3 con backup: superata;
 - bundle debug macOS creato e verificato con `codesign --verify --deep --strict`;

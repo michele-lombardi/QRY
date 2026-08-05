@@ -36,9 +36,10 @@ Il controllo avviene:
 - durante la rivalutazione periodica della topologia display.
 
 Il permesso non viene richiesto all'avvio. L'utente lo concede esplicitamente
-dalla finestra TypePulse o da Impostazioni di Sistema. Senza consenso, con una
-finestra non compatibile o dopo la rimozione del display, l'app usa il display
-principale e poi il primo display disponibile.
+dalla finestra TypePulse o da Impostazioni di Sistema. Se una lettura fallisce
+dopo un posizionamento valido, l'app conserva il monitor corrente; a freddo usa
+il display principale e poi il primo display disponibile. Una nuova lettura
+valida della finestra focalizzata ha sempre precedenza.
 
 ## Vincoli privacy
 

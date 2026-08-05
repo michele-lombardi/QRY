@@ -15,6 +15,10 @@ names, window titles or typed content.
    then quit and reopen the app if macOS requests it.
 5. Confirm the Accessibility status changes to `granted`.
 
+After installing or rebuilding an ad-hoc-signed copy, verify `granted` again. macOS may
+treat the changed binary as a new identity; remove the stale TypePulse entry, add the
+exact app being tested, enable it and restart TypePulse if needed.
+
 Expected: denied access never blocks typing metrics and never causes a crash or repeated
 permission prompt.
 
@@ -40,8 +44,9 @@ display—selects the PiP display when Accessibility is granted.
 2. Test an app or system surface that does not expose a focused window.
 3. Disconnect the display hosting the PiP while it is visible.
 
-Expected: TypePulse silently returns to the primary/available display, remains
-responsive and does not invent focused-window data.
+Expected: a transient read failure keeps the PiP on its current valid display. A cold
+start without a valid focused target uses the primary/available display. TypePulse
+remains responsive and does not invent focused-window data.
 
 ## Privacy observation
 

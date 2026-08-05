@@ -71,6 +71,8 @@ posizione e non viene serializzato, registrato o conservato.
 - test patologici verificano che non escano `NaN`, infiniti o valori negativi.
 - il warm-up usa soltanto intervalli monotoni anonimi e applica un limite di 300
   WPM; non richiede identità di tasto nel core.
+- i campioni dei primi 3 secondi restano effimeri e non aggiornano media, picco
+  o record personale.
 
 ## Garanzie implementate nella Fase D
 

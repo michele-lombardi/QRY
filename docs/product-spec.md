@@ -114,9 +114,11 @@ WPM = ((attività osservate - 1) / 5) / minuti osservati
 ```
 
 La prima stima richiede almeno 250 ms di osservazione ed è limitata a 300 WPM;
-normalmente compare dopo 2–4 caratteri. Una media esponenziale attenua i salti
-successivi. I default validati dalla Fase C sono lookback massimo di 10 secondi
-e fattore EMA 0,25. Overlay,
+normalmente compare dopo 2–4 caratteri. Nel primo secondo usa un denominatore
+minimo di un secondo e cresce gradualmente, invece di trasformare pochi tasti in
+un picco. Una media esponenziale attenua i salti successivi. Media, picco e best
+score accettano un valore soltanto dopo 3 secondi di osservazione. I default
+validati dalla Fase C sono lookback massimo di 10 secondi e fattore EMA 0,25. Overlay,
 sessione e tempo attivo usano rispettivamente 2, 30 e 2 secondi.
 
 ## Dati salvati

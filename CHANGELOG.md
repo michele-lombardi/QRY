@@ -39,6 +39,10 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
   Light and Dark appearances.
 - changing between one-, two- and three-digit WPM values no longer shifts the
   menu-bar Pulse mark.
+- the first live second now ramps progressively, and samples cannot update
+  session statistics or the personal best until three seconds are observed;
+- a transient focused-window Accessibility failure keeps the PiP on its current
+  valid display instead of immediately moving it to the primary display.
 
 ## [0.1.0] - 2026-08-05
 

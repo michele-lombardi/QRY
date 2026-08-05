@@ -29,6 +29,8 @@ persistenza della Fase D, non al calcolo WPM.
 - durante il warm-up, formula:
   `(intervalli osservati / 5) / durata fra prima e ultima attività`;
 - almeno 250 ms fra prima e ultima attività prima di pubblicare una stima;
+- nel primo secondo usare un denominatore minimo di un secondo, così la stima
+  cresce gradualmente invece di proiettare pochi intervalli in un picco;
 - dopo il warm-up la stessa formula usa le attività rimaste nel lookback;
 - limite difensivo live di 300 WPM;
 - un evento esattamente sul limite inferiore della finestra è scaduto;
@@ -38,7 +40,8 @@ persistenza della Fase D, non al calcolo WPM.
 
 Il lookback rende la metrica indipendente dal polling senza imporre dieci secondi
 di attesa. A 60 WPM una sequenza con un'attività ogni 200 ms produce la prima
-stima dopo circa 400 ms; sequenze simultanee non producono una velocità infinita.
+stima dopo circa 400 ms. Nel primo secondo il valore sale progressivamente verso
+la velocità osservata; sequenze simultanee non producono una velocità infinita.
 Il valore resta una stima convenzionale basata su cinque attività per parola.
 
 ### Protezione dalle ripetizioni
@@ -67,8 +70,8 @@ Le soglie sono configurabili, finite, non negative e strettamente crescenti.
 - 30 secondi senza attività: sessione conclusa;
 - l'orario logico di fine è l'ultima attività, non la fine del timeout;
 - il tempo attivo è la somma dei gap consecutivi non superiori a 2 secondi;
-- la media è la media aritmetica dei WPM visualizzati campionati sulle attività;
-- il picco è il massimo WPM visualizzato della sessione;
+- media e picco usano soltanto campioni con almeno 3 secondi di osservazione;
+- il warm-up resta visibile ma non può entrare negli aggregati o nel record;
 - parole stimate = attività / 5, mantenendo la parte frazionaria nel dominio.
 
 Una nuova attività arrivata al timeout esatto completa la vecchia sessione e
@@ -77,8 +80,9 @@ ne apre una nuova nello stesso aggiornamento.
 ### Record
 
 La celebrazione esiste solo se è stato fornito un record storico. Viene emessa
-al primo superamento e al massimo una volta per sessione. In assenza di storico,
-la prima sessione stabilisce il riferimento senza celebrare ogni incremento.
+al primo superamento qualificato dopo almeno 3 secondi e al massimo una volta per
+sessione. In assenza di storico, la prima sessione stabilisce il riferimento
+senza celebrare ogni incremento.
 
 ## Conseguenze
 

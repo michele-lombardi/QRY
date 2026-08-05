@@ -47,7 +47,7 @@ Settings definitiva insieme agli altri pannelli.
 ## Verifiche
 
 - `./scripts/check.sh`: pass;
-- 67 test Rust passati e un benchmark manuale ignorato;
+- 69 test Rust passati e un benchmark manuale ignorato;
 - bundle debug `TypePulse.app`: costruito e avviato;
 - Launch Services: `ApplicationType = UIElement`, quindi app accessoria senza
   presenza ordinaria nel Dock;

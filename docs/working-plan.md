@@ -329,6 +329,7 @@ Fase B.
 | CORE-09 | Rendere parametri configurabili | P1 | S | CORE-02, CORE-04, CORE-06 | default V1 centralizzati e validati |
 | CORE-10 | Aggiungere property test o casi limite estesi | P1 | M | CORE-07 | nessun NaN, overflow o WPM negativo |
 | CORE-11 | Rendere reattivo il warm-up WPM — **Done** | P0 | M | CORE-02, CORE-04 | prima stima dopo ≥250 ms, lookback 10 s e limite 300 WPM testati |
+| CORE-12 | Proteggere best score dai picchi warm-up — **Done** | P0 | M | CORE-11, CORE-08 | rampa iniziale 1 s e record qualificato dopo 3 s con regressione testata |
 
 **Gate C:** il core riceve solo timestamp e produce tutto lo stato necessario
 all'interfaccia con test deterministici.
@@ -348,6 +349,7 @@ Stato Fase C:
 | CORE-09 | Done | default V1 centralizzati e configurazione validata |
 | CORE-10 | Done | casi patologici e sequenza deterministica da 10.000 eventi |
 | CORE-11 | Done | prima stima affidabile in 250–400 ms, cap 300 WPM, EMA dal primo campione valido |
+| CORE-12 | Done | warm-up progressivo 1 s; media, picco e record esclusi fino a 3 s |
 
 Il Gate C è chiuso. Semantica e verifiche sono descritte nell'ADR 0005 e nel
 report di Fase C.
@@ -389,6 +391,7 @@ finestre. La prova reale del login item resta nella checklist manuale.
 | OVR-07 | Aggiungere celebrazione record — **Done** | P1 | M | CORE-08, OVR-06 | sequenza monotona ed effetto breve non ripetuto |
 | OVR-08 | Implementare dimensioni e contenuti configurabili — **Done** | P1 | M | OVR-05, OVR-06 | tre dimensioni e tre modalità persistono e si applicano live |
 | OVR-09 | Seguire il display della finestra focalizzata — **Done nel codice; manuale aperto** | P0 | L | OVR-03, MAC-03 | consenso Accessibilità separato, solo centro geometrico effimero, fallback principale e refresh ≤250 ms durante attività |
+| OVR-10 | Conservare il display valido su errore AX transitorio — **Done nel codice; manuale aperto** | P0 | S | OVR-09 | monitor corrente precede il fallback principale e ha test di regressione |
 
 **Gate E: implementazione completata, prova reale aperta.** Test automatici
 coprono coordinate, preset, DTO, fasce e persistenza. Le checklist manuali devono

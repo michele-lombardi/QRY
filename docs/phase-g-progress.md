@@ -57,7 +57,7 @@ ma non conforme ai criteri V1 definiti dal progetto.
 ## Verifiche locali eseguite
 
 - `./scripts/check.sh`: pass, incluso audit privacy;
-- 67 test Rust passati e un benchmark manuale ignorato dopo l'integrazione del
+- 69 test Rust passati e un benchmark manuale ignorato dopo l'integrazione del
   display focalizzato;
 - `./scripts/release-audit.sh v0.1.0`: metadati coerenti;
 - YAML delle workflow e Dependabot: parsing riuscito;

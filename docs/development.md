@@ -65,10 +65,13 @@ registers a macOS login item and starts monitoring whenever the app opens.
 Closing the window only hides it; choose Quit from the tray menu to terminate
 the background process cleanly.
 
-The app cannot grant TCC permission itself. After changing Input Monitoring in
-System Settings, macOS may require a quit/restart. Unsigned debug rebuilds can
-also appear as a new identity. Follow `tests/manual/input-monitoring.md`; never
-edit the TCC database.
+The app cannot grant TCC permission itself. After changing Input Monitoring or
+Accessibility in System Settings, macOS may require a quit/restart. Ad-hoc debug
+and local release builds use a code-directory hash as their designated
+requirement, so rebuilding can make macOS treat the binary as a new identity.
+Remove a stale permission entry, add the exact app being tested, enable it and
+restart TypePulse when the UI reports `denied`. Follow the manual permission
+checklists; never edit the TCC database.
 
 ## Useful commands
 
@@ -142,7 +145,8 @@ not belong here.
 `overlay.rs` creates a transparent, click-through webview window and controls
 its position/visibility from aggregate snapshots. On macOS it maps the focused
 window's temporary center to a display before presentation and during active
-typing, then falls back to the primary display. It never observes input
+typing. A transient Accessibility failure keeps the current display; a cold
+start falls back to the primary display. It never observes input
 identities or sends geometry to the frontend. Tauri's
 `macOSPrivateApi` flag is enabled solely for transparent-window support; the
 project does not target the Mac App Store.
