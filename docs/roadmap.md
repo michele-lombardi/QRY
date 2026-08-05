@@ -83,7 +83,7 @@ con il tap Homebrew personale.
 - valutare un repository APT firmato solo dopo release Linux stabili;
 - studiare Wayland separatamente senza ricorrere a privilegi invasivi.
 
-**Uscita:** TypePulse funziona su una distribuzione Linux/X11 dichiarata e viene
+**Uscita:** QRY funziona su una distribuzione Linux/X11 dichiarata e viene
 installato da un pacchetto `.deb` riproducibile.
 
 ## Criteri trasversali

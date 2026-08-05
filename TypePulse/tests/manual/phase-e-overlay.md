@@ -6,27 +6,27 @@ notes and aggregate WPM values; never attach keyboard-event logs.
 ## Preparation
 
 1. From `TypePulse/`, run `npm run tauri dev`.
-2. Open TypePulse from its menu-bar icon.
+2. Open QRY Settings from its menu-bar context menu.
 3. Confirm Input Monitoring is `granted` and select **Start**.
 4. Enable **Show overlay**, then choose `Top right`, `Medium`, and `WPM and animation`.
 5. Open a disposable document in TextEdit or another normal editor.
 
 ## Focus, lifecycle and click-through
 
-1. Type in the external editor and confirm the overlay appears without TypePulse
-   becoming the active application.
+1. Type in the external editor and confirm the overlay appears without QRY becoming the
+   active application.
 2. Stop typing for two seconds: the card must fade and disappear.
 3. Type again before the 30-second session timeout: the same session resumes and the
    card reappears.
 4. Place the overlay above a safe clickable control in another app, then click the
    control through the card. The underlying control must receive the click.
-5. Confirm TypePulse remains absent from the Dock and `Cmd + Tab`.
+5. Confirm QRY remains absent from the Dock and `Cmd + Tab`.
 
 Expected: the overlay never accepts focus, typing or pointer input.
 
 ## Position, size and content
 
-While the monitor is running, exercise every option from the TypePulse window:
+While the monitor is running, exercise every option from QRY Settings:
 
 - four positions: top-left, top-right, bottom-left, bottom-right;
 - three sizes: small, medium, large;

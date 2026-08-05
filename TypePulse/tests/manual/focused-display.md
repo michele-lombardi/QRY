@@ -6,18 +6,17 @@ names, window titles or typed content.
 
 ## Permission and fallback
 
-1. Start TypePulse, open its menu-bar window and confirm the two permissions are shown
-   separately.
+1. Start QRY, open Settings and confirm the two permissions are shown separately.
 2. Leave Accessibility denied, start monitoring and type in a disposable document on the
    secondary display.
 3. Confirm the PiP still works and falls back to the primary display.
-4. Select **Request access**, enable TypePulse under Privacy & Security → Accessibility,
-   then quit and reopen the app if macOS requests it.
+4. Select **Request access**, enable QRY under Privacy & Security → Accessibility, then
+   quit and reopen the app if macOS requests it.
 5. Confirm the Accessibility status changes to `granted`.
 
 After installing or rebuilding an ad-hoc-signed copy, verify `granted` again. macOS may
-treat the changed binary as a new identity; remove the stale TypePulse entry, add the
-exact app being tested, enable it and restart TypePulse if needed.
+treat the changed binary as a new identity; remove the stale QRY entry, add the exact
+app being tested, enable it and restart QRY if needed.
 
 Expected: denied access never blocks typing metrics and never causes a crash or repeated
 permission prompt.
@@ -42,17 +41,17 @@ display—selects the PiP display when Accessibility is granted.
 
 ## Degraded cases
 
-1. Revoke Accessibility while TypePulse is running and type again.
+1. Revoke Accessibility while QRY is running and type again.
 2. Test an app or system surface that does not expose a focused window.
 3. Disconnect the display hosting the PiP while it is visible.
 
 Expected: a transient read failure keeps the PiP on its current valid display. A cold
-start without a valid focused target uses the primary/available display. TypePulse
-remains responsive and does not invent focused-window data.
+start without a valid focused target uses the primary/available display. QRY remains
+responsive and does not invent focused-window data.
 
 ## Privacy observation
 
-1. Use the TypePulse UI and exported CSV after the test.
+1. Use the QRY UI and exported CSV after the test.
 2. Inspect only the documented aggregate database schema if needed.
 
 Expected: no app name, window title, window rectangle or typed content is shown,

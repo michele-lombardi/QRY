@@ -5,7 +5,7 @@
 
 ## Contesto
 
-TypePulse deve riconoscere attività di scrittura anche quando un'altra app è in
+QRY deve riconoscere attività di scrittura anche quando un'altra app è in
 primo piano. Il percorso è sensibile: un'API capace di osservare la tastiera può
 diventare accidentalmente un keylogger se identità dei tasti, testo o metadati
 escono dall'adapter.
@@ -46,13 +46,13 @@ L'app può aprirlo, ma non può concedere il permesso per conto dell'utente.
 ## Perché `Session` e `ListenOnly`
 
 Un tap HID richiede privilegi più elevati e non è necessario per il prodotto.
-`ListenOnly` rende esplicito che TypePulse non modifica, sopprime o sostituisce
+`ListenOnly` rende esplicito che QRY non modifica, sopprime o sostituisce
 eventi. Il callback restituisce sempre l'evento invariato.
 
 ## Comportamento con Secure Input
 
 Quando macOS o un'app protegge un campo con Secure Input, alcuni eventi possono
-non essere osservabili. TypePulse accetta il buco nel conteggio, non tenta di
+non essere osservabili. QRY accetta il buco nel conteggio, non tenta di
 aggirarlo, non chiede privilegi aggiuntivi e non simula attività. È una
 limitazione intenzionale a tutela dell'utente.
 

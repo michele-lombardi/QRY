@@ -6,7 +6,7 @@
 ## Context
 
 macOS exposes details that could be used to reconstruct what a person types.
-TypePulse promises to measure rhythm without recording content. Relying only on
+QRY promises to measure rhythm without recording content. Relying only on
 developer discipline would make accidental logging or persistence too easy.
 
 ## Decision

@@ -7,8 +7,8 @@ Do not attach keyboard event logs or type a real password during this check.
 1. Run `npm run tauri dev` from `TypePulse/`.
 2. In the diagnostic window, select **Check**.
 3. If access is denied, select **Request access**, then **Open Settings**.
-4. Enable TypePulse (or the development terminal when macOS identifies the executable
-   that way), quit the debug app, and start it again.
+4. Enable QRY (or the development terminal when macOS identifies the executable that
+   way), quit the debug app, and start it again.
 5. Confirm that the status is `granted` before selecting **Start**.
 
 Unsigned debug executables can appear as a new TCC identity after a rebuild. Remove

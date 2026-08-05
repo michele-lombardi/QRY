@@ -1,23 +1,31 @@
 # Changelog
 
-All notable TypePulse changes are documented here. The format follows Keep a
+All notable QRY changes are documented here. The format follows Keep a
 Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
 ### Planned
 
-- complete statistics, settings, onboarding and accessibility in Phase F;
+- complete onboarding, native CSV save flow and accessibility audit in Phase F;
 - complete real TCC, overlay and multi-monitor validation before a stable macOS release.
 
 ### Added
+
+- QRY compact daily panel opened by left-clicking the menu-bar Pulse, with live
+  WPM, words, personal best, streak and last activity;
+- dedicated Apple-style Settings and full Statistics windows with daily,
+  weekly, monthly and yearly local aggregate views;
+- detailed words, average WPM, peak WPM and active-time chart/table views;
+- Settings control for menu-bar WPM synchronized with the native context menu;
+- idle midnight rollover that closes the previous local day's active session.
 
 - transparent click-through macOS overlay with live WPM and four visual bands;
 - four screen positions, three size presets and three content modes;
 - one-shot personal-record celebration and reduced-motion behavior;
 - SQLite schema v2 for persisted visual preferences and safe v1 migration;
 - automatic primary-display repositioning and multi-monitor fallback;
-- TypePulse Pulse mark, application icon and dynamic menu-bar glyph;
+- QRY Pulse mark, application icon and dynamic menu-bar glyph;
 - brand palette, system typography, product voice and Micro-Y text endorsement;
 - identity-aligned Pip renderer with Walk, Run, Tired and one-shot Jump/Cheer.
 - optional macOS Accessibility flow that places the PiP on the focused window's
@@ -31,6 +39,12 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 - privacy-confined repetition protection for macOS auto-repeat and artificial
   same-key runs while preserving legitimate double letters;
 - SQLite schema v3 and safe migration of the menu-bar WPM preference.
+
+### Changed
+
+- visible product, bundle, release archive and Homebrew cask name from TypePulse
+  to QRY; the existing technical identifier and local database remain unchanged
+  to preserve user data and macOS permission continuity.
 
 ### Fixed
 
@@ -65,5 +79,5 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
   verification on a release artifact;
 - overlay, onboarding and final statistics/settings screens are incomplete.
 
-[Unreleased]: https://github.com/TODO_OWNER/typepulse/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/TODO_OWNER/typepulse/releases/tag/v0.1.0
+[Unreleased]: https://github.com/TODO_OWNER/qry/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/TODO_OWNER/qry/releases/tag/v0.1.0

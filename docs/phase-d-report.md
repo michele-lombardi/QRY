@@ -7,7 +7,7 @@
 
 ## Risultato
 
-TypePulse collega il monitor macOS al core metrico e salva in SQLite soltanto
+QRY collega il monitor macOS al core metrico e salva in SQLite soltanto
 sessioni concluse, bucket aggregati da 60 secondi e una preferenza locale. La
 vista diagnostica mostra WPM live e riepilogo del giorno corrente.
 
@@ -82,7 +82,7 @@ Risultato al completamento:
 - Rustfmt e Clippy con warning negati: pass;
 - 48 test Rust passati;
 - 1 benchmark manuale ignorato come previsto;
-- bundle debug `TypePulse.app` costruito e avviato correttamente;
+- bundle debug `QRY.app` costruito e avviato correttamente;
 - database reale inizializzato a schema 1 con preferenza automatica disattivata;
 - persistenza dopo riapertura, migrazione, backup, rollover, reset isolato, CSV
   e audit privacy coperti da test.

@@ -42,7 +42,7 @@ The command installs the frontend dependencies and the project-local Tauri CLI.
 Cargo downloads Rust dependencies on the first build. Application lockfiles are
 committed to keep builds reproducible.
 
-## Run the Phase B diagnostic app
+## Run QRY locally
 
 ```bash
 cd TypePulse
@@ -50,15 +50,16 @@ npm run tauri dev
 ```
 
 Tauri starts Vite on port 1420, compiles the Rust workspace and launches
-TypePulse as a macOS menu-bar application. No window is shown automatically.
-Select the TypePulse icon in the upper-right menu bar to open the diagnostic
-window; right-click it for Open, Start monitoring, Pause monitoring,
+QRY as a macOS menu-bar application. No window is shown automatically.
+Left-click the QRY Pulse in the upper-right menu bar for the compact Today
+panel; right-click it for Today, Statistics, Settings, Start/Pause monitoring,
 Show WPM in menu bar and Quit. Disabling the menu-bar number does not disable
-the WPM shown in the PiP.
+the WPM shown in the panel or Pip.
 
-Use the window to check/request Input Monitoring and the separate optional
-Accessibility permission, inspect live/today metrics, change `Start automatically`
-and configure the overlay. Accessibility lets the PiP follow the display of the
+Use Settings to check/request Input Monitoring and the separate optional
+Accessibility permission, change `Start automatically` and configure Pip. Use
+Statistics for Today/7 days/30 days/Year aggregate views. Accessibility lets
+Pip follow the display of the
 focused window; without it the primary-display fallback remains functional. The
 startup checkbox
 registers a macOS login item and starts monitoring whenever the app opens.
@@ -70,7 +71,7 @@ Accessibility in System Settings, macOS may require a quit/restart. Ad-hoc debug
 and local release builds use a code-directory hash as their designated
 requirement, so rebuilding can make macOS treat the binary as a new identity.
 Remove a stale permission entry, add the exact app being tested, enable it and
-restart TypePulse when the UI reports `denied`. Follow the manual permission
+restart QRY when the UI reports `denied`. Follow the manual permission
 checklists; never edit the TCC database.
 
 ## Useful commands
@@ -280,7 +281,7 @@ visible while the session is active.
 
 ### Automatic startup is checked but monitoring does not start
 
-Confirm TypePulse is present in macOS Login Items and has Input Monitoring
+Confirm QRY is present in macOS Login Items and has Input Monitoring
 permission. The preference cannot grant TCC consent. Read the runtime error in
 the diagnostic window, then use the Phase D manual checklist.
 

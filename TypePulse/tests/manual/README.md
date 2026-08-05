@@ -14,6 +14,7 @@ Phase D checks:
 Menu-bar shell check:
 
 - [`menu-bar-shell.md`](menu-bar-shell.md)
+- [`qry-interface.md`](qry-interface.md)
 
 Phase E overlay check:
 

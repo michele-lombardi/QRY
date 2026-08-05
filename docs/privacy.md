@@ -2,12 +2,12 @@
 
 ## Impegno di prodotto
 
-TypePulse conta attività compatibili con la digitazione per stimarne la velocità.
+QRY conta attività compatibili con la digitazione per stimarne la velocità.
 Non registra ciò che l'utente scrive.
 
 Testo breve previsto nell'app:
 
-> TypePulse counts keyboard activity to estimate typing speed. It never stores
+> QRY counts keyboard activity to estimate typing speed. It never stores
 > individual keys, words, passwords or written content. All statistics remain
 > locally on your Mac.
 
@@ -97,6 +97,17 @@ posizione e non viene serializzato, registrato o conservato.
 - il controller di posizionamento osserva geometria e scala dei display, mai
   applicazione attiva, titolo finestra o contenuto digitato;
 - l'audit DTO include anche le preferenze dell'overlay.
+
+## Garanzie implementate nella Fase F
+
+- pannello QRY, Impostazioni e Statistiche ricevono soltanto stato permessi,
+  preferenze e aggregati;
+- i grafici usano bucket al minuto o riepiloghi giornalieri, mai eventi singoli;
+- l'orario “Quiet since” deriva dall'ultimo timestamp accettato e non include
+  identità del tasto o contesto applicativo;
+- la copia CSV usa lo stesso exporter giornaliero aggregato già sottoposto ad
+  audit;
+- nessuna nuova capability Tauri oltre `core:default` è stata aggiunta.
 
 ## Display focalizzato e permesso Accessibilità
 

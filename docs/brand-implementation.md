@@ -1,8 +1,9 @@
-# TypePulse brand implementation
+# QRY brand implementation
 
 - Source of truth: `brand identity/TypePulse Brand Identity.dc.html`
 - Identity version: v0.1
-- Product name adopted: TypePulse
+- Product name adopted: QRY
+- Previous working name: TypePulse
 - Implementation date: 5 August 2026
 
 ## Rules adopted
@@ -94,9 +95,10 @@ future companion messages belong beside it in the menu-bar panel.
 | BRD-10 | Add at most three companion messages per local day | P2/v2 | UI-02, local message state | messages appear only inside the popover, never as system notifications |
 | BRD-11 | Complete branded onboarding and insights screens | P0 | UI-03, UI-04, UI-09 | all final screens use tokens, voice and Pip rules consistently |
 | BRD-12 | Add an About panel endorsement | P1 | owner confirmation | exact legal display name is confirmed; app uses text only and no co-brand lockup |
-| BRD-13 | Verify TypePulse name, domain and trademark availability | P0 before public launch | project owner/external research | result and final naming decision are recorded before stable release |
+| BRD-13 | Verify QRY name, domain and trademark availability | P0 before public launch | project owner/external research | result and final naming decision are recorded before stable release |
 | BRD-14 | Produce website horizontal/vertical lockups and product GIF | P2 | public website | homepage demonstrates live motion and follows clear-space rules |
 | BRD-15 | Perform visual regression and contrast audit | P0 before RC | final Phase F screens | icon, tray, light/dark UI, reduced motion and overlays pass reference review |
+| BRD-16 | Migrate the visible product name to QRY | Done | product decision | menu bar, windows, bundle, release artifacts, package metadata and docs say QRY while the legacy technical identifier remains compatible |
 
 The Micro-Y logo referenced by the identity HTML is not included in the supplied
 folder. No logo was recreated or extracted. Only the text endorsement is used

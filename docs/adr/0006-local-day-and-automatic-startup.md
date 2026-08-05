@@ -5,7 +5,7 @@
 
 ## Context
 
-TypePulse must show “today” without requiring a manual reset. It also needs one
+QRY must show “today” without requiring a manual reset. It also needs one
 user-controlled option that both opens the app at macOS login and starts input
 monitoring whenever the app process opens.
 

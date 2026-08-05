@@ -1,8 +1,7 @@
 # Manual check — Phase D persistence, rollover and automatic startup
 
 This checklist changes the current user's macOS login-item configuration. Use dummy text
-only and disable the option again at the end if you do not want TypePulse to open at
-login.
+only and disable the option again at the end if you do not want QRY to open at login.
 
 ## Prerequisites
 
@@ -18,7 +17,7 @@ login.
 - [ ] Today's estimated words, average/peak WPM, active time and session count become
       non-zero.
 - [ ] Quit and reopen the app; today's completed values are unchanged.
-- [ ] Confirm the database exists in the TypePulse application-data directory as
+- [ ] Confirm the database exists in the QRY application-data directory as
       `typepulse.sqlite3`.
 - [ ] Inspect only its schema: tables are `completed_sessions`, `metric_buckets`,
       `app_preferences` plus SQLite metadata; no key, text, application or window column
@@ -30,13 +29,13 @@ but they are still personal activity data.
 ## Automatic startup
 
 - [ ] Enable **Start automatically**.
-- [ ] Confirm TypePulse appears in macOS System Settings → General → Login Items.
-- [ ] Stop monitoring, quit TypePulse, then open it normally; monitoring reaches
-      `running` without pressing **Start**.
-- [ ] Log out and back in, or restart the Mac; TypePulse opens and monitoring starts
-      after macOS grants access.
+- [ ] Confirm QRY appears in macOS System Settings → General → Login Items.
+- [ ] Stop monitoring, quit QRY, then open it normally; monitoring reaches `running`
+      without pressing **Start**.
+- [ ] Log out and back in, or restart the Mac; QRY opens and monitoring starts after
+      macOS grants access.
 - [ ] Disable **Start automatically** and confirm the login item is removed.
-- [ ] Quit and reopen TypePulse; monitoring remains stopped until **Start** is selected.
+- [ ] Quit and reopen QRY; monitoring remains stopped until **Start** is selected.
 
 If TCC consent is missing, automatic launch may work while monitoring reports a
 permission error. That is expected: the preference never bypasses macOS consent.
@@ -47,7 +46,7 @@ The automated suite verifies Gregorian boundaries and date-isolated queries. For
 real midnight test:
 
 - [ ] Note today's completed summary before local midnight.
-- [ ] Leave TypePulse open across midnight without changing the system clock.
+- [ ] Leave QRY open across midnight without changing the system clock.
 - [ ] Confirm the displayed date advances and the new day's summary starts at zero.
 - [ ] Use the seven-day/CSV backend in a development check to confirm the prior day
       remains present; rollover must not delete history.

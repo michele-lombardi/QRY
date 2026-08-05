@@ -39,7 +39,7 @@ Il controllo avviene:
 - durante la rivalutazione periodica della topologia display.
 
 Il permesso non viene richiesto all'avvio. L'utente lo concede esplicitamente
-dalla finestra TypePulse o da Impostazioni di Sistema. Se una lettura fallisce
+dalla finestra QRY o da Impostazioni di Sistema. Se una lettura fallisce
 dopo un posizionamento valido, l'app conserva il monitor corrente; a freddo usa
 il display principale e poi il primo display disponibile. Una nuova lettura
 valida della finestra focalizzata ha sempre precedenza.
@@ -56,7 +56,7 @@ valida della finestra focalizzata ha sempre precedenza.
 ## Conseguenze
 
 Il comportamento è accurato anche quando il puntatore si trova altrove e non
-lega il dominio portabile alle API macOS. In cambio TypePulse presenta due
+lega il dominio portabile alle API macOS. In cambio QRY presenta due
 permessi distinti e la funzione “segui display” non è disponibile senza
 Accessibilità. Linux dovrà implementare una sorgente equivalente oppure
 dichiarare il fallback previsto dalla propria sessione grafica.

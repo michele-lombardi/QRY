@@ -2,7 +2,7 @@
 
 ## Visione
 
-TypePulse è un piccolo oggetto digitale che vive nella menu bar e reagisce al
+QRY è un piccolo oggetto digitale che vive nella menu bar e reagisce al
 ritmo di scrittura. Deve sembrare più vicino a un tamagotchi della tastiera che
 a uno strumento analitico.
 
@@ -10,7 +10,7 @@ La promessa è: **See your typing rhythm. Not what you type.**
 
 ## Piattaforme
 
-La V1 è progettata, verificata e distribuita per macOS. TypePulse nasce però
+La V1 è progettata, verificata e distribuita per macOS. QRY nasce però
 come progetto open source e il core delle metriche deve restare portabile.
 
 Linux è previsto dopo una versione macOS stabile. Il supporto iniziale potrà
@@ -21,7 +21,7 @@ specifiche della piattaforma.
 ## Esperienza principale
 
 1. Al primo avvio viene mostrato un onboarding di massimo tre passaggi.
-2. L'utente concede a TypePulse il permesso di monitoraggio input di macOS.
+2. L'utente concede a QRY il permesso di monitoraggio input di macOS.
 3. L'app resta in background, fuori dal Dock e da `Cmd + Tab`.
 4. Alla prima attività di scrittura compare l'overlay sul display della finestra
    focalizzata quando l'utente ha concesso Accessibilità; altrimenti usa il
@@ -54,7 +54,7 @@ e una decisione sul lifecycle idle.
 
 ## Menu bar
 
-TypePulse vive come icona di stato nella parte destra della menu bar di macOS,
+QRY vive come icona di stato nella parte destra della menu bar di macOS,
 insieme alle altre applicazioni in background. Non mantiene un'icona nel Dock e
 non compare in `Cmd + Tab`. Il click apre il pannello; la chiusura del pannello
 non termina il monitoraggio. Un menu contestuale offre almeno start, pausa,
@@ -62,26 +62,28 @@ visibilità del WPM nella menu bar, impostazioni e uscita completa. Quando il
 numero è visibile occupa uno slot stabile di tre cifre, così il Pulse non si
 sposta durante gli aggiornamenti; disabilitarlo non modifica il PiP.
 
+Il click sinistro apre il pannello compatto; il click destro apre il menu nativo.
 Il pannello compatto mostra:
 
-- media WPM di oggi;
-- picco WPM;
-- parole stimate;
-- tempo di digitazione attiva;
-- accesso alle statistiche e alle impostazioni;
-- controllo overlay, pausa, export CSV e chiusura dell'app.
+- WPM live e Pulse animato;
+- parole stimate di oggi;
+- record personale;
+- giorni consecutivi con attività;
+- orario dell'ultima attività;
+- accesso a Impostazioni e Statistiche complete.
 
 ## Statistiche
 
-La finestra principale si apre solo su richiesta. Contiene quattro valori di
-oggi, un grafico WPM nel tempo e un elenco sintetico degli ultimi sette giorni.
-Le misurazioni vengono aggregate ogni 30 o 60 secondi: non è necessario
-conservare ogni evento.
+La finestra Statistiche si apre solo su richiesta. Contiene parole, media WPM,
+picco WPM, tempo attivo, grafico e tabella. Le viste disponibili sono oggi,
+sette giorni, trenta giorni e anno. Il grafico giornaliero usa bucket aggregati
+al minuto; le altre viste usano riepiloghi giornalieri. Non viene conservato
+ogni evento.
 
 ## Impostazioni
 
 - `Start automatically`: avvio al login e avvio immediato del monitor ogni volta
-  che TypePulse viene aperto;
+  che QRY viene aperto;
 - icona menu bar visibile;
 - WPM nella menu bar visibile o nascosto;
 - pausa del monitoraggio;

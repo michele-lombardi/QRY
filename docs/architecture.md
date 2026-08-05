@@ -92,12 +92,12 @@ il layer applicativo della Fase D associa la data civile locale tramite un
 ### DesktopShell
 
 Il layer `src-tauri` crea la tray e le finestre, registra i comandi e inoltra gli
-eventi del core al frontend. Su macOS TypePulse usa la activation policy
+eventi del core al frontend. Su macOS QRY usa la activation policy
 `Accessory`: non compare nel Dock o in `Cmd + Tab`, ma resta raggiungibile
-dall'icona nella menu bar. La finestra principale nasce nascosta, viene mostrata
-con il click sinistro e torna nascosta quando l'utente la chiude. Il click destro
-offre apertura, start, pausa e quit; quit ferma prima il monitor per scaricare
-gli aggregati pendenti.
+dall'icona nella menu bar. Il click sinistro apre un pannello giornaliero
+borderless; il click destro offre Today, Statistiche, Impostazioni, preferenza
+WPM, start, pausa e quit. Impostazioni e Statistiche sono finestre complete
+separate; quit ferma prima il monitor per scaricare gli aggregati pendenti.
 
 L'overlay è una finestra Tauri separata, trasparente, senza decorazioni, sempre
 in primo piano, non focalizzabile e configurata per ignorare il cursore. Un
@@ -166,7 +166,7 @@ accedere agli eventi live.
 ### Automatic startup
 
 Una singola preferenza controlla sia il login item macOS (`LaunchAgent`) sia
-l'avvio del monitor quando TypePulse si apre. L'abilitazione avvia subito il
+l'avvio del monitor quando QRY si apre. L'abilitazione avvia subito il
 monitor; la disabilitazione rimuove il login item ma non interrompe una sessione
 già attiva. Errori del login item o del permesso vengono mostrati senza impedire
 l'apertura dell'app.

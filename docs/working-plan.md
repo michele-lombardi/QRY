@@ -2,7 +2,7 @@
 
 ## 1. Obiettivo operativo
 
-Realizzare una prima release open source di TypePulse per macOS che:
+Realizzare una prima release open source di QRY per macOS che:
 
 1. vive nella menu bar;
 2. rileva attività di scrittura globale con consenso esplicito;
@@ -31,16 +31,17 @@ una release macOS stabile.
   Gate E end-to-end resta una checklist manuale con consenso TCC;
 - brand identity v0.1: nome, mark, icone, token e comportamenti Pip supportati
   integrati; Dance, Sleep, messaggi v2 e superfici finali hanno task dedicati;
-- Fase F: avviata dal pannello menu bar e dal ciclo finestra in background;
+- Fase F: pannello giornaliero, Impostazioni e Statistiche implementati; restano
+  onboarding, salvataggio CSV nativo e audit manuale;
 - Fase G: automazione qualità/release avviata; audit privacy, SemVer, packaging,
   workflow draft Release e template cask implementati;
 - rollover: automatico sulla data civile locale, con storico conservato;
 - avvio automatico: preferenza e login item macOS implementati in anticipo;
 - licenza open source: GNU GPLv3 only; restano placeholder anagrafici in
   `NOTICE.md`;
-- prossimo lavoro: completare le schermate della Fase F e svolgere le checklist
-  reali TCC/overlay. Gate G rimane aperto fino a queste dipendenze, alle prove
-  manuali e alla configurazione del remote GitHub.
+- prossimo lavoro: completare onboarding e svolgere le checklist reali
+  TCC/overlay/interfaccia. Gate G rimane aperto fino a queste dipendenze, alle
+  prove manuali e alla configurazione del remote GitHub.
 
 ### Priorità
 
@@ -172,7 +173,7 @@ progetto1/
 │           └── release-quality.md
 ├── packaging/
 │   ├── homebrew/
-│   │   └── typepulse.rb               # Template sincronizzato nel tap
+│   │   └── qry.rb                     # Template sincronizzato nel tap
 │   └── debian/                        # Creato solo nella fase Linux
 ├── scripts/
 │   ├── check.sh
@@ -290,7 +291,7 @@ in attesa della pubblicazione e del primo push su GitHub.
 | MAC-09 | Misurare overhead del callback | P0 | M | MAC-05 | nessun I/O o lavoro UI nel callback; misura di riferimento salvata |
 | MAC-10 | Proteggere la metrica da ripetizioni artificiali — **Done** | P0 | M | MAC-05 | auto-repeat escluso; doppie lettere ammesse; terza pressione identica filtrata senza esporre key code |
 
-**Gate B:** TypePulse conta attività globale su macOS senza esporre o registrare
+**Gate B:** QRY conta attività globale su macOS senza esporre o registrare
 contenuto. Se questo gate fallisce, si ferma lo sviluppo UI e si rivaluta
 l'approccio tecnico.
 
@@ -403,7 +404,7 @@ Accessibilità concessi, oltre al fallback senza Accessibilità.
 
 | ID | Task | Stato | Prio | Dipende da | Criterio di accettazione |
 | --- | --- | --- | --- | --- | --- |
-| BRD-01 | Adottare TypePulse e Pulse mark come identità canonica | Done | P0 | identity v0.1 | nome e geometria unici nel prodotto |
+| BRD-01 | Adottare QRY e Pulse mark come identità canonica | Done | P0 | identity v0.1 + rename | nome e geometria unici nel prodotto |
 | BRD-02 | Generare icona app e glifi menu bar | Done | P0 | BRD-01 | template adattivi; titolo WPM nativo opzionale con slot fisso a tre cifre |
 | BRD-03 | Applicare palette, SF Pro/system stack e voce | Done sulla UI corrente | P0 | BRD-01 | token e copy correnti rispettano l'identity |
 | BRD-04 | Implementare anatomia Pip | Done | P0 | OVR-06 | cerchio, occhi, piedi; niente bocca, ombre o accessori |
@@ -411,11 +412,12 @@ Accessibilità concessi, oltre al fallback senza Accessibilità.
 | BRD-06 | Applicare pulse dinamico e reduced motion | Done | P1 | BRD-05 | 1.6–0.4 s; modalità ridotta senza moto continuo |
 | BRD-07 | Misurare stabilità del ritmo e attivare Dance | Todo futuro | P1 | nuovo task core | trigger deterministico dopo oltre due minuti stabili |
 | BRD-08 | Progettare Sleep a cinque minuti | Todo futuro | P1 | lifecycle/UI-02 | nessun conflitto con hide 2 s e fine sessione 30 s |
-| BRD-09 | Trasformare il Pulse mark nel grafico live | Todo F | P1 | UI-04 | wave accessibile senza libreria chart |
+| BRD-09 | Trasformare il Pulse mark nel grafico live | Done | P1 | UI-04 | wave accessibile senza libreria chart |
 | BRD-10 | Messaggi compagno, massimo tre al giorno | Todo v2 | P2 | UI-02 | solo popover, nessuna notifica di sistema |
-| BRD-11 | Onboarding e insights conformi all'identity | Todo F | P0 | UI-03, UI-09 | token, Pip e voce applicati alle schermate finali |
+| BRD-11 | Onboarding e insights conformi all'identity | Partial | P0 | UI-03, UI-09 | insight pronto; onboarding ancora aperto |
 | BRD-12 | Confermare endorsement legale Micro-Y nell'About | Todo owner | P1 | dato esterno | solo testo in-app, formulazione autorizzata |
-| BRD-13 | Verificare nome, dominio e marchio TypePulse | Todo pre-release | P0 | ricerca/owner | decisione registrata prima della V1 |
+| BRD-13 | Verificare nome, dominio e marchio QRY | Todo pre-release | P0 | ricerca/owner | decisione registrata prima della V1 |
+| BRD-16 | Rinominare prodotto e bundle in QRY conservando identità tecnica legacy | Done | P0 | decisione prodotto | UI, bundle, release, Homebrew e documentazione coerenti; dati esistenti preservati |
 | BRD-14 | Preparare sito, lockup e GIF prodotto | Todo futuro | P2 | sito pubblico | clear-space e motion identity rispettati |
 | BRD-15 | Visual regression e contrast audit | Todo RC | P0 | Gate F | light/dark, tray, overlay e reduce motion verificati |
 
@@ -423,20 +425,20 @@ Accessibilità concessi, oltre al fallback senza Accessibilità.
 
 | ID | Task | Prio | Taglia | Dipende da | Criterio di accettazione |
 | --- | --- | --- | --- | --- | --- |
-| UI-01 | Definire token visuali e tema | P1 | S | FND-03 | colori, spaziature e tipografia non sono duplicati |
-| UI-02 | Completare pannello tray — **In progress** | P0 | M | APP-03, DB-06 | shell e azioni pronte; riepilogo compatto ancora da integrare |
-| UI-03 | Creare finestra statistiche | P0 | L | DB-06, DB-07 | quattro metriche e ultimi sette giorni visibili |
-| UI-04 | Creare grafico giornaliero | P1 | L | DB-05 | bucket visualizzati con assi leggibili |
-| UI-05 | Creare settings General | P0 | M | APP-03 | pausa e preferenze persistono |
-| UI-06 | Creare settings Overlay | P0 | M | OVR-08 | posizione, dimensione, hide-after e contenuto applicati live |
-| UI-07 | Creare settings Appearance | P1 | S | UI-01 | System, Light e Dark funzionano |
+| UI-01 | Definire token visuali e tema — **Done** | P1 | S | FND-03 | colori, spaziature e tipografia condividono token per superficie |
+| UI-02 | Completare pannello tray — **Done** | P0 | M | APP-03, DB-06 | click Pulse apre riepilogo compatto live e azioni dedicate |
+| UI-03 | Creare finestra statistiche — **Done** | P0 | L | DB-06, DB-07 | quattro metriche e viste oggi/settimana/mese/anno visibili |
+| UI-04 | Creare grafico giornaliero — **Done** | P1 | L | DB-05 | bucket WPM/parole/picco e breakdown leggibili |
+| UI-05 | Creare settings General — **Done** | P0 | M | APP-03 | monitor, login, WPM e navigazione persistono |
+| UI-06 | Creare settings Overlay — **Done** | P0 | M | OVR-08 | posizione, dimensione e contenuto applicati live |
+| UI-07 | Creare settings Appearance — **Partial** | P1 | S | UI-01 | tema System adattivo pronto; override Light/Dark futuro |
 | UI-08 | Implementare avvio al login — **Done anticipato in D** | P1 | M | UI-05 | login item e monitor automatico seguono la stessa preferenza |
 | UI-09 | Creare onboarding in tre passaggi | P0 | L | MAC-03, MAC-07, OVR-09 | primo avvio spiega privacy e i due permessi distinti |
-| UI-10 | Gestire permesso negato/revocato | P0 | M | UI-09, MAC-07 | stato chiaro, nessun dato simulato |
-| UI-11 | Aggiungere dialog export CSV | P0 | M | DB-09 | utente sceglie destinazione e riceve esito |
+| UI-10 | Gestire permesso negato/revocato — **Done nella schermata** | P0 | M | UI-09, MAC-07 | stato chiaro, azioni Request/Open, nessun dato simulato |
+| UI-11 | Aggiungere dialog export CSV — **Partial** | P0 | M | DB-09 | copia CSV pronta; destinazione file nativa ancora aperta |
 | UI-12 | Verificare accessibilità di base | P1 | M | UI-02–UI-11 | tastiera, contrasto e reduced motion verificati |
 
-**Gate F:** un nuovo utente può installare, concedere il permesso, usare TypePulse
+**Gate F:** un nuovo utente può installare, concedere il permesso, usare QRY
 e comprendere i dati senza istruzioni esterne.
 
 ### Fase G — Qualità, sicurezza e release macOS
@@ -452,14 +454,14 @@ e comprendere i dati senza istruzioni esterne.
 | REL-02 | Creare workflow release macOS — **Implemented, non pubblicata** | P0 | L | REL-01, Gate F | due architetture, ZIP, checksum e draft Release su tag |
 | REL-03 | Applicare firma ad-hoc dove utile — **Done nel packaging** | P1 | M | REL-02 | identità `-` e `codesign --verify` obbligatorio |
 | REL-04 | Scrivere istruzioni Gatekeeper — **Done** | P0 | S | REL-02 | limiti e apertura sicura documentati senza bypass globale |
-| REL-05 | Creare tap `homebrew-typepulse` — **Template done, remote blocked** | P0 | M | REL-02 | struttura cask pronta; owner/repository TODO |
+| REL-05 | Creare tap `homebrew-qry` — **Template done, remote blocked** | P0 | M | REL-02 | struttura cask pronta; owner/repository TODO |
 | REL-06 | Creare e validare cask — **Blocked da REL-05/release reale** | P0 | M | REL-05 | renderer valida SemVer/hash; install/upgrade/uninstall TODO manuale |
 | REL-07 | Pubblicare release candidate — **Blocked** | P0 | M | QA-01–QA-05, REL-06 | Gate F, QA manuale e remote mancanti |
 | REL-08 | Pubblicare V1 macOS — **Blocked** | P0 | S | REL-07 | nessuna release stabile autorizzata |
 
 **Gate G: aperto.** Il codice di audit e distribuzione è pronto, ma nessun utente
 può ancora installare dal tap: mancano Gate F, prove reali, remote GitHub,
-Release pubblica e repository `homebrew-typepulse`.
+Release pubblica e repository `homebrew-qry`.
 
 ### Fase H — Linux dopo la V1
 

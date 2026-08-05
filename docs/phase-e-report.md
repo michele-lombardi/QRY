@@ -6,7 +6,7 @@
 
 ## Risultato
 
-TypePulse dispone ora di una seconda finestra Tauri dedicata all'overlay. La
+QRY dispone ora di una seconda finestra Tauri dedicata all'overlay. La
 finestra viene creata nascosta e usa queste proprietà native:
 
 - trasparente e senza decorazioni;
@@ -15,7 +15,7 @@ finestra viene creata nascosta e usa queste proprietà native:
 - configurata con `set_ignore_cursor_events(true)` per lasciar passare i click;
 - mostrata e nascosta dal controller Rust in base allo stato del core.
 
-L'uso della trasparenza su macOS abilita `macOSPrivateApi` di Tauri. TypePulse
+L'uso della trasparenza su macOS abilita `macOSPrivateApi` di Tauri. QRY
 non è destinata al Mac App Store, quindi questa scelta è coerente con la
 distribuzione open source tramite GitHub Release e Homebrew.
 

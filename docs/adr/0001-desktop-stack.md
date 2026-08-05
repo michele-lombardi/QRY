@@ -5,7 +5,7 @@
 
 ## Context
 
-TypePulse targets macOS first and Linux later. The product needs a tray, a small
+QRY targets macOS first and Linux later. The product needs a tray, a small
 always-on-top overlay, local storage and a platform-specific global input adapter.
 A Swift-only application would optimize the first platform but require a second
 implementation for Linux.

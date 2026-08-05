@@ -2,7 +2,7 @@
 
 ## Obiettivo
 
-TypePulse è open source e viene sviluppato prima per macOS. Il codice sorgente è
+QRY è open source e viene sviluppato prima per macOS. Il codice sorgente è
 sempre disponibile su GitHub; i binari sono una comodità aggiuntiva e non devono
 diventare un requisito per contribuire.
 
@@ -16,7 +16,7 @@ Canali previsti:
 
 ## macOS: compilazione locale
 
-Lo sviluppo avviene da VS Code e terminale. Tauri deve produrre `TypePulse.app`
+Lo sviluppo avviene da VS Code e terminale. Tauri deve produrre `QRY.app`
 su macOS con un comando ripetibile. L'ambiente di build necessita comunque del
 toolchain e dell'SDK macOS, ma non richiede l'uso quotidiano dell'interfaccia di
 Xcode.
@@ -42,8 +42,8 @@ il gate completo e crea una draft GitHub Release contenente:
 La V1 usa due artefatti distinti:
 
 ```text
-TypePulse-VERSION-aarch64.app.zip
-TypePulse-VERSION-x86_64.app.zip
+QRY-VERSION-aarch64.app.zip
+QRY-VERSION-x86_64.app.zip
 ```
 
 Questa scelta evita una fase `lipo` non ancora necessaria e permette al cask di
@@ -71,26 +71,26 @@ procedura utente è in [`gatekeeper.md`](gatekeeper.md).
 
 ## Homebrew
 
-TypePulse è un'app grafica, quindi il pacchetto appropriato è un **cask**.
+QRY è un'app grafica, quindi il pacchetto appropriato è un **cask**.
 
 Durante le prime versioni viene mantenuto un tap personale:
 
 ```text
-github.com/<owner>/homebrew-typepulse
+github.com/<owner>/homebrew-qry
 └── Casks/
-    └── typepulse.rb
+    └── qry.rb
 ```
 
 Installazione prevista:
 
 ```bash
-brew tap <owner>/typepulse
-brew install --cask typepulse
+brew tap <owner>/qry
+brew install --cask qry
 ```
 
 Il cask contiene versione, URL immutabile della GitHub Release, checksum per
 architettura e nome dell'app bundle. Il template versionato è in
-`packaging/homebrew/Casks/typepulse.rb.template`; lo script di rendering accetta
+`packaging/homebrew/Casks/qry.rb.template`; lo script di rendering accetta
 solo owner semplice, SemVer e hash SHA-256 da 64 cifre. Viene generato soltanto
 dopo che gli artefatti definitivi sono stati pubblicati.
 
@@ -104,10 +104,10 @@ Quando l'adapter Linux sarà pronto, Tauri potrà generare un `.deb`. Il primo
 metodo di installazione sarà intenzionalmente semplice:
 
 ```bash
-sudo apt install ./typepulse_<version>_<architettura>.deb
+sudo apt install ./qry_<version>_<architettura>.deb
 ```
 
-Questo non equivale ancora a `sudo apt install typepulse`: quel comando richiede
+Questo non equivale ancora a `sudo apt install qry`: quel comando richiede
 che APT conosca un repository contenente il pacchetto.
 
 ## Repository APT futuro
@@ -121,7 +121,7 @@ Un repository APT di terze parti richiede almeno:
 - chiave pubblica e istruzioni di configurazione sicure;
 - strategia di aggiornamento e conservazione delle versioni.
 
-Non verrà creato finché TypePulse non avrà una release Linux stabile. In una
+Non verrà creato finché QRY non avrà una release Linux stabile. In una
 fase ancora successiva si potrà valutare l'inclusione nei repository ufficiali
 delle distribuzioni.
 

@@ -10,7 +10,7 @@ Secure Input is a privacy boundary, not an error to bypass.
 5. Leave the protected field and type ordinary dummy text in TextEdit.
 6. Confirm ordinary counting resumes if macOS makes events visible again.
 
-Acceptable result: activity inside the protected field may be absent. TypePulse must not
+Acceptable result: activity inside the protected field may be absent. QRY must not
 weaken or work around the protection.
 
 Status on 5 August 2026: **TODO manuale**, blocked by denied TCC permission on the

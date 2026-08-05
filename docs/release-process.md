@@ -8,7 +8,7 @@ manuali indicate nel report di Fase G.
 
 ## Versioning
 
-TypePulse usa Semantic Versioning. I tag hanno forma `vMAJOR.MINOR.PATCH` oppure
+QRY usa Semantic Versioning. I tag hanno forma `vMAJOR.MINOR.PATCH` oppure
 `vMAJOR.MINOR.PATCH-PRERELEASE`. Prima del tag, lo stesso numero deve comparire
 in:
 
@@ -51,7 +51,7 @@ compatibili va ripetuto anche per `x86_64-apple-darwin`.
 
 ## Homebrew
 
-Il template è `packaging/homebrew/Casks/typepulse.rb.template`. Dopo la
+Il template è `packaging/homebrew/Casks/qry.rb.template`. Dopo la
 pubblicazione della Release, copia i due hash dai file `.sha256` e genera il
 cask:
 
@@ -64,21 +64,21 @@ cask:
 ```
 
 Prima di pubblicarlo, copia il file generato nel futuro repository
-`homebrew-typepulse/Casks/typepulse.rb`. Con il tap installato, valida il cask
+`homebrew-qry/Casks/qry.rb`. Con il tap installato, valida il cask
 tramite il suo token:
 
 ```bash
-ruby -c release/typepulse.rb
-brew style --cask TODO_OWNER/typepulse/typepulse
-brew audit --cask --strict TODO_OWNER/typepulse/typepulse
+ruby -c release/qry.rb
+brew style --cask TODO_OWNER/qry/qry
+brew audit --cask --strict TODO_OWNER/qry/qry
 ```
 
 Poi verificare su un account/macchina pulita:
 
 ```bash
-brew tap TODO_OWNER/typepulse
-brew install --cask typepulse
-brew uninstall --cask typepulse
+brew tap TODO_OWNER/qry
+brew install --cask qry
+brew uninstall --cask qry
 ```
 
 `TODO_OWNER`, URL del repository, checksum reali e contatto security non possono

@@ -76,7 +76,7 @@ resta quindi TODO al primo tag eseguito su GitHub Actions.
 ## TODO che richiedono dati o autorità esterna
 
 - `[TODO: GitHub owner]` e URL repository definitivo;
-- repository pubblico `homebrew-typepulse`;
+- repository pubblico `homebrew-qry`;
 - contatto security privato;
 - consenso TCC e test lifecycle/risorse su macOS reale;
 - Gate F completato e Gate E verificato manualmente;

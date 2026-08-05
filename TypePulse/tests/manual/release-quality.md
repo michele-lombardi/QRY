@@ -12,7 +12,7 @@ keys, application names or window titles.
     ../scripts/sample-resources.sh PID 60 1
     ```
 
-3. Grant Input Monitoring, start TypePulse and type dummy prose for two minutes.
+3. Grant Input Monitoring, start QRY and type dummy prose for two minutes.
 4. Repeat the sample during ordinary typing.
 5. Record average/max CPU percentage and RSS MiB only.
 
@@ -26,12 +26,12 @@ baseline is available.
 
 ## Suspend, logout and restart (QA-03)
 
-- [ ] An active session is flushed or safely recoverable when TypePulse quits.
+- [ ] An active session is flushed or safely recoverable when QRY quits.
 - [ ] Sleep/wake does not create invented activity or extreme WPM.
 - [ ] Revoked Input Monitoring remains visibly revoked after wake.
 - [ ] With automatic startup enabled, logout/login creates one process and one menu-bar
       icon.
-- [ ] With automatic startup disabled, login does not launch TypePulse.
+- [ ] With automatic startup disabled, login does not launch QRY.
 
 ## Timezone and date (QA-04)
 
@@ -49,7 +49,7 @@ for this test.
 ## Release artifact and Gatekeeper
 
 - [ ] Both SHA-256 files verify their matching archives.
-- [ ] `codesign --verify --deep --strict TypePulse.app` passes.
+- [ ] `codesign --verify --deep --strict QRY.app` passes.
 - [ ] A clean account/Mac follows `docs/gatekeeper.md` successfully.
 - [ ] Input Monitoring is requested separately and never bypassed.
 - [ ] Install, launch, upgrade and uninstall through the personal cask pass.

@@ -7,7 +7,7 @@
 
 ## Risultato
 
-TypePulse dispone ora di una base macOS compilabile e riproducibile con Tauri 2,
+QRY dispone ora di una base macOS compilabile e riproducibile con Tauri 2,
 Rust e TypeScript. L'applicazione mostra una finestra diagnostica di fondazione,
 ma non richiede permessi e non osserva ancora la tastiera.
 
@@ -20,7 +20,7 @@ dopo la Fase C.
 ### Applicazione
 
 - scaffold Tauri 2 generato dal template ufficiale vanilla TypeScript;
-- frontend dimostrativo del template sostituito da una schermata TypePulse;
+- frontend dimostrativo del template sostituito da una schermata QRY;
 - plugin opener e relativo permesso rimossi perché non necessari;
 - Content Security Policy esplicita;
 - bundle target limitato all'app macOS nella fase corrente;
@@ -97,12 +97,12 @@ npm run tauri dev
 
 Vite ha aperto la porta 1420, Cargo ha compilato i quattro package del workspace
 e il binario `typepulse-app` è stato avviato. Il processo di sviluppo è stato poi
-terminato senza lasciare processi Vite o TypePulse in background.
+terminato senza lasciare processi Vite o QRY in background.
 
 Bundle prodotto:
 
 ```text
-TypePulse/target/debug/bundle/macos/TypePulse.app
+TypePulse/target/debug/bundle/macos/QRY.app
 ```
 
 Il bundle è un artefatto locale di debug ed è correttamente escluso da Git. Non è

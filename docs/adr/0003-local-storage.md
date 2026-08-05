@@ -5,7 +5,7 @@
 
 ## Context
 
-TypePulse stores sessions, short aggregate buckets and preferences locally. It
+QRY stores sessions, short aggregate buckets and preferences locally. It
 needs deterministic migrations and simple daily queries. The future Linux build
 should share the same persistence model.
 

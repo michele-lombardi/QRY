@@ -7,7 +7,7 @@
 
 ## Risultato
 
-TypePulse dispone di un adapter macOS funzionante a livello di build e test che
+QRY dispone di un adapter macOS funzionante a livello di build e test che
 legge/richiede il permesso, apre la sezione corretta di System Settings, installa
 un event tap passivo, filtra gli eventi e distrugge l'identità del tasto prima
 del confine pubblico.

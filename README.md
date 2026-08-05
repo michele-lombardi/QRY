@@ -1,18 +1,19 @@
-# TypePulse
+# QRY
 
-TypePulse è una piccola app macOS da menu bar che rende visibile il ritmo di
+QRY è una piccola app macOS da menu bar che rende visibile il ritmo di
 scrittura senza registrare ciò che viene scritto.
 
 > **See your typing rhythm. Not what you type.**
 
 ## Stato del progetto
 
-Le Fasi A–E sono implementate nel codice: fondazioni, monitor macOS
-privacy-safe, core WPM/sessioni, persistenza e overlay sono presenti. I Gate C e
-D sono chiusi automaticamente; i Gate B/E end-to-end restano checklist manuali
-finché il Mac di sviluppo non concede Input Monitoring.
+Le Fasi A–F sono implementate nel codice: fondazioni, monitor macOS
+privacy-safe, core WPM/sessioni, persistenza, overlay, pannello giornaliero,
+Impostazioni e Statistiche sono presenti. I Gate C e D sono chiusi
+automaticamente; i Gate B/E/F end-to-end restano checklist manuali sul Mac con
+i permessi reali.
 
-TypePulse è software libero distribuito con licenza GNU GPL versione 3 soltanto
+QRY è software libero distribuito con licenza GNU GPL versione 3 soltanto
 (`GPL-3.0-only`). Il nome del titolare del copyright e il contatto pubblico
 restano da compilare in [`NOTICE.md`](NOTICE.md).
 
@@ -26,6 +27,11 @@ Decisioni attuali:
 - HTML, CSS e TypeScript per l'interfaccia;
 - VS Code come ambiente di lavoro principale;
 - GitHub Releases e tap Homebrew personale come primo canale di distribuzione.
+
+Il nome visibile e il bundle sono `QRY`/`QRY.app`. La cartella di workspace
+`TypePulse/`, l'identificatore `app.typepulse.desktop` e il database
+`typepulse.sqlite3` restano intenzionalmente invariati in questa migrazione per
+preservare storico, preferenze, login item e continuità dei permessi macOS.
 
 ## Obiettivo della V1
 
@@ -78,6 +84,7 @@ anche:
 - [`docs/phase-c-report.md`](docs/phase-c-report.md)
 - [`docs/phase-e-report.md`](docs/phase-e-report.md)
 - [`docs/brand-implementation.md`](docs/brand-implementation.md)
+- [`docs/qry-interface.md`](docs/qry-interface.md)
 
 ## Sviluppo locale
 
@@ -108,12 +115,13 @@ Controllo completo dalla root:
 
 1. Concedere Input Monitoring e completare le checklist manuali della Fase B.
 2. Verificare manualmente login item, riapertura e rollover della Fase D.
-3. Proseguire la Fase F con statistiche, preferenze e onboarding; la shell menu
-   bar senza Dock è già attiva.
+3. Verificare manualmente il nuovo pannello QRY, le Impostazioni e le viste
+   Oggi/7 giorni/30 giorni/Anno delle Statistiche.
 4. Concedere separatamente Accessibilità e verificare focus, click-through,
    display focalizzato e fallback multi-monitor della Fase E.
 5. Chiudere le prove manuali della Fase G e configurare il remote GitHub prima
    di creare una Release o il tap Homebrew.
-6. Compilare titolare copyright e contatto pubblico in `NOTICE.md`.
+6. Completare onboarding, dialog di salvataggio CSV e audit accessibilità UI.
+7. Compilare titolare copyright e contatto pubblico in `NOTICE.md`.
 
 Il piano aggiornato è in [`docs/working-plan.md`](docs/working-plan.md).
