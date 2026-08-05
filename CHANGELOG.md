@@ -17,6 +17,8 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 - dedicated Apple-style Settings and full Statistics windows with daily,
   weekly, monthly and yearly local aggregate views;
 - detailed words, average WPM, peak WPM and active-time chart/table views;
+- separate WPM-speed and estimated-word charts, each with a numeric vertical
+  scale and time labels on the horizontal axis;
 - Settings control for menu-bar WPM synchronized with the native context menu;
 - idle midnight rollover that closes the previous local day's active session.
 - persisted background-card switch that can render only Pip and its WPM counter

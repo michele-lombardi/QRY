@@ -15,9 +15,16 @@ let selectedDays = 1;
 let refreshing = false;
 
 const message = byId<HTMLElement>("statistics-message");
-const chart = byId<SVGSVGElement>("rhythm-chart");
-const chartLabels = byId<HTMLElement>("chart-labels");
+const wpmChart = byId<SVGSVGElement>("wpm-chart");
+const wordsChart = byId<SVGSVGElement>("words-chart");
 const detailBody = byId<HTMLTableSectionElement>("detail-body");
+
+const chartWidth = 920;
+const chartHeight = 280;
+const plotLeft = 58;
+const plotRight = 900;
+const plotTop = 18;
+const plotBottom = 238;
 
 const aggregate = (points: ChartPoint[]) => {
   const words = points.reduce((sum, point) => sum + point.words, 0);
@@ -98,63 +105,156 @@ const svgElement = (name: string, attributes: Record<string, string>): SVGElemen
   return element;
 };
 
-const renderChart = (points: ChartPoint[]): void => {
-  chart.replaceChildren();
-  chartLabels.replaceChildren();
-  byId<HTMLElement>("empty-chart").hidden = points.some(
-    (point) => point.words > 0 || point.peak > 0,
+type AxisScale = { maximum: number; step: number };
+
+const niceScale = (value: number, minimum: number): AxisScale => {
+  const target = Math.max(value, minimum);
+  const roughStep = target / 4;
+  const magnitude = 10 ** Math.floor(Math.log10(roughStep));
+  const normalized = roughStep / magnitude;
+  const factor =
+    normalized <= 1
+      ? 1
+      : normalized <= 2
+        ? 2
+        : normalized <= 2.5
+          ? 2.5
+          : normalized <= 5
+            ? 5
+            : 10;
+  const step = factor * magnitude;
+  return { maximum: Math.ceil(target / step) * step, step };
+};
+
+const svgText = (content: string, attributes: Record<string, string>): SVGElement => {
+  const element = svgElement("text", attributes);
+  element.textContent = content;
+  return element;
+};
+
+const xCoordinate = (index: number, count: number): number =>
+  count <= 1
+    ? (plotLeft + plotRight) / 2
+    : plotLeft + (index / (count - 1)) * (plotRight - plotLeft);
+
+const yCoordinate = (value: number, maximum: number): number =>
+  plotBottom - (value / maximum) * (plotBottom - plotTop);
+
+const timeLabelIndexes = (count: number): number[] => {
+  if (count <= 0) return [];
+  const labelCount = Math.min(count, 6);
+  return Array.from(
+    new Set(
+      Array.from({ length: labelCount }, (_, index) =>
+        Math.round((index * (count - 1)) / Math.max(labelCount - 1, 1)),
+      ),
+    ),
   );
-  const width = 880;
-  const height = 270;
-  const padding = 18;
-  const maxWpm = Math.max(120, ...points.map((point) => point.peak));
-  const maxWords = Math.max(1, ...points.map((point) => point.words));
-  for (let line = 0; line <= 4; line += 1) {
-    const y = padding + ((height - padding * 2) * line) / 4;
+};
+
+const renderAxes = (
+  chart: SVGSVGElement,
+  points: ChartPoint[],
+  scale: AxisScale,
+  unit: string,
+): void => {
+  const tickCount = Math.round(scale.maximum / scale.step);
+  for (let tick = 0; tick <= tickCount; tick += 1) {
+    const value = tick * scale.step;
+    const y = yCoordinate(value, scale.maximum);
     chart.append(
       svgElement("line", {
-        x1: "0",
+        x1: String(plotLeft),
         y1: String(y),
-        x2: String(width),
+        x2: String(plotRight),
         y2: String(y),
         stroke: "currentColor",
-        "stroke-opacity": "0.08",
+        "stroke-opacity": tick === 0 ? "0.18" : "0.08",
         "stroke-width": "1",
+      }),
+      svgText(value.toLocaleString(undefined, { maximumFractionDigits: 1 }), {
+        x: String(plotLeft - 10),
+        y: String(y + 4),
+        fill: "currentColor",
+        "fill-opacity": "0.55",
+        "font-size": "11",
+        "text-anchor": "end",
       }),
     );
   }
-  if (points.length === 0) return;
-  const step = points.length > 1 ? (width - padding * 2) / (points.length - 1) : 0;
-  const barWidth = Math.max(
-    3,
-    Math.min(24, (width - padding * 2) / Math.max(points.length, 1) - 4),
+
+  chart.append(
+    svgText(unit, {
+      x: "2",
+      y: "12",
+      fill: "currentColor",
+      "fill-opacity": "0.55",
+      "font-size": "10",
+      "font-weight": "650",
+    }),
   );
-  const coordinate = (value: number, index: number): [number, number] => [
-    padding + step * index,
-    height - padding - (value / maxWpm) * (height - padding * 2),
-  ];
-  points.forEach((point, index) => {
-    const x = points.length === 1 ? width / 2 : padding + step * index;
-    const barHeight = (point.words / maxWords) * (height - padding * 2) * 0.34;
+
+  timeLabelIndexes(points.length).forEach((index) => {
+    const x = xCoordinate(index, points.length);
     chart.append(
-      svgElement("rect", {
-        x: String(x - barWidth / 2),
-        y: String(height - padding - barHeight),
-        width: String(barWidth),
-        height: String(barHeight),
-        rx: "3",
+      svgElement("line", {
+        x1: String(x),
+        y1: String(plotBottom),
+        x2: String(x),
+        y2: String(plotBottom + 5),
+        stroke: "currentColor",
+        "stroke-opacity": "0.24",
+        "stroke-width": "1",
+      }),
+      svgText(points[index]?.label ?? "", {
+        x: String(x),
+        y: String(plotBottom + 22),
         fill: "currentColor",
-        "fill-opacity": "0.09",
+        "fill-opacity": "0.55",
+        "font-size": "11",
+        "text-anchor": "middle",
       }),
     );
   });
-  const path = points
-    .map(
-      (point, index) =>
-        `${index === 0 ? "M" : "L"}${coordinate(point.average, index).join(" ")}`,
-    )
-    .join(" ");
+
   chart.append(
+    svgText("Time", {
+      x: String(chartWidth),
+      y: String(chartHeight - 2),
+      fill: "currentColor",
+      "fill-opacity": "0.55",
+      "font-size": "10",
+      "font-weight": "650",
+      "text-anchor": "end",
+    }),
+  );
+};
+
+const appendTooltip = (element: SVGElement, content: string): void => {
+  const title = svgElement("title", {});
+  title.textContent = content;
+  element.append(title);
+};
+
+const renderSpeedChart = (points: ChartPoint[]): void => {
+  wpmChart.replaceChildren();
+  const hasData = points.some((point) => point.average > 0 || point.peak > 0);
+  byId<HTMLElement>("empty-wpm-chart").hidden = hasData;
+  const scale = niceScale(
+    Math.max(0, ...points.map((point) => Math.max(point.average, point.peak))),
+    100,
+  );
+  renderAxes(wpmChart, points, scale, "WPM");
+  if (points.length === 0) return;
+
+  const path = points
+    .map((point, index) => {
+      const x = xCoordinate(index, points.length);
+      const y = yCoordinate(point.average, scale.maximum);
+      return `${index === 0 ? "M" : "L"}${x} ${y}`;
+    })
+    .join(" ");
+  wpmChart.append(
     svgElement("path", {
       d: path,
       fill: "none",
@@ -165,20 +265,47 @@ const renderChart = (points: ChartPoint[]): void => {
     }),
   );
   points.forEach((point, index) => {
-    const [x, y] = coordinate(point.peak, index);
-    chart.append(
-      svgElement("circle", { cx: String(x), cy: String(y), r: "3.5", fill: "#30d158" }),
+    const circle = svgElement("circle", {
+      cx: String(xCoordinate(index, points.length)),
+      cy: String(yCoordinate(point.peak, scale.maximum)),
+      r: "3.5",
+      fill: "#30d158",
+    });
+    appendTooltip(
+      circle,
+      `${point.label}: ${point.average.toFixed(1)} average WPM, ${point.peak.toFixed(1)} peak WPM`,
     );
+    wpmChart.append(circle);
   });
-  const labelIndexes = new Set([
-    0,
-    Math.floor((points.length - 1) / 2),
-    points.length - 1,
-  ]);
-  labelIndexes.forEach((index) => {
-    const span = document.createElement("span");
-    span.textContent = points[index]?.label ?? "";
-    chartLabels.append(span);
+};
+
+const renderWordsChart = (points: ChartPoint[]): void => {
+  wordsChart.replaceChildren();
+  const hasData = points.some((point) => point.words > 0);
+  byId<HTMLElement>("empty-words-chart").hidden = hasData;
+  const scale = niceScale(Math.max(0, ...points.map((point) => point.words)), 5);
+  renderAxes(wordsChart, points, scale, "Words");
+  if (points.length === 0) return;
+
+  const slotWidth = (plotRight - plotLeft) / Math.max(points.length, 1);
+  const barWidth = Math.max(2, Math.min(30, slotWidth * 0.62));
+  points.forEach((point, index) => {
+    const x = xCoordinate(index, points.length);
+    const y = yCoordinate(point.words, scale.maximum);
+    const bar = svgElement("rect", {
+      x: String(x - barWidth / 2),
+      y: String(y),
+      width: String(barWidth),
+      height: String(Math.max(0, plotBottom - y)),
+      rx: String(Math.min(4, barWidth / 3)),
+      fill: "#3cefff",
+      "fill-opacity": "0.58",
+    });
+    appendTooltip(
+      bar,
+      `${point.label}: ${formatNumber(point.words, 1)} estimated words`,
+    );
+    wordsChart.append(bar);
   });
 };
 
@@ -234,7 +361,8 @@ const refresh = async (): Promise<void> => {
       ]);
       points = bucketPoints(buckets);
       renderSummary(currentDaySummary(today, monitor));
-      byId<HTMLElement>("chart-title").textContent = "Today's rhythm";
+      byId<HTMLElement>("speed-chart-title").textContent = "Today's WPM";
+      byId<HTMLElement>("words-chart-title").textContent = "Today's words";
       byId<HTMLElement>("period-caption").textContent = new Intl.DateTimeFormat(
         undefined,
         { dateStyle: "full" },
@@ -246,12 +374,15 @@ const refresh = async (): Promise<void> => {
       ]);
       points = mergeCurrentSession(dailyPoints(days), monitor);
       renderSummary(aggregate(points));
-      byId<HTMLElement>("chart-title").textContent =
-        selectedDays === 366 ? "Yearly rhythm" : `${selectedDays}-day rhythm`;
+      byId<HTMLElement>("speed-chart-title").textContent =
+        selectedDays === 366 ? "Yearly WPM" : `${selectedDays}-day WPM`;
+      byId<HTMLElement>("words-chart-title").textContent =
+        selectedDays === 366 ? "Yearly words" : `${selectedDays}-day words`;
       byId<HTMLElement>("period-caption").textContent =
         selectedDays === 366 ? "Last 12 months" : `Last ${selectedDays} days`;
     }
-    renderChart(points);
+    renderSpeedChart(points);
+    renderWordsChart(points);
     renderTable(points);
     message.textContent = "";
   } finally {

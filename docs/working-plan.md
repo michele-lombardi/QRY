@@ -430,7 +430,7 @@ Accessibilità concessi, oltre al fallback senza Accessibilità.
 | UI-01 | Definire token visuali e tema — **Done** | P1 | S | FND-03 | colori, spaziature e tipografia condividono token per superficie |
 | UI-02 | Completare pannello tray — **Done** | P0 | M | APP-03, DB-06 | click Pulse apre riepilogo compatto live e azioni dedicate |
 | UI-03 | Creare finestra statistiche — **Done** | P0 | L | DB-06, DB-07 | quattro metriche e viste oggi/settimana/mese/anno visibili |
-| UI-04 | Creare grafico giornaliero — **Done** | P1 | L | DB-05 | bucket WPM/parole/picco e breakdown leggibili |
+| UI-04 | Creare grafici giornalieri — **Done** | P1 | L | DB-05 | grafico velocità WPM e grafico parole separati, asse Y numerico e tempo sull'asse X |
 | UI-05 | Creare settings General — **Done** | P0 | M | APP-03 | monitor, login, WPM e navigazione persistono |
 | UI-06 | Creare settings Overlay — **Done** | P0 | M | OVR-08 | sfondo, posizione, dimensione e contenuto applicati live |
 | UI-07 | Creare settings Appearance — **Partial** | P1 | S | UI-01 | tema System adattivo pronto; override Light/Dark futuro |

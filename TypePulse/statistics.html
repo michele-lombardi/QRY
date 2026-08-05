@@ -58,29 +58,53 @@
         </article>
       </section>
 
-      <section class="chart-card">
-        <div class="chart-heading">
-          <div>
-            <h2 id="chart-title">Today's rhythm</h2>
-            <p>Average WPM line · peak markers · activity bars</p>
+      <section class="charts-stack" aria-label="Typing charts">
+        <article class="chart-card">
+          <div class="chart-heading">
+            <div>
+              <p class="eyebrow">Speed over time</p>
+              <h2 id="speed-chart-title">Today's WPM</h2>
+              <p>WPM values on the vertical axis · time on the horizontal axis</p>
+            </div>
+            <div class="legend">
+              <span><i class="average-dot"></i>Average WPM</span
+              ><span><i class="peak-dot"></i>Peak WPM</span>
+            </div>
           </div>
-          <div class="legend">
-            <span><i class="average-dot"></i>Average</span
-            ><span><i class="peak-dot"></i>Peak</span
-            ><span><i class="activity-dot"></i>Words</span>
+          <svg
+            id="wpm-chart"
+            class="metric-chart"
+            viewBox="0 0 920 280"
+            role="img"
+            aria-label="Words per minute over time"
+          ></svg>
+          <p id="empty-wpm-chart" class="empty-chart" hidden>
+            No speed data for this period yet.
+          </p>
+        </article>
+
+        <article class="chart-card">
+          <div class="chart-heading">
+            <div>
+              <p class="eyebrow">Volume over time</p>
+              <h2 id="words-chart-title">Today's words</h2>
+              <p>Word values on the vertical axis · time on the horizontal axis</p>
+            </div>
+            <div class="legend">
+              <span><i class="words-dot"></i>Estimated words</span>
+            </div>
           </div>
-        </div>
-        <svg
-          id="rhythm-chart"
-          viewBox="0 0 880 300"
-          preserveAspectRatio="none"
-          role="img"
-          aria-label="Typing rhythm chart"
-        ></svg>
-        <div id="chart-labels" class="chart-labels" aria-hidden="true"></div>
-        <p id="empty-chart" class="empty-chart" hidden>
-          No completed rhythm data for this period yet.
-        </p>
+          <svg
+            id="words-chart"
+            class="metric-chart"
+            viewBox="0 0 920 280"
+            role="img"
+            aria-label="Estimated words over time"
+          ></svg>
+          <p id="empty-words-chart" class="empty-chart" hidden>
+            No word data for this period yet.
+          </p>
+        </article>
       </section>
 
       <section class="detail-grid">

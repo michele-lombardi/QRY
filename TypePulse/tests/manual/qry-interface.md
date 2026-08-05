@@ -45,9 +45,16 @@ focused-display Pip behavior.
 
 ## Statistics
 
+- [ ] The page shows two separate charts: WPM speed first and estimated words second.
+- [ ] Both charts show numeric values on the Y axis and time on the X axis.
+- [ ] Today shows time-of-day labels; 7 days, 30 days and Year show date labels.
+- [ ] WPM average/peak and word bars use independent scales and remain readable with
+      sparse data.
+
 - [ ] Today, 7 days, 30 days and Year each load without error.
 - [ ] Today headline words and active time update during the current session.
-- [ ] The graph distinguishes cyan average WPM, green peaks and word bars.
+- [ ] The WPM graph distinguishes the cyan average line from green peak points.
+- [ ] The words graph renders the estimated count as cyan bars.
 - [ ] Table totals and period labels match the selected range.
 - [ ] Copy CSV places aggregate-only rows in the clipboard.
 - [ ] Reset today requires confirmation and removes completed today data only.

@@ -26,7 +26,7 @@ It exposes four separate Tauri pages.
 | --- | --- | --- | --- |
 | Today panel | `dashboard` | `dashboard.html` | compact live daily glance opened by left click |
 | Settings | `main` | `index.html` | complete editable preferences and permissions |
-| Statistics | `statistics` | `statistics.html` | aggregate history, graph, table and export |
+| Statistics | `statistics` | `statistics.html` | aggregate history, two graphs, table and export |
 | Pip overlay | `overlay` | `overlay.html` | click-through live rhythm on the focused display |
 
 The Today panel is borderless, always on top and anchored to the top-right work
@@ -95,7 +95,10 @@ view displays:
 - words as activity bars, average WPM as a cyan line and peaks as green points;
 - a period breakdown table and a short neutral rhythm insight.
 
-Today uses persisted one-minute aggregate buckets for the chart and combines
+The page separates speed and volume into two charts: the first plots average
+and peak WPM, while the second plots estimated word count. Both use numeric
+values on the vertical axis and time labels on the horizontal axis. Today uses
+persisted one-minute aggregate buckets for the charts and combines
 the completed daily summary with the current in-memory session for the top
 cards. Longer ranges use daily summaries and merge the current session into
 the last day. This keeps headline data live while the chart remains

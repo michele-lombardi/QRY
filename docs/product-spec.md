@@ -77,8 +77,10 @@ Il pannello compatto mostra:
 ## Statistiche
 
 La finestra Statistiche si apre solo su richiesta. Contiene parole, media WPM,
-picco WPM, tempo attivo, grafico e tabella. Le viste disponibili sono oggi,
-sette giorni, trenta giorni e anno. Il grafico giornaliero usa bucket aggregati
+picco WPM, tempo attivo, due grafici e tabella. Il primo grafico mostra velocità
+media e picco WPM, il secondo il numero stimato di parole; entrambi hanno valori
+numerici sull'asse Y e tempo sull'asse X. Le viste disponibili sono oggi, sette
+giorni, trenta giorni e anno. I grafici giornalieri usano bucket aggregati
 al minuto; le altre viste usano riepiloghi giornalieri. Non viene conservato
 ogni evento.
 
