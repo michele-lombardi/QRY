@@ -106,7 +106,9 @@ Controllo completo dalla root:
 
 1. Concedere Input Monitoring e completare le checklist manuali della Fase B.
 2. Verificare manualmente login item, riapertura e rollover della Fase D.
-3. Iniziare la Fase E: tray, finestra invisibile e overlay.
-4. Compilare titolare copyright e contatto pubblico in `NOTICE.md`.
+3. Proseguire la Fase F con statistiche, preferenze e onboarding; la shell menu
+   bar senza Dock è già attiva.
+4. Completare separatamente l'overlay animato della Fase E.
+5. Compilare titolare copyright e contatto pubblico in `NOTICE.md`.
 
 Il piano aggiornato è in [`docs/working-plan.md`](docs/working-plan.md).

@@ -27,6 +27,8 @@ sensibile viene persistito o loggato.
 
 ## 2. Esperienza principale
 
+- shell menu bar, avvio nascosto e assenza dal Dock: completati come fondazione
+  della Fase F;
 - costruire overlay non cliccabile e sempre in primo piano;
 - aggiungere quattro posizioni, tre dimensioni e ritardo configurabile;
 - implementare i quattro stati dell'animazione e la celebrazione record;

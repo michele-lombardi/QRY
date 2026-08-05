@@ -88,9 +88,16 @@ il layer applicativo della Fase D associa la data civile locale tramite un
 ### DesktopShell
 
 Il layer `src-tauri` crea la tray e le finestre, registra i comandi e inoltra gli
-eventi del core al frontend. L'overlay è una finestra Tauri trasparente, senza
-decorazioni, sempre in primo piano e configurata per ignorare il cursore. Dove
-il comportamento differisce tra sistemi, il dettaglio rimane nell'adapter.
+eventi del core al frontend. Su macOS TypePulse usa la activation policy
+`Accessory`: non compare nel Dock o in `Cmd + Tab`, ma resta raggiungibile
+dall'icona nella menu bar. La finestra principale nasce nascosta, viene mostrata
+con il click sinistro e torna nascosta quando l'utente la chiude. Il click destro
+offre apertura, start, pausa e quit; quit ferma prima il monitor per scaricare
+gli aggregati pendenti.
+
+L'overlay resta una finestra Tauri separata, trasparente, senza decorazioni,
+sempre in primo piano e configurata per ignorare il cursore. Dove il
+comportamento differisce tra sistemi, il dettaglio rimane nell'adapter.
 
 L'UI riceve uno stato già pronto e non calcola le metriche.
 

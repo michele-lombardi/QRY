@@ -27,12 +27,16 @@ una release macOS stabile.
   Input Monitoring;
 - Fase C: core metrico e Gate C completati con test deterministici;
 - Fase D: persistenza, aggregazioni, CSV e Gate D completati;
+- Fase E: `APP-01`, `APP-02` e `APP-03` completati come prerequisito della
+  Fase F; tray menu macOS attivo e app rimossa dal Dock;
+- Fase F: avviata dal pannello menu bar e dal ciclo finestra in background;
 - rollover: automatico sulla data civile locale, con storico conservato;
 - avvio automatico: preferenza e login item macOS implementati in anticipo;
 - licenza open source: GNU GPLv3 only; restano placeholder anagrafici in
   `NOTICE.md`;
-- prossimo lavoro: Fase E; restano manuali la checklist TCC di Fase B e la prova
-  del login item dopo logout/login.
+- prossimo lavoro: completare le schermate della Fase F; overlay e animazione
+  della Fase E restano una linea separata. Restano manuali TCC, login item e
+  comportamento reale della menu bar.
 
 ### Priorità
 
@@ -360,9 +364,9 @@ finestre. La prova reale del login item resta nella checklist manuale.
 
 | ID | Task | Prio | Taglia | Dipende da | Criterio di accettazione |
 | --- | --- | --- | --- | --- | --- |
-| APP-01 | Configurare app senza finestra principale all'avvio | P0 | M | FND-03 | avvio silenzioso e nessuna finestra grande |
-| APP-02 | Nascondere app da Dock e `Cmd + Tab` | P0 | M | APP-01 | comportamento verificato dopo avvio e riapertura |
-| APP-03 | Creare icona tray e menu minimo | P0 | M | APP-01 | menu permette pausa, settings e quit |
+| APP-01 | Configurare app senza finestra principale all'avvio — **Done** | P0 | M | FND-03 | finestra principale creata nascosta |
+| APP-02 | Nascondere app da Dock e `Cmd + Tab` — **Done** | P0 | M | APP-01 | activation policy macOS `Accessory` e `skipTaskbar` |
+| APP-03 | Creare icona tray e menu minimo — **Done** | P0 | M | APP-01 | click apre l'app; menu permette start, pausa e quit |
 | APP-04 | Collegare monitor, core e stato applicazione — **Done anticipato in D** | P0 | L | MAC-07, CORE-07 | evento reale aggiorna stato diagnostico, bucket e sessioni |
 | OVR-01 | Creare finestra overlay trasparente | P0 | L | APP-01 | niente bordo, always-on-top e click-through |
 | OVR-02 | Implementare quattro posizioni | P0 | M | OVR-01 | coordinate corrette su display principale |
@@ -381,7 +385,7 @@ rubare focus o intercettare click.
 | ID | Task | Prio | Taglia | Dipende da | Criterio di accettazione |
 | --- | --- | --- | --- | --- | --- |
 | UI-01 | Definire token visuali e tema | P1 | S | FND-03 | colori, spaziature e tipografia non sono duplicati |
-| UI-02 | Completare pannello tray | P0 | M | APP-03, DB-06 | mostra riepilogo di oggi e azioni previste |
+| UI-02 | Completare pannello tray — **In progress** | P0 | M | APP-03, DB-06 | shell e azioni pronte; riepilogo compatto ancora da integrare |
 | UI-03 | Creare finestra statistiche | P0 | L | DB-06, DB-07 | quattro metriche e ultimi sette giorni visibili |
 | UI-04 | Creare grafico giornaliero | P1 | L | DB-05 | bucket visualizzati con assi leggibili |
 | UI-05 | Creare settings General | P0 | M | APP-03 | pausa e preferenze persistono |

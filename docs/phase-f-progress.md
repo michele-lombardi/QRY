@@ -1,0 +1,49 @@
+# Fase F — Stato schermate e preferenze
+
+- Data avvio: 5 agosto 2026
+- Stato: in corso
+- Primo incremento: shell macOS nella menu bar
+
+## Decisione UX
+
+TypePulse non userà il Dock come punto di accesso permanente. Vive nella parte
+destra della menu bar di macOS come le altre utility in background. La finestra
+principale è uno strumento aperto su richiesta, non la presenza costante
+dell'app.
+
+## Completato in questo incremento
+
+- `APP-01`: finestra principale nascosta all'avvio;
+- `APP-02`: activation policy `Accessory`, niente Dock o `Cmd + Tab`;
+- `APP-03`: icona menu bar con tooltip e menu nativo;
+- click sinistro per riaprire e focalizzare la finestra;
+- click destro per Open, Start monitoring, Pause monitoring e Quit;
+- chiusura finestra intercettata e trasformata in hide;
+- quit esplicito con stop del monitor e flush degli aggregati;
+- test unitario della mappatura degli ID del menu;
+- checklist manuale macOS dedicata.
+
+## Fase F ancora aperta
+
+- token visuali e temi;
+- riepilogo compatto nel pannello tray;
+- schermata statistiche, ultimi sette giorni e grafico;
+- settings General, Overlay e Appearance;
+- onboarding e stati permesso negato/revocato;
+- dialog di export CSV;
+- audit accessibilità.
+
+Le impostazioni Overlay dipendono ancora dal completamento dell'overlay della
+Fase E. Le altre schermate possono procedere usando repository, comandi e shell
+già disponibili.
+
+## Verifiche
+
+- `./scripts/check.sh`: pass;
+- 49 test Rust passati e un benchmark manuale ignorato come previsto;
+- bundle debug `TypePulse.app`: costruito e avviato;
+- Launch Services: `ApplicationType = UIElement`, quindi app accessoria senza
+  presenza ordinaria nel Dock;
+- preferenza `auto_start_enabled = 0` durante la prova: nessun login item
+  attivato dal test;
+- presenza e interazioni reali della status icon: checklist manuale aperta.

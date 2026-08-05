@@ -49,6 +49,12 @@ Per la V1 basta un solo personaggio con quattro stati, più l'effetto record.
 
 ## Menu bar
 
+TypePulse vive come icona di stato nella parte destra della menu bar di macOS,
+insieme alle altre applicazioni in background. Non mantiene un'icona nel Dock e
+non compare in `Cmd + Tab`. Il click apre il pannello; la chiusura del pannello
+non termina il monitoraggio. Un menu contestuale offre almeno start, pausa,
+impostazioni e uscita completa.
+
 Il pannello compatto mostra:
 
 - media WPM di oggi;

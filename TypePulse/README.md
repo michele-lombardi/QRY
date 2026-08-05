@@ -27,8 +27,9 @@ From the repository root:
 
 The Phase D workspace includes the portable WPM/session engine, SQLite aggregate
 persistence, local-day rollover, CSV output and the macOS automatic-start preference.
-The temporary diagnostic window wires the real monitor to live and daily metrics; tray
-and overlay behavior belong to Phase E.
+The Phase F shell launches as a macOS menu-bar accessory without a Dock icon. Its tray
+opens the temporary diagnostic window and exposes start, pause and quit actions. The
+final statistics/settings screens and the Phase E overlay remain in progress.
 
 See [`../docs/development.md`](../docs/development.md) for the complete guide.
 

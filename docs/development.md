@@ -49,11 +49,15 @@ cd TypePulse
 npm run tauri dev
 ```
 
-Tauri starts Vite on port 1420, compiles the Rust workspace and opens the input
-diagnostic window. Use it to check/request Input Monitoring, start/stop the
-passive monitor, inspect live/today metrics and change `Start automatically`.
-That checkbox registers a macOS login item and starts monitoring whenever the
-app opens. The window is temporary: tray-only behavior arrives in Phase E.
+Tauri starts Vite on port 1420, compiles the Rust workspace and launches
+TypePulse as a macOS menu-bar application. No window is shown automatically.
+Select the TypePulse icon in the upper-right menu bar to open the diagnostic
+window; right-click it for Open, Start monitoring, Pause monitoring and Quit.
+
+Use the window to check/request Input Monitoring, inspect live/today metrics and
+change `Start automatically`. That checkbox registers a macOS login item and
+starts monitoring whenever the app opens. Closing the window only hides it;
+choose Quit from the tray menu to terminate the background process cleanly.
 
 The app cannot grant TCC permission itself. After changing Input Monitoring in
 System Settings, macOS may require a quit/restart. Unsigned debug rebuilds can
@@ -163,6 +167,10 @@ Manual Phase B checks live in `tests/manual/`. The release hot-path reference is
 cargo test -p typepulse-platform-macos --release \
   typing_callback_hot_path_reference -- --ignored --nocapture
 ```
+
+The menu-bar lifecycle checklist is in
+`tests/manual/menu-bar-shell.md`. It verifies macOS UI behavior that unit tests
+cannot observe, including Dock and `Cmd + Tab` visibility.
 
 ## Logging rules
 
