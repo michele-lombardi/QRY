@@ -274,9 +274,13 @@ fn position_window<R: Runtime>(
 ) -> tauri::Result<()> {
     let focused_monitor = typepulse_platform_macos::focused_window_center()
         .and_then(|point| app.monitor_from_point(point.x, point.y).ok().flatten());
-    let monitor = focused_monitor
-        .or(app.primary_monitor()?)
-        .or_else(|| app.available_monitors().ok()?.into_iter().next());
+    let current_monitor = window.current_monitor()?;
+    let monitor = select_monitor(
+        focused_monitor,
+        current_monitor,
+        app.primary_monitor()?,
+        app.available_monitors()?.into_iter().next(),
+    );
     let Some(monitor) = monitor else {
         return Ok(());
     };
@@ -298,6 +302,15 @@ fn position_window<R: Runtime>(
         preferences.overlay_position,
     );
     window.set_position(PhysicalPosition::new(position.0, position.1))
+}
+
+fn select_monitor<T>(
+    focused: Option<T>,
+    current: Option<T>,
+    primary: Option<T>,
+    available: Option<T>,
+) -> Option<T> {
+    focused.or(current).or(primary).or(available)
 }
 
 const fn dimensions(size: OverlaySize) -> (f64, f64) {
@@ -365,7 +378,27 @@ mod tests {
     use serde_json::Value;
     use typepulse_core::{AppPreferences, OverlayContent, OverlayPosition, OverlaySize};
 
-    use super::{corner_position, dimensions, pip_behavior, OverlayEventDto, OverlayPreferenceDto};
+    use super::{
+        corner_position, dimensions, pip_behavior, select_monitor, OverlayEventDto,
+        OverlayPreferenceDto,
+    };
+
+    #[test]
+    fn transient_focus_failure_keeps_the_current_monitor_before_primary_fallback() {
+        assert_eq!(
+            select_monitor(None, Some("current"), Some("primary"), Some("available")),
+            Some("current")
+        );
+        assert_eq!(
+            select_monitor(
+                Some("focused"),
+                Some("current"),
+                Some("primary"),
+                Some("available")
+            ),
+            Some("focused")
+        );
+    }
 
     #[test]
     fn positions_all_corners_inside_a_negative_origin_work_area() {
