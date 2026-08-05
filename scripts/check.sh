@@ -19,3 +19,5 @@ cargo fmt --all --check
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace --all-targets
 cargo check --workspace --all-targets
+
+"$project_root/scripts/audit-privacy.sh"

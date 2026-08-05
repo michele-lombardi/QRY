@@ -10,7 +10,7 @@ use std::{
     time::Duration,
 };
 
-use chrono::{Datelike, Local};
+use chrono::{DateTime, Datelike, Local, TimeZone};
 use typepulse_core::{
     AnimationBand, AppPreferences, CompletedSessionRecord, CoreConfig, DailySummary,
     EngineSnapshot, LocalDate, MetricBucketRecord, SessionPhase, SessionSummary,
@@ -405,12 +405,15 @@ struct WallObservation {
 
 fn current_wall_observation() -> WallObservation {
     let now = Local::now();
-    let date = LocalDate::new(now.year(), now.month() as u8, now.day() as u8)
-        .expect("chrono returned a valid local date");
     WallObservation {
-        date,
+        date: local_date(&now),
         unix_ms: now.timestamp_millis(),
     }
+}
+
+fn local_date<Tz: TimeZone>(value: &DateTime<Tz>) -> LocalDate {
+    LocalDate::new(value.year(), value.month() as u8, value.day() as u8)
+        .expect("chrono returned a valid local date")
 }
 
 struct BucketAccumulator {
@@ -465,6 +468,7 @@ fn lock_error<T>(_error: std::sync::PoisonError<T>) -> String {
 #[cfg(test)]
 mod tests {
     use super::{bucket_start, BucketAccumulator, WallObservation, BUCKET_DURATION};
+    use chrono::{FixedOffset, TimeZone, Utc};
     use typepulse_core::LocalDate;
 
     #[test]
@@ -482,5 +486,15 @@ mod tests {
         assert_eq!(record.estimated_character_count, 2);
         assert_eq!(record.average_wpm, 30.0);
         assert_eq!(record.peak_wpm, 40.0);
+    }
+
+    #[test]
+    fn one_instant_can_belong_to_distinct_local_dates_without_mixing_them() {
+        let instant = Utc.with_ymd_and_hms(2026, 8, 5, 23, 30, 0).unwrap();
+        let west = instant.with_timezone(&FixedOffset::west_opt(7 * 3_600).unwrap());
+        let east = instant.with_timezone(&FixedOffset::east_opt(9 * 3_600).unwrap());
+
+        assert_eq!(super::local_date(&west).to_string(), "2026-08-05");
+        assert_eq!(super::local_date(&east).to_string(), "2026-08-06");
     }
 }
