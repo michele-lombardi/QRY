@@ -24,6 +24,13 @@ type StartupPreference = {
   loginItemRegistered: boolean;
 };
 
+type OverlayPreference = {
+  enabled: boolean;
+  position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  size: "small" | "medium" | "large";
+  content: "wpm" | "animation" | "both";
+};
+
 type DailySummary = {
   date: string;
   estimatedCharacterCount: number;
@@ -52,6 +59,10 @@ const todayWpm = byId<HTMLElement>("today-wpm");
 const todayActive = byId<HTMLElement>("today-active");
 const todaySessions = byId<HTMLElement>("today-sessions");
 const autoStart = byId<HTMLInputElement>("auto-start");
+const overlayEnabled = byId<HTMLInputElement>("overlay-enabled");
+const overlayPosition = byId<HTMLSelectElement>("overlay-position");
+const overlaySize = byId<HTMLSelectElement>("overlay-size");
+const overlayContent = byId<HTMLSelectElement>("overlay-content");
 const message = byId<HTMLElement>("runtime-status");
 const startButton = byId<HTMLButtonElement>("start-monitor");
 const stopButton = byId<HTMLButtonElement>("stop-monitor");
@@ -83,6 +94,13 @@ const renderStartup = (preference: StartupPreference): void => {
   autoStart.dataset.registered = String(preference.loginItemRegistered);
 };
 
+const renderOverlayPreference = (preference: OverlayPreference): void => {
+  overlayEnabled.checked = preference.enabled;
+  overlayPosition.value = preference.position;
+  overlaySize.value = preference.size;
+  overlayContent.value = preference.content;
+};
+
 const renderToday = (summary: DailySummary): void => {
   todayDate.textContent = summary.date;
   todayWords.textContent = summary.estimatedWordCount.toFixed(2);
@@ -96,15 +114,17 @@ const renderToday = (summary: DailySummary): void => {
 const call = async <T>(command: string): Promise<T> => invoke<T>(command);
 
 const refresh = async (): Promise<void> => {
-  const [permission, monitor, startup, today] = await Promise.all([
+  const [permission, monitor, startup, overlay, today] = await Promise.all([
     call<PermissionStatus>("input_permission_status"),
     call<MonitorStatus>("monitor_status"),
     call<StartupPreference>("startup_preference"),
+    call<OverlayPreference>("overlay_preference"),
     call<DailySummary>("today_summary"),
   ]);
   renderPermission(permission);
   renderMonitor(monitor);
   renderStartup(startup);
+  renderOverlayPreference(overlay);
   renderToday(today);
 };
 
@@ -174,6 +194,32 @@ autoStart.addEventListener("change", async () => {
   } finally {
     autoStart.disabled = false;
   }
+});
+
+const saveOverlayPreference = async (): Promise<void> => {
+  const controls = [overlayEnabled, overlayPosition, overlaySize, overlayContent];
+  controls.forEach((control) => (control.disabled = true));
+  try {
+    const preference = await invoke<OverlayPreference>("set_overlay_preference", {
+      preference: {
+        enabled: overlayEnabled.checked,
+        position: overlayPosition.value,
+        size: overlaySize.value,
+        content: overlayContent.value,
+      },
+    });
+    renderOverlayPreference(preference);
+    setMessage("Overlay preferences saved and applied live.");
+  } catch (error) {
+    setMessage(String(error), true);
+    await refresh();
+  } finally {
+    controls.forEach((control) => (control.disabled = false));
+  }
+};
+
+[overlayEnabled, overlayPosition, overlaySize, overlayContent].forEach((control) => {
+  control.addEventListener("change", () => void saveOverlayPreference());
 });
 
 window.addEventListener("DOMContentLoaded", async () => {

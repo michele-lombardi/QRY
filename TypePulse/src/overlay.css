@@ -1,0 +1,295 @@
+:root {
+  color: #f8fff9;
+  font-family:
+    Inter,
+    ui-rounded,
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Rounded",
+    sans-serif;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  pointer-events: none;
+  user-select: none;
+}
+
+body {
+  display: grid;
+  padding: 5px;
+  place-items: center;
+}
+
+.overlay-card {
+  --accent: #76d58d;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 24px;
+  opacity: 0;
+  background: rgb(20 30 24 / 82%);
+  box-shadow:
+    0 14px 34px rgb(0 0 0 / 24%),
+    inset 0 1px rgb(255 255 255 / 10%);
+  backdrop-filter: blur(24px) saturate(130%);
+  transform: translateY(8px) scale(0.98);
+  transition:
+    opacity 150ms ease-out,
+    transform 150ms ease-out;
+}
+
+.overlay-card.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.rhythm-character {
+  position: relative;
+  display: grid;
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.creature {
+  position: relative;
+  z-index: 2;
+  width: 47px;
+  height: 47px;
+  border-radius: 44% 54% 46% 52%;
+  background: linear-gradient(145deg, #a4efae, var(--accent));
+  box-shadow:
+    0 8px 18px rgb(19 79 39 / 32%),
+    inset 5px 6px 10px rgb(255 255 255 / 25%);
+  transform-origin: 50% 78%;
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+.eye {
+  position: absolute;
+  top: 16px;
+  width: 5px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16301d;
+}
+
+.eye-left {
+  left: 13px;
+}
+
+.eye-right {
+  right: 13px;
+}
+
+.smile {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  width: 13px;
+  height: 7px;
+  border-bottom: 2px solid #16301d;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.pulse-ring {
+  position: absolute;
+  z-index: 1;
+  width: 46px;
+  height: 46px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.metric {
+  display: grid;
+  min-width: 70px;
+}
+
+.metric strong {
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.06em;
+  line-height: 0.94;
+}
+
+.metric span {
+  margin-top: 5px;
+  color: #aebdb2;
+  font-size: 0.66rem;
+  font-weight: 750;
+  letter-spacing: 0.15em;
+}
+
+[data-band="steady"] {
+  --accent: #76d58d;
+}
+
+[data-band="steady"] .creature {
+  animation: bounce 1.05s ease-in-out infinite;
+}
+
+[data-band="fast"] {
+  --accent: #f5c45f;
+}
+
+[data-band="fast"] .creature {
+  animation: bounce 620ms ease-in-out infinite;
+}
+
+[data-band="fast"] .ring-one,
+[data-band="intense"] .ring-one {
+  animation: pulse 1s ease-out infinite;
+}
+
+[data-band="intense"] {
+  --accent: #ff846f;
+}
+
+[data-band="intense"] .creature {
+  animation: intense 330ms ease-in-out infinite alternate;
+}
+
+[data-band="intense"] .ring-one {
+  animation-duration: 700ms;
+}
+
+[data-band="intense"] .ring-two {
+  animation: pulse 700ms 350ms ease-out infinite;
+}
+
+[data-content="wpm"] .rhythm-character,
+[data-content="animation"] .metric {
+  display: none;
+}
+
+[data-content="wpm"] .metric {
+  min-width: 0;
+  text-align: center;
+}
+
+[data-content="animation"] {
+  gap: 0;
+}
+
+[data-size="small"] {
+  border-radius: 20px;
+}
+
+[data-size="small"] .rhythm-character {
+  transform: scale(0.82);
+}
+
+[data-size="small"] .metric strong {
+  font-size: 1.55rem;
+}
+
+[data-size="large"] .rhythm-character {
+  transform: scale(1.18);
+}
+
+[data-size="large"] .metric strong {
+  font-size: 2.5rem;
+}
+
+.record-burst {
+  position: absolute;
+  z-index: 4;
+  top: -9px;
+  right: -7px;
+  color: #ffe17b;
+  font-size: 1.35rem;
+  opacity: 0;
+  text-shadow: 0 3px 10px rgb(255 194 61 / 60%);
+  transform: scale(0.2) rotate(-25deg);
+}
+
+.is-celebrating {
+  animation: card-celebration 680ms ease-out;
+}
+
+.is-celebrating .record-burst {
+  animation: record-star 850ms ease-out;
+}
+
+@keyframes breathe {
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+@keyframes bounce {
+  50% {
+    transform: translateY(-5px) rotate(2deg);
+  }
+}
+
+@keyframes intense {
+  from {
+    transform: translate(-2px, -3px) rotate(-4deg) scale(1.02);
+  }
+  to {
+    transform: translate(2px, 1px) rotate(4deg) scale(1.08);
+  }
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.6;
+    transform: scale(0.75);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+@keyframes card-celebration {
+  45% {
+    border-color: rgb(255 225 123 / 80%);
+    box-shadow: 0 0 38px rgb(255 206 89 / 50%);
+    transform: scale(1.045);
+  }
+}
+
+@keyframes record-star {
+  25%,
+  65% {
+    opacity: 1;
+    transform: scale(1.25) rotate(12deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.8) rotate(28deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay-card,
+  .creature,
+  .pulse-ring,
+  .record-burst {
+    animation: none !important;
+    transition-duration: 1ms;
+  }
+}

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/src/overlay.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="TypePulse live typing rhythm overlay" />
+    <title>TypePulse live rhythm</title>
+    <script type="module" src="/src/overlay.ts" defer></script>
+  </head>
+  <body>
+    <main
+      id="overlay-card"
+      class="overlay-card"
+      data-band="still"
+      data-content="both"
+      data-size="medium"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div class="rhythm-character" aria-hidden="true">
+        <div class="pulse-ring ring-one"></div>
+        <div class="pulse-ring ring-two"></div>
+        <div class="creature">
+          <span class="eye eye-left"></span>
+          <span class="eye eye-right"></span>
+          <span class="smile"></span>
+        </div>
+        <div class="record-burst">★</div>
+      </div>
+      <div class="metric">
+        <strong id="overlay-wpm">0</strong>
+        <span>WPM</span>
+      </div>
+    </main>
+  </body>
+</html>

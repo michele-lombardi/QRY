@@ -110,6 +110,53 @@
         </div>
       </section>
 
+      <section class="monitor-card" aria-labelledby="overlay-heading">
+        <div class="monitor-header">
+          <div>
+            <p class="section-label">Live rhythm overlay</p>
+            <h2 id="overlay-heading">Overlay presentation</h2>
+            <p class="settings-copy">
+              The card never receives focus or pointer input. Changes are persisted and
+              applied live.
+            </p>
+          </div>
+          <label class="startup-toggle compact-toggle">
+            <input id="overlay-enabled" type="checkbox" />
+            <span>
+              <strong>Show overlay</strong>
+              <small>Appear while a typing session is active.</small>
+            </span>
+          </label>
+        </div>
+        <div class="overlay-settings">
+          <label>
+            <span>Position</span>
+            <select id="overlay-position">
+              <option value="top-left">Top left</option>
+              <option value="top-right">Top right</option>
+              <option value="bottom-left">Bottom left</option>
+              <option value="bottom-right">Bottom right</option>
+            </select>
+          </label>
+          <label>
+            <span>Size</span>
+            <select id="overlay-size">
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </label>
+          <label>
+            <span>Content</span>
+            <select id="overlay-content">
+              <option value="wpm">WPM</option>
+              <option value="animation">Animation</option>
+              <option value="both">WPM and animation</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
       <aside class="privacy-note">
         <strong>Diagnostic boundary</strong>
         <p>

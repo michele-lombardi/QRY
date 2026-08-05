@@ -185,6 +185,51 @@ button:focus-visible {
   display: block;
 }
 
+.settings-copy {
+  max-width: 540px;
+  margin-bottom: 0;
+  color: #536258;
+}
+
+.compact-toggle {
+  flex: 0 0 300px;
+}
+
+.overlay-settings {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.overlay-settings label,
+.overlay-settings label > span {
+  display: block;
+}
+
+.overlay-settings label > span {
+  margin: 0 0 7px 2px;
+  color: #536258;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+select {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid rgb(54 80 63 / 22%);
+  border-radius: 11px;
+  color: #203a29;
+  background: rgb(255 255 255 / 70%);
+  font: inherit;
+}
+
+select:focus-visible {
+  outline: 3px solid #90c89d;
+  outline-offset: 2px;
+}
+
 .startup-toggle small {
   margin-top: 3px;
   color: #536258;
@@ -236,6 +281,12 @@ footer {
   .metrics {
     grid-template-columns: 1fr;
   }
+  .overlay-settings {
+    grid-template-columns: 1fr;
+  }
+  .compact-toggle {
+    flex-basis: auto;
+  }
   .metrics article {
     min-height: auto;
   }
@@ -252,6 +303,8 @@ footer {
   }
   .promise,
   .status-card p,
+  .settings-copy,
+  .overlay-settings label > span,
   footer {
     color: #aab8ae;
   }
@@ -261,6 +314,11 @@ footer {
     background: rgb(32 43 35 / 74%);
   }
   button.secondary {
+    border-color: rgb(228 244 232 / 20%);
+    color: #e4eee7;
+    background: rgb(255 255 255 / 8%);
+  }
+  select {
     border-color: rgb(228 244 232 / 20%);
     color: #e4eee7;
     background: rgb(255 255 255 / 8%);
