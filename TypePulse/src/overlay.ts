@@ -13,7 +13,7 @@ type OverlayState = {
 const card = document.querySelector<HTMLElement>("#overlay-card");
 const wpm = document.querySelector<HTMLElement>("#overlay-wpm");
 
-if (!card || !wpm) throw new Error("Missing TypePulse overlay elements");
+if (!card || !wpm) throw new Error("Missing QRY overlay elements");
 
 let celebrationSequence = 0;
 let celebrationTimer: number | undefined;

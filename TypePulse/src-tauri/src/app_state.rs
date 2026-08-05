@@ -2,7 +2,7 @@
 
 use std::{
     sync::{
-        atomic::{AtomicU64, Ordering},
+        atomic::{AtomicI64, AtomicU64, Ordering},
         mpsc::RecvTimeoutError,
         Arc, Mutex,
     },
@@ -30,6 +30,7 @@ pub(crate) struct DiagnosticState {
     active: Mutex<Option<ActiveMonitor>>,
     repository: Arc<Mutex<SqliteStatisticsRepository>>,
     total_activities: Arc<AtomicU64>,
+    last_activity_unix_ms: Arc<AtomicI64>,
     live_metrics: Arc<Mutex<LiveMetrics>>,
     last_error: Arc<Mutex<Option<String>>>,
 }
@@ -40,6 +41,7 @@ impl DiagnosticState {
             active: Mutex::new(None),
             repository: Arc::new(Mutex::new(repository)),
             total_activities: Arc::new(AtomicU64::new(0)),
+            last_activity_unix_ms: Arc::new(AtomicI64::new(0)),
             live_metrics: Arc::new(Mutex::new(LiveMetrics::default())),
             last_error: Arc::new(Mutex::new(None)),
         }
@@ -52,6 +54,7 @@ impl DiagnosticState {
         }
 
         self.total_activities.store(0, Ordering::Relaxed);
+        self.last_activity_unix_ms.store(0, Ordering::Relaxed);
         self.set_last_error(None);
         *self
             .live_metrics
@@ -61,6 +64,7 @@ impl DiagnosticState {
         let (mut monitor, receiver) =
             KeyboardMonitor::start(MonitorConfig::default()).map_err(|error| error.to_string())?;
         let relay_total = Arc::clone(&self.total_activities);
+        let relay_last_activity = Arc::clone(&self.last_activity_unix_ms);
         let relay_repository = Arc::clone(&self.repository);
         let relay_live = Arc::clone(&self.live_metrics);
         let relay_error = Arc::clone(&self.last_error);
@@ -71,6 +75,7 @@ impl DiagnosticState {
                 relay_activity(
                     receiver,
                     relay_total,
+                    relay_last_activity,
                     relay_repository,
                     relay_live,
                     relay_error,
@@ -122,6 +127,7 @@ impl DiagnosticState {
             run_state,
             monitor_metrics,
             total_activities: self.total_activities.load(Ordering::Relaxed),
+            last_activity_unix_ms: self.last_activity_unix_ms.load(Ordering::Relaxed),
             live_metrics: *self
                 .live_metrics
                 .lock()
@@ -149,6 +155,15 @@ impl DiagnosticState {
             .lock()
             .map_err(lock_error)?
             .recent_daily_summaries(today, days)
+            .map_err(|error| error.to_string())
+    }
+
+    pub(crate) fn today_buckets(&self) -> Result<Vec<MetricBucketRecord>, String> {
+        let today = current_wall_observation().date;
+        self.repository
+            .lock()
+            .map_err(lock_error)?
+            .metric_buckets(today)
             .map_err(|error| error.to_string())
     }
 
@@ -189,6 +204,7 @@ pub(crate) struct RuntimeSnapshot {
     pub(crate) run_state: MonitorRunState,
     pub(crate) monitor_metrics: MonitorMetricsSnapshot,
     pub(crate) total_activities: u64,
+    pub(crate) last_activity_unix_ms: i64,
     pub(crate) live_metrics: LiveMetrics,
     pub(crate) last_error: Option<String>,
 }
@@ -200,6 +216,10 @@ pub(crate) struct LiveMetrics {
     pub(crate) displayed_wpm: f64,
     pub(crate) animation_band: AnimationBand,
     pub(crate) active_typing_seconds: f64,
+    pub(crate) current_session_characters: u64,
+    pub(crate) current_session_average_wpm: f64,
+    pub(crate) current_session_peak_wpm: f64,
+    pub(crate) personal_best_wpm: f64,
     pub(crate) celebration_sequence: u64,
 }
 
@@ -211,6 +231,10 @@ impl Default for LiveMetrics {
             displayed_wpm: 0.0,
             animation_band: AnimationBand::Still,
             active_typing_seconds: 0.0,
+            current_session_characters: 0,
+            current_session_average_wpm: 0.0,
+            current_session_peak_wpm: 0.0,
+            personal_best_wpm: 0.0,
             celebration_sequence: 0,
         }
     }
@@ -234,6 +258,7 @@ impl ActiveMonitor {
 fn relay_activity(
     receiver: ActivityReceiver,
     total: Arc<AtomicU64>,
+    last_activity_unix_ms: Arc<AtomicI64>,
     repository: Arc<Mutex<SqliteStatisticsRepository>>,
     live_metrics: Arc<Mutex<LiveMetrics>>,
     last_error: Arc<Mutex<Option<String>>>,
@@ -256,6 +281,7 @@ fn relay_activity(
         match receiver.recv_timeout(RELAY_TICK) {
             Ok(activity) => {
                 let wall = current_wall_observation();
+                last_activity_unix_ms.store(wall.unix_ms, Ordering::Relaxed);
                 if session_context.is_some_and(|context| context.date != wall.date) {
                     if let Some(summary) = engine.finish_active_session() {
                         persist_summary(&repository, session_context.take(), summary, &last_error);
@@ -290,6 +316,11 @@ fn relay_activity(
             }
             Err(RecvTimeoutError::Timeout) => {
                 let wall = current_wall_observation();
+                if session_context.is_some_and(|context| context.date != wall.date) {
+                    if let Some(summary) = engine.finish_active_session() {
+                        persist_summary(&repository, session_context.take(), summary, &last_error);
+                    }
+                }
                 rotate_bucket_if_needed(&repository, &mut bucket, wall, &last_error);
                 match engine.tick() {
                     Ok(update) => {
@@ -402,6 +433,19 @@ fn set_live_metrics(target: &Arc<Mutex<LiveMetrics>>, update: EngineUpdate) {
         .snapshot
         .active_session
         .map_or(0.0, |session| session.active_typing_duration.as_secs_f64());
+    metrics.current_session_characters = update
+        .snapshot
+        .active_session
+        .map_or(0, |session| session.estimated_character_count);
+    metrics.current_session_average_wpm = update
+        .snapshot
+        .active_session
+        .map_or(0.0, |session| session.average_wpm);
+    metrics.current_session_peak_wpm = update
+        .snapshot
+        .active_session
+        .map_or(0.0, |session| session.peak_wpm);
+    metrics.personal_best_wpm = update.snapshot.personal_best_wpm.unwrap_or(0.0);
 }
 
 fn set_shared_error(target: &Arc<Mutex<Option<String>>>, error: String) {
@@ -481,7 +525,7 @@ fn duration_millis_i64(duration: Duration) -> i64 {
 }
 
 fn lock_error<T>(_error: std::sync::PoisonError<T>) -> String {
-    "shared TypePulse state is unavailable".into()
+    "shared QRY state is unavailable".into()
 }
 
 #[cfg(test)]

@@ -1,18 +1,18 @@
-cask "typepulse" do
+cask "qry" do
   arch arm: "aarch64", intel: "x86_64"
 
   version "__VERSION__"
   sha256 arm:   "__ARM64_SHA256__",
          intel: "__X86_64_SHA256__"
 
-  url "https://github.com/__OWNER__/typepulse/releases/download/v#{version}/TypePulse-#{version}-#{arch}.app.zip"
-  name "TypePulse"
+  url "https://github.com/__OWNER__/qry/releases/download/v#{version}/QRY-#{version}-#{arch}.app.zip"
+  name "QRY"
   desc "Privacy-first typing rhythm visualizer for the menu bar"
-  homepage "https://github.com/__OWNER__/typepulse"
+  homepage "https://github.com/__OWNER__/qry"
 
   depends_on macos: ">= :catalina"
 
-  app "TypePulse.app"
+  app "QRY.app"
 
   uninstall quit: "app.typepulse.desktop"
 
@@ -22,7 +22,7 @@ cask "typepulse" do
   ]
 
   caveats <<~EOS
-    TypePulse is distributed without Apple notarization. On first launch,
+    QRY is distributed without Apple notarization. On first launch,
     macOS may require approval in System Settings > Privacy & Security.
     Input Monitoring consent must always be granted manually by the user.
   EOS

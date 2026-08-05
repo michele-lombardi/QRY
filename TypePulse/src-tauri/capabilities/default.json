@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Minimal foundation capability for the main and trusted overlay windows",
-  "windows": ["main", "overlay"],
+  "description": "Minimal foundation capability for QRY trusted application windows",
+  "windows": ["main", "dashboard", "statistics", "overlay"],
   "permissions": ["core:default"]
 }

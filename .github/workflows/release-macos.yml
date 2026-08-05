@@ -93,11 +93,11 @@ jobs:
       - name: Upload architecture artifact
         uses: actions/upload-artifact@v7
         with:
-          name: typepulse-${{ matrix.artifact_arch }}
+          name: qry-${{ matrix.artifact_arch }}
           if-no-files-found: error
           path: |
-            release/TypePulse-*.app.zip
-            release/TypePulse-*.app.zip.sha256
+            release/QRY-*.app.zip
+            release/QRY-*.app.zip.sha256
 
   draft-release:
     name: Create draft GitHub Release
@@ -122,5 +122,5 @@ jobs:
           --draft
           --generate-notes
           --repo "$GITHUB_REPOSITORY"
-          --title "TypePulse $GITHUB_REF_NAME"
+          --title "QRY $GITHUB_REF_NAME"
           --verify-tag

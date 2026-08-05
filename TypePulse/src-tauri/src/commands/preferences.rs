@@ -13,6 +13,13 @@ pub(crate) struct StartupPreferenceDto {
     login_item_registered: bool,
 }
 
+/// Persisted menu-bar presentation preference.
+#[derive(Clone, Copy, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct MenuBarPreferenceDto {
+    wpm_enabled: bool,
+}
+
 #[tauri::command]
 pub(crate) fn startup_preference(
     app: AppHandle,
@@ -57,4 +64,35 @@ pub(crate) fn set_auto_start_enabled(
         state.start_automatically();
     }
     startup_preference(app, state)
+}
+
+#[tauri::command]
+pub(crate) fn menu_bar_preference(
+    state: State<'_, DiagnosticState>,
+) -> Result<MenuBarPreferenceDto, String> {
+    Ok(MenuBarPreferenceDto {
+        wpm_enabled: state.load_preferences()?.menu_bar_wpm_enabled,
+    })
+}
+
+#[tauri::command]
+pub(crate) fn set_menu_bar_wpm_enabled(
+    enabled: bool,
+    app: AppHandle,
+) -> Result<MenuBarPreferenceDto, String> {
+    crate::shell::set_menu_bar_wpm_enabled(&app, enabled)?;
+    Ok(MenuBarPreferenceDto {
+        wpm_enabled: enabled,
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::MenuBarPreferenceDto;
+
+    #[test]
+    fn menu_bar_preference_dto_contains_only_the_visibility_flag() {
+        let dto = MenuBarPreferenceDto { wpm_enabled: true };
+        assert!(dto.wpm_enabled);
+    }
 }

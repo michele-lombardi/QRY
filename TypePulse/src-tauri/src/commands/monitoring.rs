@@ -33,6 +33,7 @@ impl From<PermissionStatus> for PermissionStatusDto {
 pub(crate) struct MonitorStatusDto {
     state: &'static str,
     total_activities: u64,
+    last_activity_unix_ms: i64,
     events_seen: u64,
     activities_emitted: u64,
     activities_dropped: u64,
@@ -44,6 +45,11 @@ pub(crate) struct MonitorStatusDto {
     raw_wpm: f64,
     displayed_wpm: f64,
     animation_band: &'static str,
+    current_session_active_typing_seconds: f64,
+    current_session_characters: u64,
+    current_session_average_wpm: f64,
+    current_session_peak_wpm: f64,
+    personal_best_wpm: f64,
     last_error: Option<String>,
 }
 
@@ -83,6 +89,7 @@ pub(crate) fn monitor_status(state: State<'_, DiagnosticState>) -> MonitorStatus
     MonitorStatusDto {
         state: snapshot.run_state.as_str(),
         total_activities: snapshot.total_activities,
+        last_activity_unix_ms: snapshot.last_activity_unix_ms,
         events_seen: snapshot.monitor_metrics.events_seen,
         activities_emitted: snapshot.monitor_metrics.activities_emitted,
         activities_dropped: snapshot.monitor_metrics.activities_dropped,
@@ -94,6 +101,11 @@ pub(crate) fn monitor_status(state: State<'_, DiagnosticState>) -> MonitorStatus
         raw_wpm: snapshot.live_metrics.raw_wpm,
         displayed_wpm: snapshot.live_metrics.displayed_wpm,
         animation_band: snapshot.live_metrics.animation_band.as_str(),
+        current_session_active_typing_seconds: snapshot.live_metrics.active_typing_seconds,
+        current_session_characters: snapshot.live_metrics.current_session_characters,
+        current_session_average_wpm: snapshot.live_metrics.current_session_average_wpm,
+        current_session_peak_wpm: snapshot.live_metrics.current_session_peak_wpm,
+        personal_best_wpm: snapshot.live_metrics.personal_best_wpm,
         last_error: snapshot.last_error,
     }
 }

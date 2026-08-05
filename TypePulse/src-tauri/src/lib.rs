@@ -1,4 +1,4 @@
-//! TypePulse desktop application composition root.
+//! QRY desktop application composition root.
 
 mod app_state;
 mod commands;
@@ -11,11 +11,17 @@ use commands::monitoring::{
     open_accessibility_permission_settings, open_input_settings, request_accessibility_permission,
     request_input_permission, start_input_monitoring, stop_input_monitoring,
 };
-use commands::preferences::{set_auto_start_enabled, startup_preference};
+use commands::preferences::{
+    menu_bar_preference, set_auto_start_enabled, set_menu_bar_wpm_enabled, startup_preference,
+};
 use commands::statistics::{
-    export_daily_statistics_csv, recent_daily_summaries, reset_today_statistics, today_summary,
+    export_daily_statistics_csv, recent_daily_summaries, reset_today_statistics,
+    today_metric_buckets, today_summary,
 };
 use overlay::{overlay_preference, set_overlay_preference};
+use shell::{
+    hide_dashboard_window, open_settings_window, open_statistics_window, open_today_window,
+};
 use tauri::Manager;
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 use typepulse_storage_sqlite::SqliteStatisticsRepository;
@@ -55,10 +61,14 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                if window.label() == "main" {
+                if matches!(window.label(), "main" | "statistics" | "dashboard") {
                     api.prevent_close();
                     shell::hide_main_window(window);
                 }
+            }
+            if matches!(event, tauri::WindowEvent::Focused(false)) && window.label() == "dashboard"
+            {
+                let _ = window.hide();
             }
         })
         .invoke_handler(tauri::generate_handler![
@@ -73,12 +83,19 @@ pub fn run() {
             stop_input_monitoring,
             startup_preference,
             set_auto_start_enabled,
+            menu_bar_preference,
+            set_menu_bar_wpm_enabled,
             overlay_preference,
             set_overlay_preference,
             today_summary,
             recent_daily_summaries,
+            today_metric_buckets,
             export_daily_statistics_csv,
             reset_today_statistics,
+            open_settings_window,
+            open_statistics_window,
+            open_today_window,
+            hide_dashboard_window,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -32,6 +32,7 @@ cd "$app_root"
 cargo test -p typepulse-storage-sqlite schema_has_no_sensitive_input_columns
 cargo test -p typepulse-app dto_contains_only_daily_aggregates
 cargo test -p typepulse-app permission_dto_contains_only_the_status
+cargo test -p typepulse-app menu_bar_preference_dto_contains_only_the_visibility_flag
 cargo test -p typepulse-app preference_dto_contains_only_visual_configuration
 cargo test -p typepulse-app overlay_event_dto_contains_only_aggregate_presentation_state
 

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="QRY detailed statistics" />
+    <title>QRY Statistics</title>
+    <link rel="stylesheet" href="/src/statistics.css" />
+    <script type="module" src="/src/statistics.ts" defer></script>
+  </head>
+  <body>
+    <main class="statistics-shell">
+      <header class="statistics-header">
+        <div class="statistics-brand">
+          <svg viewBox="0 0 62 40" aria-hidden="true">
+            <path
+              d="M3 20 A7 7 0 0 1 17 20 A7 7 0 0 0 31 20 A7 7 0 0 1 45 20 A7 7 0 0 0 59 20"
+            ></path>
+          </svg>
+          <div><strong>QRY</strong><span>Statistics</span></div>
+        </div>
+        <div class="header-actions">
+          <button id="open-settings" class="secondary" type="button">Settings</button
+          ><button id="copy-csv" class="secondary" type="button">Copy CSV</button>
+        </div>
+      </header>
+
+      <section class="statistics-title">
+        <div>
+          <p class="eyebrow">Your typing rhythm</p>
+          <h1>Statistics</h1>
+          <p id="period-caption">Today</p>
+        </div>
+        <div class="range-control" role="group" aria-label="Statistics range">
+          <button class="range-button active" data-range="1" type="button">Today</button
+          ><button class="range-button" data-range="7" type="button">7 days</button
+          ><button class="range-button" data-range="30" type="button">30 days</button
+          ><button class="range-button" data-range="366" type="button">Year</button>
+        </div>
+      </section>
+
+      <section class="summary-grid" aria-label="Period summary">
+        <article>
+          <span>Words</span><strong id="summary-words">0</strong
+          ><small>estimated</small>
+        </article>
+        <article>
+          <span>Average pace</span><strong id="summary-average">0</strong
+          ><small>WPM</small>
+        </article>
+        <article>
+          <span>Peak pace</span><strong id="summary-peak" class="record">0</strong
+          ><small>WPM</small>
+        </article>
+        <article>
+          <span>Active time</span><strong id="summary-active">0m</strong
+          ><small id="summary-sessions">0 sessions</small>
+        </article>
+      </section>
+
+      <section class="chart-card">
+        <div class="chart-heading">
+          <div>
+            <h2 id="chart-title">Today's rhythm</h2>
+            <p>Average WPM line · peak markers · activity bars</p>
+          </div>
+          <div class="legend">
+            <span><i class="average-dot"></i>Average</span
+            ><span><i class="peak-dot"></i>Peak</span
+            ><span><i class="activity-dot"></i>Words</span>
+          </div>
+        </div>
+        <svg
+          id="rhythm-chart"
+          viewBox="0 0 880 300"
+          preserveAspectRatio="none"
+          role="img"
+          aria-label="Typing rhythm chart"
+        ></svg>
+        <div id="chart-labels" class="chart-labels" aria-hidden="true"></div>
+        <p id="empty-chart" class="empty-chart" hidden>
+          No completed rhythm data for this period yet.
+        </p>
+      </section>
+
+      <section class="detail-grid">
+        <article class="detail-card">
+          <div class="detail-heading">
+            <div>
+              <p class="eyebrow">Breakdown</p>
+              <h2>Period details</h2>
+            </div>
+            <span id="detail-count">0 points</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Period</th>
+                  <th>Words</th>
+                  <th>Average</th>
+                  <th>Peak</th>
+                  <th>Active</th>
+                </tr>
+              </thead>
+              <tbody id="detail-body"></tbody>
+            </table>
+          </div>
+        </article>
+        <aside class="insight-card">
+          <p class="eyebrow">Rhythm note</p>
+          <h2 id="insight-title">Start typing</h2>
+          <p id="insight-copy">
+            QRY will build a private local picture of your pace as completed sessions
+            accumulate.
+          </p>
+          <button id="reset-today" class="danger" type="button">Reset today…</button>
+        </aside>
+      </section>
+      <p id="statistics-message" role="status"></p>
+    </main>
+  </body>
+</html>

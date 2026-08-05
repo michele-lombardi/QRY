@@ -28,9 +28,9 @@ done
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(cd "$script_dir/.." && pwd)"
-template="$project_root/packaging/homebrew/Casks/typepulse.rb.template"
+template="$project_root/packaging/homebrew/Casks/qry.rb.template"
 release_dir="$project_root/release"
-output="$release_dir/typepulse.rb"
+output="$release_dir/qry.rb"
 
 mkdir -p "$release_dir"
 sed \

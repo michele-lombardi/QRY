@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="QRY today at a glance" />
+    <title>QRY Today</title>
+    <link rel="stylesheet" href="/src/dashboard.css" />
+    <script type="module" src="/src/dashboard.ts" defer></script>
+  </head>
+  <body>
+    <main class="dashboard-card" aria-label="QRY today">
+      <header class="dashboard-header">
+        <div class="mini-brand">
+          <svg viewBox="0 0 62 40" aria-hidden="true">
+            <path
+              d="M3 20 A7 7 0 0 1 17 20 A7 7 0 0 0 31 20 A7 7 0 0 1 45 20 A7 7 0 0 0 59 20"
+            ></path>
+          </svg>
+          <strong>QRY</strong>
+        </div>
+        <span id="dashboard-state" class="state-pill">Ready</span>
+      </header>
+
+      <section class="live-reading" aria-label="Live typing speed">
+        <div><strong id="dashboard-wpm">0</strong><span>WPM</span></div>
+        <svg
+          class="wave"
+          viewBox="0 0 154 36"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path id="dashboard-wave"></path>
+        </svg>
+      </section>
+
+      <dl class="today-list">
+        <div>
+          <dt>Words today</dt>
+          <dd id="dashboard-words">0</dd>
+        </div>
+        <div>
+          <dt>Personal best</dt>
+          <dd id="dashboard-best" class="record">0</dd>
+        </div>
+        <div>
+          <dt>Days in a row</dt>
+          <dd id="dashboard-streak">0</dd>
+        </div>
+        <div>
+          <dt>Quiet since</dt>
+          <dd id="dashboard-quiet">—</dd>
+        </div>
+      </dl>
+
+      <nav class="dashboard-actions" aria-label="Open QRY sections">
+        <button id="open-settings" class="secondary" type="button">Settings</button>
+        <button id="open-statistics" type="button">Full statistics</button>
+      </nav>
+      <p id="dashboard-message" role="status"></p>
+    </main>
+  </body>
+</html>

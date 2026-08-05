@@ -108,7 +108,7 @@ pub(crate) fn configure(app: &mut App, preferences: AppPreferences) -> tauri::Re
     let initial_size = dimensions(preferences.overlay_size);
     let window =
         WebviewWindowBuilder::new(app, OVERLAY_LABEL, WebviewUrl::App("overlay.html".into()))
-            .title("TypePulse live rhythm")
+            .title("QRY live rhythm")
             .inner_size(initial_size.0, initial_size.1)
             .resizable(false)
             .maximizable(false)

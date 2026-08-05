@@ -1,95 +1,46 @@
 import { invoke } from "@tauri-apps/api/core";
+import type {
+  MonitorStatus,
+  MenuBarPreference,
+  OverlayPreference,
+  PermissionStatus,
+  StartupPreference,
+} from "./contracts";
+import { byId, pulsePath } from "./ui";
 
-type PermissionStatus = { status: "granted" | "denied" | "unknown" };
-
-type MonitorStatus = {
-  state: string;
-  totalActivities: number;
-  eventsSeen: number;
-  activitiesEmitted: number;
-  activitiesDropped: number;
-  callbackCount: number;
-  averageCallbackNs: number;
-  maxCallbackNs: number;
-  reenableAttempts: number;
-  sessionPhase: string;
-  rawWpm: number;
-  displayedWpm: number;
-  animationBand: string;
-  lastError: string | null;
-};
-
-type StartupPreference = {
-  autoStartEnabled: boolean;
-  loginItemRegistered: boolean;
-};
-
-type OverlayPreference = {
-  enabled: boolean;
-  position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
-  size: "small" | "medium" | "large";
-  content: "wpm" | "animation" | "both";
-};
-
-type DailySummary = {
-  date: string;
-  estimatedCharacterCount: number;
-  estimatedWordCount: number;
-  averageWpm: number;
-  peakWpm: number;
-  activeTypingSeconds: number;
-  sessionCount: number;
-};
-
-const byId = <T extends HTMLElement>(id: string): T => {
-  const element = document.querySelector<T>(`#${id}`);
-  if (!element) throw new Error(`Missing diagnostic element: ${id}`);
-  return element;
-};
-
+const message = byId<HTMLElement>("runtime-status");
 const permissionValue = byId<HTMLElement>("permission-value");
 const accessibilityValue = byId<HTMLElement>("accessibility-value");
-const monitorValue = byId<HTMLElement>("monitor-value");
-const activityValue = byId<HTMLElement>("activity-value");
-const callbackValue = byId<HTMLElement>("callback-value");
-const droppedValue = byId<HTMLElement>("dropped-value");
-const wpmValue = byId<HTMLElement>("wpm-value");
-const todayDate = byId<HTMLElement>("today-date");
-const todayWords = byId<HTMLElement>("today-words");
-const todayWpm = byId<HTMLElement>("today-wpm");
-const todayActive = byId<HTMLElement>("today-active");
-const todaySessions = byId<HTMLElement>("today-sessions");
+const monitorDetail = byId<HTMLElement>("monitor-detail");
+const liveStatus = byId<HTMLElement>("live-status");
+const previewWpm = byId<HTMLElement>("preview-wpm");
+const startButton = byId<HTMLButtonElement>("start-monitor");
+const stopButton = byId<HTMLButtonElement>("stop-monitor");
 const autoStart = byId<HTMLInputElement>("auto-start");
+const menuBarWpm = byId<HTMLInputElement>("menu-bar-wpm");
 const overlayEnabled = byId<HTMLInputElement>("overlay-enabled");
 const overlayPosition = byId<HTMLSelectElement>("overlay-position");
 const overlaySize = byId<HTMLSelectElement>("overlay-size");
 const overlayContent = byId<HTMLSelectElement>("overlay-content");
-const message = byId<HTMLElement>("runtime-status");
-const startButton = byId<HTMLButtonElement>("start-monitor");
-const stopButton = byId<HTMLButtonElement>("stop-monitor");
+byId<SVGPathElement>("settings-wave").setAttribute("d", pulsePath);
 
 const setMessage = (value: string, isError = false): void => {
   message.textContent = value;
   message.classList.toggle("error", isError);
 };
 
-const renderPermission = ({ status }: PermissionStatus): void => {
-  permissionValue.textContent = status;
-  permissionValue.dataset.state = status;
-};
-
-const renderAccessibilityPermission = ({ status }: PermissionStatus): void => {
-  accessibilityValue.textContent = status;
-  accessibilityValue.dataset.state = status;
+const renderPermission = (element: HTMLElement, { status }: PermissionStatus): void => {
+  element.textContent = status;
+  element.dataset.state = status;
 };
 
 const renderMonitor = (status: MonitorStatus): void => {
-  monitorValue.textContent = status.state;
-  monitorValue.dataset.state = status.state;
-  activityValue.textContent = status.totalActivities.toLocaleString();
-  callbackValue.textContent = `${(status.averageCallbackNs / 1_000).toFixed(2)} µs avg · ${(status.maxCallbackNs / 1_000).toFixed(2)} µs max`;
-  droppedValue.textContent = `${status.activitiesDropped.toLocaleString()} dropped · ${status.reenableAttempts.toLocaleString()} re-enable`;
-  wpmValue.textContent = `${status.displayedWpm.toFixed(1)} · ${status.animationBand}`;
+  monitorDetail.textContent =
+    status.state === "running"
+      ? `${status.totalActivities.toLocaleString()} activities · ${(status.averageCallbackNs / 1_000).toFixed(2)} µs callback`
+      : `Monitor is ${status.state}`;
+  liveStatus.textContent = `${Math.round(status.displayedWpm)} WPM · ${status.animationBand}`;
+  previewWpm.textContent = Math.round(status.displayedWpm || 82).toString();
   startButton.disabled = status.state === "running" || status.state === "starting";
   stopButton.disabled = status.state === "stopped";
   if (status.lastError) setMessage(status.lastError, true);
@@ -100,122 +51,135 @@ const renderStartup = (preference: StartupPreference): void => {
   autoStart.dataset.registered = String(preference.loginItemRegistered);
 };
 
-const renderOverlayPreference = (preference: OverlayPreference): void => {
+const renderMenuBar = (preference: MenuBarPreference): void => {
+  menuBarWpm.checked = preference.wpmEnabled;
+};
+
+const renderOverlay = (preference: OverlayPreference): void => {
   overlayEnabled.checked = preference.enabled;
   overlayPosition.value = preference.position;
   overlaySize.value = preference.size;
   overlayContent.value = preference.content;
 };
 
-const renderToday = (summary: DailySummary): void => {
-  todayDate.textContent = summary.date;
-  todayWords.textContent = summary.estimatedWordCount.toFixed(2);
-  todayWpm.textContent = `${summary.averageWpm.toFixed(1)} / ${summary.peakWpm.toFixed(1)} WPM`;
-  const minutes = Math.floor(summary.activeTypingSeconds / 60);
-  const seconds = Math.floor(summary.activeTypingSeconds % 60);
-  todayActive.textContent = `${minutes}m ${seconds}s`;
-  todaySessions.textContent = summary.sessionCount.toLocaleString();
-};
-
-const call = async <T>(command: string): Promise<T> => invoke<T>(command);
-
 const refresh = async (): Promise<void> => {
-  const [permission, accessibility, monitor, startup, overlay, today] =
-    await Promise.all([
-      call<PermissionStatus>("input_permission_status"),
-      call<PermissionStatus>("accessibility_permission_status"),
-      call<MonitorStatus>("monitor_status"),
-      call<StartupPreference>("startup_preference"),
-      call<OverlayPreference>("overlay_preference"),
-      call<DailySummary>("today_summary"),
-    ]);
-  renderPermission(permission);
-  renderAccessibilityPermission(accessibility);
+  const [input, accessibility, monitor, startup, menuBar, overlay] = await Promise.all([
+    invoke<PermissionStatus>("input_permission_status"),
+    invoke<PermissionStatus>("accessibility_permission_status"),
+    invoke<MonitorStatus>("monitor_status"),
+    invoke<StartupPreference>("startup_preference"),
+    invoke<MenuBarPreference>("menu_bar_preference"),
+    invoke<OverlayPreference>("overlay_preference"),
+  ]);
+  renderPermission(permissionValue, input);
+  renderPermission(accessibilityValue, accessibility);
   renderMonitor(monitor);
   renderStartup(startup);
-  renderOverlayPreference(overlay);
-  renderToday(today);
+  renderMenuBar(menuBar);
+  renderOverlay(overlay);
 };
 
-byId<HTMLButtonElement>("check-permission").addEventListener("click", async () => {
-  try {
-    renderPermission(await call<PermissionStatus>("input_permission_status"));
-    setMessage("Input Monitoring status refreshed.");
-  } catch (error) {
-    setMessage(String(error), true);
-  }
-});
-
-byId<HTMLButtonElement>("request-permission").addEventListener("click", async () => {
-  try {
-    renderPermission(await call<PermissionStatus>("request_input_permission"));
-    setMessage(
-      "Permission request completed. Restart the debug app if macOS asks for it.",
+const selectSection = (name: string): void => {
+  document
+    .querySelectorAll<HTMLElement>("[data-section]")
+    .forEach((button) =>
+      button.classList.toggle("active", button.dataset.section === name),
     );
-  } catch (error) {
-    setMessage(String(error), true);
-  }
+  document
+    .querySelectorAll<HTMLElement>("[data-panel]")
+    .forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === name));
+  const activeButton = document.querySelector<HTMLElement>(`[data-section="${name}"]`);
+  byId<HTMLElement>("section-title").textContent =
+    activeButton?.textContent?.trim() ?? "Settings";
+};
+
+document.querySelectorAll<HTMLButtonElement>("[data-section]").forEach((button) => {
+  button.addEventListener("click", () =>
+    selectSection(button.dataset.section ?? "general"),
+  );
 });
 
-byId<HTMLButtonElement>("open-settings").addEventListener("click", async () => {
+const permissionAction = async (
+  command: string,
+  target: HTMLElement | null,
+  success: string,
+): Promise<void> => {
   try {
-    await call<void>("open_input_settings");
-    setMessage("Opened Privacy & Security → Input Monitoring.");
+    const response = await invoke<PermissionStatus | void>(command);
+    if (target && response) renderPermission(target, response);
+    setMessage(success);
   } catch (error) {
     setMessage(String(error), true);
   }
-});
+};
 
-byId<HTMLButtonElement>("check-accessibility").addEventListener("click", async () => {
-  try {
-    renderAccessibilityPermission(
-      await call<PermissionStatus>("accessibility_permission_status"),
-    );
-    setMessage("Accessibility status refreshed.");
-  } catch (error) {
-    setMessage(String(error), true);
-  }
-});
-
-byId<HTMLButtonElement>("request-accessibility").addEventListener("click", async () => {
-  try {
-    renderAccessibilityPermission(
-      await call<PermissionStatus>("request_accessibility_permission"),
-    );
-    setMessage(
-      "Accessibility request opened. Enable TypePulse in System Settings; macOS may require an app restart.",
-    );
-  } catch (error) {
-    setMessage(String(error), true);
-  }
-});
-
+byId<HTMLButtonElement>("check-permission").addEventListener(
+  "click",
+  () =>
+    void permissionAction(
+      "input_permission_status",
+      permissionValue,
+      "Input Monitoring refreshed.",
+    ),
+);
+byId<HTMLButtonElement>("request-permission").addEventListener(
+  "click",
+  () =>
+    void permissionAction(
+      "request_input_permission",
+      permissionValue,
+      "Complete the macOS permission flow, then restart QRY if requested.",
+    ),
+);
+byId<HTMLButtonElement>("open-input-settings").addEventListener(
+  "click",
+  () =>
+    void permissionAction(
+      "open_input_settings",
+      null,
+      "Opened Input Monitoring settings.",
+    ),
+);
+byId<HTMLButtonElement>("check-accessibility").addEventListener(
+  "click",
+  () =>
+    void permissionAction(
+      "accessibility_permission_status",
+      accessibilityValue,
+      "Accessibility refreshed.",
+    ),
+);
+byId<HTMLButtonElement>("request-accessibility").addEventListener(
+  "click",
+  () =>
+    void permissionAction(
+      "request_accessibility_permission",
+      accessibilityValue,
+      "Complete the macOS permission flow, then restart QRY if requested.",
+    ),
+);
 byId<HTMLButtonElement>("open-accessibility-settings").addEventListener(
   "click",
-  async () => {
-    try {
-      await call<void>("open_accessibility_permission_settings");
-      setMessage("Opened Privacy & Security → Accessibility.");
-    } catch (error) {
-      setMessage(String(error), true);
-    }
-  },
+  () =>
+    void permissionAction(
+      "open_accessibility_permission_settings",
+      null,
+      "Opened Accessibility settings.",
+    ),
 );
 
 startButton.addEventListener("click", async () => {
   try {
-    renderMonitor(await call<MonitorStatus>("start_input_monitoring"));
-    setMessage("Your keyboard has a heartbeat. Type elsewhere to see its rhythm.");
+    renderMonitor(await invoke<MonitorStatus>("start_input_monitoring"));
+    setMessage("QRY is listening to rhythm only.");
   } catch (error) {
     setMessage(String(error), true);
-    await refresh();
   }
 });
-
 stopButton.addEventListener("click", async () => {
   try {
-    renderMonitor(await call<MonitorStatus>("stop_input_monitoring"));
-    setMessage("The rhythm is paused.");
+    renderMonitor(await invoke<MonitorStatus>("stop_input_monitoring"));
+    setMessage("Monitoring paused.");
   } catch (error) {
     setMessage(String(error), true);
   }
@@ -224,14 +188,13 @@ stopButton.addEventListener("click", async () => {
 autoStart.addEventListener("change", async () => {
   autoStart.disabled = true;
   try {
-    const preference = await invoke<StartupPreference>("set_auto_start_enabled", {
-      enabled: autoStart.checked,
-    });
-    renderStartup(preference);
+    renderStartup(
+      await invoke<StartupPreference>("set_auto_start_enabled", {
+        enabled: autoStart.checked,
+      }),
+    );
     setMessage(
-      preference.autoStartEnabled
-        ? "TypePulse will be ready when you log in."
-        : "Automatic startup is off.",
+      autoStart.checked ? "QRY will start at login." : "Automatic startup is off.",
     );
   } catch (error) {
     setMessage(String(error), true);
@@ -241,20 +204,42 @@ autoStart.addEventListener("change", async () => {
   }
 });
 
-const saveOverlayPreference = async (): Promise<void> => {
+menuBarWpm.addEventListener("change", async () => {
+  menuBarWpm.disabled = true;
+  try {
+    renderMenuBar(
+      await invoke<MenuBarPreference>("set_menu_bar_wpm_enabled", {
+        enabled: menuBarWpm.checked,
+      }),
+    );
+    setMessage(
+      menuBarWpm.checked
+        ? "Live WPM is visible in the menu bar."
+        : "Live WPM stays in the panel and Pip only.",
+    );
+  } catch (error) {
+    setMessage(String(error), true);
+    await refresh();
+  } finally {
+    menuBarWpm.disabled = false;
+  }
+});
+
+const saveOverlay = async (): Promise<void> => {
   const controls = [overlayEnabled, overlayPosition, overlaySize, overlayContent];
   controls.forEach((control) => (control.disabled = true));
   try {
-    const preference = await invoke<OverlayPreference>("set_overlay_preference", {
-      preference: {
-        enabled: overlayEnabled.checked,
-        position: overlayPosition.value,
-        size: overlaySize.value,
-        content: overlayContent.value,
-      },
-    });
-    renderOverlayPreference(preference);
-    setMessage("Your rhythm view is updated.");
+    renderOverlay(
+      await invoke<OverlayPreference>("set_overlay_preference", {
+        preference: {
+          enabled: overlayEnabled.checked,
+          position: overlayPosition.value,
+          size: overlaySize.value,
+          content: overlayContent.value,
+        },
+      }),
+    );
+    setMessage("Appearance updated.");
   } catch (error) {
     setMessage(String(error), true);
     await refresh();
@@ -263,24 +248,21 @@ const saveOverlayPreference = async (): Promise<void> => {
   }
 };
 
-[overlayEnabled, overlayPosition, overlaySize, overlayContent].forEach((control) => {
-  control.addEventListener("change", () => void saveOverlayPreference());
-});
+[overlayEnabled, overlayPosition, overlaySize, overlayContent].forEach((control) =>
+  control.addEventListener("change", () => void saveOverlay()),
+);
+byId<HTMLButtonElement>("open-full-statistics").addEventListener(
+  "click",
+  () => void invoke("open_statistics_window"),
+);
+byId<HTMLButtonElement>("open-today-panel").addEventListener(
+  "click",
+  () => void invoke("open_today_window"),
+);
 
-window.addEventListener("DOMContentLoaded", async () => {
-  try {
-    await refresh();
-    setMessage(
-      "Ready. Today's rhythm starts fresh automatically at your local midnight.",
-    );
-    window.setInterval(
-      () =>
-        void refresh().catch((error) => {
-          setMessage(`Refresh failed: ${String(error)}`, true);
-        }),
-      1_000,
-    );
-  } catch (error) {
-    setMessage(`Tauri diagnostics unavailable: ${String(error)}`, true);
-  }
+window.addEventListener("DOMContentLoaded", () => {
+  void refresh()
+    .then(() => setMessage("Settings are up to date."))
+    .catch((error) => setMessage(String(error), true));
+  window.setInterval(() => void refresh().catch(() => undefined), 1_000);
 });
