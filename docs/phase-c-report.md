@@ -19,7 +19,8 @@ stato poi completato nella Fase D senza modificare quel confine.
 
 - `Clock`, `SystemClock` e `ManualClock` condivisibile;
 - `CoreConfig` con validazione di ogni relazione tra timeout e soglie;
-- finestra WPM fissa e memoria effimera degli ultimi 10 secondi;
+- lookback WPM massimo e memoria effimera degli ultimi 10 secondi;
+- warm-up adattivo con prima stima dopo almeno 250 ms e limite 300 WPM;
 - formula standard a cinque attività per parola;
 - smoothing esponenziale configurabile;
 - fasce `Still`, `Steady`, `Fast`, `Intense` a 30/60/90 WPM;
@@ -36,6 +37,8 @@ stato poi completato nella Fase D senza modificare quel confine.
 | Parametro | Valore |
 | --- | ---: |
 | Finestra WPM | 10 s |
+| Osservazione minima warm-up | 250 ms |
+| Limite live difensivo | 300 WPM |
 | Caratteri stimati per parola | 5 |
 | Fattore EMA | 0,25 |
 | Hide overlay | 2 s |
@@ -47,11 +50,12 @@ La semantica completa è formalizzata nell'ADR 0005.
 
 ## Verifiche
 
-Il crate core contiene 24 test. Coprono:
+Il crate core contiene 33 test. Coprono:
 
 - clock manuale senza attese;
 - configurazioni valide e relazioni invalide;
-- finestra vuota, digitazione lenta, 60 WPM e burst da 1.000 attività;
+- finestra vuota, warm-up reattivo, digitazione lenta, 60/120 WPM e burst da
+  1.000 attività;
 - smoothing senza ritardo iniziale e attenuazione progressiva;
 - `NaN`, infinito e valori negativi;
 - confini esatti 30/60/90;

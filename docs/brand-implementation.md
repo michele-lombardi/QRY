@@ -43,6 +43,11 @@ AppKit renders the mark light on a dark menu bar and dark on a light menu bar.
 The WPM string remains the native status-item title and follows the same system
 appearance without application-defined foreground colors.
 
+When enabled, the native title uses a fixed three-digit slot made from figure
+spaces, so changes such as 9 → 10 → 100 do not move the Pulse mark. A checked
+**Show WPM in menu bar** item persists the preference; disabling it removes only
+the menu-bar number and leaves the PiP unchanged.
+
 ## Pip behavior mapping
 
 Pip is implemented as inline SVG: one circle, two eyes and two capsule feet. It

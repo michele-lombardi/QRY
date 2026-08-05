@@ -55,6 +55,10 @@ posizione e non viene serializzato, registrato o conservato.
 - il callback usa un canale limitato non bloccante e non effettua I/O o log;
 - Secure Input viene rispettato: dati non osservabili restano non osservati;
 - revoca del permesso ferma il worker e non genera dati simulati.
+- auto-repeat e sequenze identiche artificiali vengono filtrati nello stesso
+  modulo privato: l'ultimo key code e la lunghezza della sequenza vivono soltanto
+  in atomiche effimere del callback e non attraversano il confine adapter;
+- due pressioni identiche restano valide per supportare le doppie lettere.
 
 ## Garanzie implementate nella Fase C
 
@@ -65,6 +69,8 @@ posizione e non viene serializzato, registrato o conservato.
 - nessun tipo live implementa una serializzazione automatica verso frontend o
   disco;
 - test patologici verificano che non escano `NaN`, infiniti o valori negativi.
+- il warm-up usa soltanto intervalli monotoni anonimi e applica un limite di 300
+  WPM; non richiede identità di tasto nel core.
 
 ## Garanzie implementate nella Fase D
 

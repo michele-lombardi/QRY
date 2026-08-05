@@ -24,12 +24,21 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
   display without collecting app, title or content metadata;
 - immediate focused-display placement with primary-display fallback and a
   dedicated two-monitor privacy checklist.
+- optional persisted menu-bar WPM with a fixed three-digit slot independent from
+  the PiP;
+- adaptive live-WPM warm-up after a 250 ms observation span while retaining the
+  10-second lookback and EMA smoothing;
+- privacy-confined repetition protection for macOS auto-repeat and artificial
+  same-key runs while preserving legitimate double letters;
+- SQLite schema v3 and safe migration of the menu-bar WPM preference.
 
 ### Fixed
 
 - macOS menu-bar Pulse and flatline icons now preserve native template rendering
   after runtime state changes, keeping both the glyph and WPM title readable in
   Light and Dark appearances.
+- changing between one-, two- and three-digit WPM values no longer shifts the
+  menu-bar Pulse mark.
 
 ## [0.1.0] - 2026-08-05
 

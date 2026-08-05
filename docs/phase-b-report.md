@@ -25,6 +25,9 @@ applicazione attiva o finestra.
 - event tap `Session` + `ListenOnly` su thread e run loop dedicati;
 - filtro privato per lettere, numeri, spazio, punteggiatura e keypad;
 - esclusione di shortcut con Command, Control, Option o Fn;
+- esclusione dell'auto-repeat Core Graphics;
+- guard effimera che consente la doppia lettera e scarta dalla terza pressione
+  identica fino a cambio tasto o pausa di un secondo;
 - canale bounded non bloccante con contatore dei drop;
 - stop con join del worker, revoca rilevata e riattivazione del tap;
 - comandi e snapshot diagnostici Tauri a cadenza di un secondo, senza eventi
@@ -45,7 +48,8 @@ cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace --all-targets
 ```
 
-I test coprono il tipo privacy-safe, filtro tasti/modificatori, stringhe degli
+I test coprono il tipo privacy-safe, filtro tasti/modificatori, auto-repeat,
+sequenze identiche, stringhe degli
 stati, URL delle impostazioni, stati atomici del monitor, metriche vuote e DTO
 Tauri.
 
@@ -61,7 +65,7 @@ cargo test -p typepulse-platform-macos --release \
 Risultato locale su Apple M1 Pro, arm64, macOS 26.5.2:
 
 ```text
-250.000 attività, 31 ns/attività nel percorso filtro + Instant + try_send + atomiche
+250.000 attività, 12 ns/attività nel percorso filtro + Instant + try_send + atomiche
 ```
 
 Questo è un microbenchmark del percorso Rust, non una promessa universale né la

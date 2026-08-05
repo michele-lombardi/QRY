@@ -16,11 +16,15 @@ It does not require typing or recording any keyboard input.
 - [ ] TypePulse does not appear in `Cmd + Tab`.
 - [ ] Left-clicking the status icon opens and focuses the TypePulse window.
 - [ ] Closing the window hides it and leaves the status icon running.
-- [ ] Right-clicking the status icon shows Open, Start monitoring, Pause monitoring and
-      Quit TypePulse.
+- [ ] Right-clicking the status icon shows Open, Show WPM in menu bar, Start monitoring,
+      Pause monitoring and Quit TypePulse.
 - [ ] Start/Pause affect the same monitor state shown in the window.
 - [ ] Typing changes the flatline to the three-beat Pulse mark and shows rounded live
       WPM beside it; stopping returns it to the flatline without a stale number.
+- [ ] While WPM changes across one-, two- and three-digit values, the fixed three-digit
+      slot keeps the Pulse mark stationary.
+- [ ] Unchecking **Show WPM in menu bar** removes the numeric slot but leaves WPM in the
+      PiP; checking it restores the slot, and the choice survives Quit/reopen.
 - [ ] Quit TypePulse removes the status icon and terminates the process.
 - [ ] Reopening TypePulse recreates exactly one status icon.
 - [ ] With TypePulse idle, switch macOS from Light to Dark appearance and back: the

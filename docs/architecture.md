@@ -56,6 +56,8 @@ Non importa Tauri e non conosce finestre, tray o permessi macOS.
 - verifica e comunica lo stato del permesso, quando la piattaforma lo prevede;
 - avvia e ferma il monitoraggio globale;
 - scarta modificatori, navigazione, tasti funzione e scorciatoie;
+- scarta auto-repeat e, dopo due pressioni valide, il resto di una sequenza dello
+  stesso tasto fino a cambio tasto o pausa;
 - emette soltanto attività conteggiabile, mai key code o testo verso gli altri
   componenti.
 
@@ -76,7 +78,8 @@ Tempo e scheduler devono essere iniettabili per testare i timeout senza attese
 reali.
 
 La Fase C implementa `TypingEngine<C: Clock>`. Il motore riceve soltanto
-`TypingActivity`, usa una finestra fissa di 10 secondi e produce `EngineUpdate`
+`TypingActivity`, usa un lookback massimo di 10 secondi con stima adattiva dopo
+almeno 250 ms e produce `EngineUpdate`
 con snapshot, eventuale sessione conclusa ed eventuale nuovo record. I clock di
 produzione e test sono separati; nessun polling UI modifica la semantica delle
 metriche.

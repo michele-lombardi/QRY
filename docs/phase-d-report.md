@@ -48,7 +48,8 @@ metric_buckets
   estimated_character_count, average_wpm, peak_wpm
 
 app_preferences
-  auto_start_enabled
+  auto_start_enabled, menu_bar_wpm_enabled,
+  overlay_enabled, overlay_position, overlay_size, overlay_content
 ```
 
 Non esiste una tabella eventi. Lo schema non può rappresentare key code, testo,
@@ -85,6 +86,10 @@ Risultato al completamento:
 - database reale inizializzato a schema 1 con preferenza automatica disattivata;
 - persistenza dopo riapertura, migrazione, backup, rollover, reset isolato, CSV
   e audit privacy coperti da test.
+
+Lo schema corrente è v3: `0002` aggiunge le preferenze overlay e `0003` la sola
+preferenza booleana del WPM nella menu bar. Migrazioni da v1 e v2 conservano i
+valori esistenti, creano il backup previsto e abilitano il numero per default.
 
 ## TODO manuali lasciati aperti
 

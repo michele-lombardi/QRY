@@ -74,6 +74,9 @@ copiati in backup prima dell'upgrade e ricevono default sicuri:
 Nessuna identità di tasto, testo, applicazione o finestra entra nei DTO o nel
 database.
 
+La successiva migrazione v3 aggiunge `menu_bar_wpm_enabled`, un booleano visuale
+indipendente dal contenuto del PiP.
+
 ## Stato task
 
 | Task | Stato | Evidenza |
@@ -102,9 +105,9 @@ monitor funziona sull'hardware dell'utente.
 - `./scripts/check.sh`: superato;
 - frontend: Prettier, ESLint, TypeScript e bundle Vite multipagina superati;
 - Rust: rustfmt, Clippy con warning negati, check e test superati;
-- 61 test Rust passati e un benchmark manuale ignorato;
+- 67 test Rust passati e un benchmark manuale ignorato;
 - audit privacy: schema, capability e DTO overlay superati;
-- migrazione simulata da schema v1 a v2 con backup: superata;
+- migrazione simulata da schema v1/v2 a v3 con backup: superata;
 - bundle debug macOS creato e verificato con `codesign --verify --deep --strict`;
 - smoke test di avvio: processo background avviato senza panic e poi terminato;
 - focus, click-through, TCC e due display: restano verifiche manuali, non simulate.

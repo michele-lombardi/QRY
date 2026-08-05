@@ -24,15 +24,32 @@ persistenza della Fase D, non al calcolo WPM.
 
 ### WPM live
 
-- finestra fissa di 10 secondi;
+- lookback mobile massimo di 10 secondi;
 - convenzione di cinque attività per parola;
-- formula: `attività / 5 / (10 secondi in minuti)`;
+- durante il warm-up, formula:
+  `(intervalli osservati / 5) / durata fra prima e ultima attività`;
+- almeno 250 ms fra prima e ultima attività prima di pubblicare una stima;
+- dopo il warm-up la stessa formula usa le attività rimaste nel lookback;
+- limite difensivo live di 300 WPM;
 - un evento esattamente sul limite inferiore della finestra è scaduto;
-- EMA con fattore `0,25`, inizializzata dal primo campione senza ritardo;
+- EMA con fattore `0,25`, inizializzata dalla prima stima affidabile senza
+  incorporare gli zeri del warm-up;
 - smoothing aggiornato sulle attività, non sui tick UI.
 
-Usare una durata fissa rende la metrica indipendente dal polling. Il valore
-parte gradualmente: con il default ogni attività presente vale 1,2 WPM.
+Il lookback rende la metrica indipendente dal polling senza imporre dieci secondi
+di attesa. A 60 WPM una sequenza con un'attività ogni 200 ms produce la prima
+stima dopo circa 400 ms; sequenze simultanee non producono una velocità infinita.
+Il valore resta una stima convenzionale basata su cinque attività per parola.
+
+### Protezione dalle ripetizioni
+
+- scartare gli eventi marcati da macOS come auto-repeat;
+- permettere due pressioni consecutive dello stesso tasto per non penalizzare le
+  doppie lettere;
+- scartare dalla terza pressione identica fino a un tasto conteggiabile diverso
+  o una pausa di almeno un secondo;
+- mantenere tasto precedente, streak e tempo soltanto nell'adapter privato;
+- non inoltrare mai questa identità al core, ai DTO, ai log o allo storage.
 
 ### Fasce visuali
 

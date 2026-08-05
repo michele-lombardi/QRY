@@ -5,6 +5,7 @@ Phase B checks:
 - [`input-monitoring.md`](input-monitoring.md)
 - [`secure-input.md`](secure-input.md)
 - [`callback-performance.md`](callback-performance.md)
+- [`live-wpm.md`](live-wpm.md)
 
 Phase D checks:
 

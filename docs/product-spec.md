@@ -58,7 +58,9 @@ TypePulse vive come icona di stato nella parte destra della menu bar di macOS,
 insieme alle altre applicazioni in background. Non mantiene un'icona nel Dock e
 non compare in `Cmd + Tab`. Il click apre il pannello; la chiusura del pannello
 non termina il monitoraggio. Un menu contestuale offre almeno start, pausa,
-impostazioni e uscita completa.
+visibilità del WPM nella menu bar, impostazioni e uscita completa. Quando il
+numero è visibile occupa uno slot stabile di tre cifre, così il Pulse non si
+sposta durante gli aggiornamenti; disabilitarlo non modifica il PiP.
 
 Il pannello compatto mostra:
 
@@ -81,6 +83,7 @@ conservare ogni evento.
 - `Start automatically`: avvio al login e avvio immediato del monitor ogni volta
   che TypePulse viene aperto;
 - icona menu bar visibile;
+- WPM nella menu bar visibile o nascosto;
 - pausa del monitoraggio;
 - reset delle statistiche di oggi;
 - overlay attivo, posizione, dimensione e ritardo di scomparsa;
@@ -97,18 +100,23 @@ per storico ed export; non è un'eliminazione automatica dei dati.
 ## Calcolo WPM
 
 Sono contati soltanto gli eventi compatibili con la scrittura: lettere, numeri,
-spazio e punteggiatura. Modificatori, frecce, tasti funzione e scorciatoie sono
-ignorati.
+spazio e punteggiatura. Modificatori, frecce, tasti funzione, scorciatoie e
+auto-repeat del sistema sono ignorati. Due pressioni identiche consecutive sono
+ammesse per le doppie lettere; una sequenza continua dal terzo tasto identico
+viene ignorata fino a cambio tasto o pausa di un secondo.
 
-La velocità live usa una finestra mobile indicativa di 10 secondi e la
-convenzione di 5 caratteri per parola:
+La velocità live usa un lookback mobile massimo di 10 secondi e la convenzione
+di 5 caratteri per parola. Durante l'avvio usa subito la durata realmente
+osservata tra prima e ultima attività:
 
 ```text
-WPM = (caratteri nella finestra / 5) / durata finestra in minuti
+WPM = ((attività osservate - 1) / 5) / minuti osservati
 ```
 
-Una media esponenziale attenua i salti del valore mostrato. I default validati
-dalla Fase C sono finestra fissa di 10 secondi e fattore EMA 0,25. Overlay,
+La prima stima richiede almeno 250 ms di osservazione ed è limitata a 300 WPM;
+normalmente compare dopo 2–4 caratteri. Una media esponenziale attenua i salti
+successivi. I default validati dalla Fase C sono lookback massimo di 10 secondi
+e fattore EMA 0,25. Overlay,
 sessione e tempo attivo usano rispettivamente 2, 30 e 2 secondi.
 
 ## Dati salvati

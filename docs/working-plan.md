@@ -288,6 +288,7 @@ in attesa della pubblicazione e del primo push su GitHub.
 | MAC-07 | Verificare revoca e ripristino permesso | P0 | M | MAC-02, MAC-04 | il monitor si ferma e riparte senza crash |
 | MAC-08 | Verificare Secure Input e casi non osservabili | P1 | Spike | MAC-04 | comportamento documentato senza tentativi di aggiramento |
 | MAC-09 | Misurare overhead del callback | P0 | M | MAC-05 | nessun I/O o lavoro UI nel callback; misura di riferimento salvata |
+| MAC-10 | Proteggere la metrica da ripetizioni artificiali — **Done** | P0 | M | MAC-05 | auto-repeat escluso; doppie lettere ammesse; terza pressione identica filtrata senza esporre key code |
 
 **Gate B:** TypePulse conta attività globale su macOS senza esporre o registrare
 contenuto. Se questo gate fallisce, si ferma lo sviluppo UI e si rivaluta
@@ -305,7 +306,8 @@ Stato Fase B:
 | MAC-06 | Done | API pubblica emette solo `TypingActivity` non serializzabile |
 | MAC-07 | Done code | stop/revoca/re-enable implementati; prova revoca reale TODO manuale |
 | MAC-08 | Done design | comportamento non invasivo documentato; prova Secure Input TODO manuale |
-| MAC-09 | Done | benchmark release 31 ns/hot path; misura callback reale TODO manuale |
+| MAC-09 | Done | benchmark release 12 ns/hot path; misura callback reale TODO manuale |
+| MAC-10 | Done | guard atomica effimera e test auto-repeat/doppia lettera/streak/reset |
 
 Il codice della Fase B è completo. Il Gate B end-to-end resta `TODO manuale`:
 TCC è `denied` sul Mac di sviluppo e il permesso non può essere auto-concesso.
@@ -326,6 +328,7 @@ Fase B.
 | CORE-08 | Rilevare nuovo record | P1 | S | CORE-07 | celebrazione emessa una sola volta per record |
 | CORE-09 | Rendere parametri configurabili | P1 | S | CORE-02, CORE-04, CORE-06 | default V1 centralizzati e validati |
 | CORE-10 | Aggiungere property test o casi limite estesi | P1 | M | CORE-07 | nessun NaN, overflow o WPM negativo |
+| CORE-11 | Rendere reattivo il warm-up WPM — **Done** | P0 | M | CORE-02, CORE-04 | prima stima dopo ≥250 ms, lookback 10 s e limite 300 WPM testati |
 
 **Gate C:** il core riceve solo timestamp e produce tutto lo stato necessario
 all'interfaccia con test deterministici.
@@ -335,8 +338,8 @@ Stato Fase C:
 | Task | Stato | Evidenza |
 | --- | --- | --- |
 | CORE-01 | Done | `Clock`, `SystemClock`, `ManualClock`, `TypingActivity` |
-| CORE-02 | Done | rolling window 10 s; test vuoto/lento/60 WPM/burst |
-| CORE-03 | Done | formula a 5 attività per parola, denominatore fisso |
+| CORE-02 | Done | lookback 10 s con warm-up adattivo; test vuoto/lento/60 WPM/burst |
+| CORE-03 | Done | formula a 5 attività per parola sulla durata realmente osservata |
 | CORE-04 | Done | EMA configurabile, test di stabilizzazione e reset |
 | CORE-05 | Done | fasce e confini esatti 30/60/90 testati |
 | CORE-06 | Done | state machine idle/visible/hidden/completed deterministica |
@@ -344,6 +347,7 @@ Stato Fase C:
 | CORE-08 | Done | record storico opzionale, evento una volta per sessione |
 | CORE-09 | Done | default V1 centralizzati e configurazione validata |
 | CORE-10 | Done | casi patologici e sequenza deterministica da 10.000 eventi |
+| CORE-11 | Done | prima stima affidabile in 250–400 ms, cap 300 WPM, EMA dal primo campione valido |
 
 Il Gate C è chiuso. Semantica e verifiche sono descritte nell'ADR 0005 e nel
 report di Fase C.
@@ -362,6 +366,7 @@ report di Fase C.
 | DB-08 | Implementare rollover automatico del giorno locale | Done | P1 | M | DB-06 | nuova data vuota senza cancellare lo storico; sessioni/bucket non mescolati |
 | DB-09 | Implementare export CSV | Done | P0 | M | DB-06 | header, decimali e ordinamento stabili testati |
 | DB-10 | Definire strategia backup/migrazione fallita | Done | P1 | Spike | DB-03 | copia `.bak` pre-migrazione ed errore categorizzato |
+| DB-11 | Persistenza visibilità WPM menu bar — **Done** | P1 | S | DB-10, APP-03 | schema v3, default attivo e migrazione v1/v2 con backup testati |
 
 **Gate D: chiuso.** Statistiche e preferenze sopravvivono alla riapertura;
 l'audit automatico dello schema SQLite esclude tasti, testo, app e titoli di
@@ -395,7 +400,7 @@ Accessibilità concessi, oltre al fallback senza Accessibilità.
 | ID | Task | Stato | Prio | Dipende da | Criterio di accettazione |
 | --- | --- | --- | --- | --- | --- |
 | BRD-01 | Adottare TypePulse e Pulse mark come identità canonica | Done | P0 | identity v0.1 | nome e geometria unici nel prodotto |
-| BRD-02 | Generare icona app e glifi menu bar | Done | P0 | BRD-01 | Pulse/flatline restano template adattivi nei cambi runtime; WPM usa il titolo nativo |
+| BRD-02 | Generare icona app e glifi menu bar | Done | P0 | BRD-01 | template adattivi; titolo WPM nativo opzionale con slot fisso a tre cifre |
 | BRD-03 | Applicare palette, SF Pro/system stack e voce | Done sulla UI corrente | P0 | BRD-01 | token e copy correnti rispettano l'identity |
 | BRD-04 | Implementare anatomia Pip | Done | P0 | OVR-06 | cerchio, occhi, piedi; niente bocca, ombre o accessori |
 | BRD-05 | Implementare Breathe, Walk, Run, Jump/Cheer e Tired | Done nel renderer | P0 | CORE-05, CORE-08 | trigger misurabili, record one-shot e tempo attivo aggregato |

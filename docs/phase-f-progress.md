@@ -27,6 +27,8 @@ dell'app.
 - fallback esplicito del PiP quando Accessibilità non è concessa.
 - icona menu bar mantenuta come template anche nei cambi idle/attivo, con logo e
   titolo WPM adattivi fra aspetto Light e Dark.
+- voce checkabile **Show WPM in menu bar**, persistente e indipendente dal PiP;
+- slot nativo fisso a tre cifre per evitare spostamenti del Pulse.
 
 ## Fase F ancora aperta
 
@@ -45,7 +47,7 @@ Settings definitiva insieme agli altri pannelli.
 ## Verifiche
 
 - `./scripts/check.sh`: pass;
-- 61 test Rust passati e un benchmark manuale ignorato;
+- 67 test Rust passati e un benchmark manuale ignorato;
 - bundle debug `TypePulse.app`: costruito e avviato;
 - Launch Services: `ApplicationType = UIElement`, quindi app accessoria senza
   presenza ordinaria nel Dock;

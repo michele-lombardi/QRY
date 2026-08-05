@@ -2,11 +2,11 @@
 
 ## Current milestone
 
-Phase E now implements the macOS menu-bar shell and a separate live overlay with
-four positions, three sizes, configurable content and four animation bands. The
-next milestone is completion of the Phase F screens and onboarding. The Phase B
-TCC checklist and the real Phase E focus/click-through checks still require a
-real user grant.
+The macOS milestone now includes the menu-bar shell, a separate live overlay,
+persisted visual preferences and the first Phase F screens. Live WPM warms up
+from real elapsed typing time instead of waiting for the full ten-second
+lookback. The Phase B TCC checklist and the real Phase E focus/click-through
+checks still require a real user grant.
 
 ## Toolchain
 
@@ -52,7 +52,9 @@ npm run tauri dev
 Tauri starts Vite on port 1420, compiles the Rust workspace and launches
 TypePulse as a macOS menu-bar application. No window is shown automatically.
 Select the TypePulse icon in the upper-right menu bar to open the diagnostic
-window; right-click it for Open, Start monitoring, Pause monitoring and Quit.
+window; right-click it for Open, Start monitoring, Pause monitoring,
+Show WPM in menu bar and Quit. Disabling the menu-bar number does not disable
+the WPM shown in the PiP.
 
 Use the window to check/request Input Monitoring and the separate optional
 Accessibility permission, inspect live/today metrics, change `Start automatically`
@@ -113,8 +115,11 @@ semantics and default parameters are in ADR 0005.
 Owns Input Monitoring permission, global macOS event integration and the
 privacy-minimized focused-window geometry adapter. Its input boundary emits only
 `TypingActivity` with a monotonic instant. Raw key information is discarded
-inside the private adapter filter. The separate Accessibility boundary exposes
-only a temporary global center point; it never exposes app, title or content.
+inside the private adapter filter. OS auto-repeat is ignored; a private,
+ephemeral repetition guard allows a double letter and suppresses the third and
+later identical press until another counted key or a one-second pause. The
+separate Accessibility boundary exposes only a temporary global center point;
+it never exposes app, title or content.
 
 ### `typepulse-storage-sqlite`
 
@@ -194,7 +199,11 @@ cargo test -p typepulse-platform-macos --release \
 
 The menu-bar lifecycle checklist is in
 `tests/manual/menu-bar-shell.md`. It verifies macOS UI behavior that unit tests
-cannot observe, including Dock and `Cmd + Tab` visibility.
+cannot observe, including Dock and `Cmd + Tab` visibility, the fixed-width WPM
+slot and the persisted visibility option.
+
+The responsive estimate and repetition checks are in
+`tests/manual/live-wpm.md`.
 
 The overlay focus, click-through, visual state and multi-monitor checklist is in
 `tests/manual/phase-e-overlay.md`.
