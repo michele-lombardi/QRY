@@ -8,5 +8,14 @@ description = "macOS platform adapter for TypePulse"
 [dependencies]
 typepulse-core = { path = "../typepulse-core" }
 
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10.1"
+core-graphics = "0.25.0"
+objc2-core-graphics = { version = "0.3.2", default-features = false, features = [
+    "std",
+    "CGEvent",
+    "CGEventTypes",
+] }
+
 [lints]
 workspace = true
