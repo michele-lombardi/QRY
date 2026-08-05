@@ -2,9 +2,9 @@
 
 ## Stato
 
-La pipeline è implementata ma non è ancora autorizzata a pubblicare una V1:
-Gate F è aperto, non esiste un remote GitHub configurato e mancano le prove
-manuali indicate nel report di Fase G.
+La pipeline è pronta per produrre la prima beta `0.1.0` come draft prerelease.
+La pubblicazione stabile resta bloccata dalle prove manuali indicate nel report
+di Fase G.
 
 ## Versioning
 
@@ -12,9 +12,9 @@ QRY usa Semantic Versioning. I tag hanno forma `vMAJOR.MINOR.PATCH` oppure
 `vMAJOR.MINOR.PATCH-PRERELEASE`. Prima del tag, lo stesso numero deve comparire
 in:
 
-- `TypePulse/package.json`;
-- `TypePulse/src-tauri/tauri.conf.json`;
-- `[workspace.package].version` in `TypePulse/Cargo.toml`;
+- `QRY/package.json`;
+- `QRY/src-tauri/tauri.conf.json`;
+- `[workspace.package].version` in `QRY/Cargo.toml`;
 - una sezione datata di `CHANGELOG.md`.
 
 Verifica:
@@ -32,7 +32,7 @@ Un push di un tag `v*` esegue `.github/workflows/release-macos.yml`:
    `x86_64-apple-darwin`;
 3. applica e verifica la firma ad-hoc configurata da Tauri;
 4. crea ZIP determinati per versione/architettura e checksum SHA-256;
-5. crea una **draft GitHub Release** con entrambi gli artefatti.
+5. crea una **draft GitHub prerelease** con entrambi gli artefatti.
 
 La bozza deve essere ispezionata e provata prima della pubblicazione. La
 pipeline non aggiorna automaticamente Homebrew e non pubblica una release
@@ -57,7 +57,7 @@ cask:
 
 ```bash
 ./scripts/render-homebrew-cask.sh \
-  TODO_OWNER \
+  michele-lombardi \
   0.1.0 \
   ARM64_SHA256 \
   X86_64_SHA256
@@ -69,24 +69,24 @@ tramite il suo token:
 
 ```bash
 ruby -c release/qry.rb
-brew style --cask TODO_OWNER/qry/qry
-brew audit --cask --strict TODO_OWNER/qry/qry
+brew style --cask michele-lombardi/qry/qry
+brew audit --cask --strict michele-lombardi/qry/qry
 ```
 
 Poi verificare su un account/macchina pulita:
 
 ```bash
-brew tap TODO_OWNER/qry
+brew tap michele-lombardi/qry
 brew install --cask qry
 brew uninstall --cask qry
 ```
 
-`TODO_OWNER`, URL del repository, checksum reali e contatto security non possono
-essere compilati finché il repository e la prima Release non esistono.
+I checksum reali vengono compilati soltanto dopo che la pipeline ha prodotto i
+due artefatti della prima Release.
 
 ## Pubblicazione
 
-Una draft può diventare release candidate solo quando tutti i task P0 richiesti
-sono chiusi e la checklist manuale è allegata senza log di input. La V1 stabile
-richiede inoltre Gate F chiuso, installazione Homebrew provata e nessun problema
-bloccante di privacy, perdita dati o consumo risorse.
+La beta deve restare marcata come prerelease finché le checklist manuali non
+sono allegate senza log di input. La V1 stabile richiede Gate F chiuso,
+installazione Homebrew provata e nessun problema bloccante di privacy, perdita
+dati o consumo risorse.

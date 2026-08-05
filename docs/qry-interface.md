@@ -8,7 +8,7 @@ and the Homebrew cask use `QRY` or `qry` as appropriate.
 The following legacy technical values remain intentionally unchanged in this
 release:
 
-- workspace directory: `TypePulse/`;
+- workspace directory: `QRY/`;
 - bundle identifier: `app.typepulse.desktop`;
 - SQLite filename: `typepulse.sqlite3`;
 - internal Rust crate names and event identifiers.
@@ -119,4 +119,4 @@ tasks.
 - coordinated reset of an active session;
 - VoiceOver, keyboard, contrast and reduced-motion validation on a release
   bundle;
-- final owner/contact placeholders and QRY name/domain/trademark verification.
+- final domain/trademark verification for the separate public website.

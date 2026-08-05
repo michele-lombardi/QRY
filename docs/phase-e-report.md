@@ -100,8 +100,8 @@ indipendente dal contenuto del PiP.
 ## Gate E
 
 L'implementazione automatizzabile è completa. La chiusura end-to-end richiede
-le checklist `TypePulse/tests/manual/phase-e-overlay.md` e
-`TypePulse/tests/manual/focused-display.md`, perché soltanto una
+le checklist `QRY/tests/manual/phase-e-overlay.md` e
+`QRY/tests/manual/focused-display.md`, perché soltanto una
 sessione macOS reale può dimostrare che scrivere in un'altra applicazione non
 perde focus, che i click attraversano davvero la finestra e che il cambio di
 monitor funziona sull'hardware dell'utente.

@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: TypePulse/package-lock.json
+          cache-dependency-path: QRY/package-lock.json
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -36,10 +36,10 @@ jobs:
       - name: Cache Rust build
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: TypePulse -> target
+          workspaces: QRY -> target
 
       - name: Install frontend dependencies
-        working-directory: TypePulse
+        working-directory: QRY
         run: npm ci
 
       - name: Verify tag and version metadata
@@ -70,7 +70,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: TypePulse/package-lock.json
+          cache-dependency-path: QRY/package-lock.json
 
       - name: Install Rust target
         uses: dtolnay/rust-toolchain@stable
@@ -81,10 +81,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.target }}
-          workspaces: TypePulse -> target
+          workspaces: QRY -> target
 
       - name: Install frontend dependencies
-        working-directory: TypePulse
+        working-directory: QRY
         run: npm ci
 
       - name: Build, verify, archive and checksum
@@ -120,6 +120,7 @@ jobs:
           gh release create "$GITHUB_REF_NAME"
           release-assets/*
           --draft
+          --prerelease
           --generate-notes
           --repo "$GITHUB_REPOSITORY"
           --title "QRY $GITHUB_REF_NAME"

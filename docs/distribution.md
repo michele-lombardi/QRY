@@ -76,7 +76,7 @@ QRY è un'app grafica, quindi il pacchetto appropriato è un **cask**.
 Durante le prime versioni viene mantenuto un tap personale:
 
 ```text
-github.com/<owner>/homebrew-qry
+github.com/michele-lombardi/homebrew-qry
 └── Casks/
     └── qry.rb
 ```
@@ -84,7 +84,7 @@ github.com/<owner>/homebrew-qry
 Installazione prevista:
 
 ```bash
-brew tap <owner>/qry
+brew tap michele-lombardi/qry
 brew install --cask qry
 ```
 

@@ -34,7 +34,7 @@ npm --version
 ## Install dependencies
 
 ```bash
-cd TypePulse
+cd QRY
 npm install
 ```
 
@@ -45,7 +45,7 @@ committed to keep builds reproducible.
 ## Run QRY locally
 
 ```bash
-cd TypePulse
+cd QRY
 npm run tauri dev
 ```
 
@@ -76,7 +76,7 @@ checklists; never edit the TCC database.
 
 ## Useful commands
 
-Run these inside `TypePulse/` unless otherwise indicated:
+Run these inside `QRY/` unless otherwise indicated:
 
 ```bash
 npm run dev            # frontend in a browser-like development server
@@ -187,7 +187,7 @@ capability and documentation in the pull request.
 ## Tests
 
 Rust unit tests live next to the implementation. Cross-crate fixtures and manual
-macOS checklists live under `TypePulse/tests/`.
+macOS checklists live under `QRY/tests/`.
 
 Automated tests must not require Input Monitoring permission. Clock, event source
 and persistence boundaries will be injectable so CI remains deterministic.
@@ -285,12 +285,8 @@ Confirm QRY is present in macOS Login Items and has Input Monitoring
 permission. The preference cannot grant TCC consent. Read the runtime error in
 the diagnostic window, then use the Phase D manual checklist.
 
-## TODO decisions
+## Open decisions and manual gates
 
-- fill the copyright-holder and public-contact placeholders in `NOTICE.md`;
 - replace the provisional bundle identifier if the GitHub owner requires it;
 - complete the Phase B TCC, revocation and Secure Input checklists;
-- replace generated Tauri icons before the first release;
-- add a private security contact before public contributions.
-- configure the GitHub remote and Homebrew tap owner before any public release;
 - complete Gate F and the Phase G manual quality checklist before tagging V1.

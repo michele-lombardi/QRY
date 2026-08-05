@@ -102,7 +102,7 @@ terminato senza lasciare processi Vite o QRY in background.
 Bundle prodotto:
 
 ```text
-TypePulse/target/debug/bundle/macos/QRY.app
+QRY/target/debug/bundle/macos/QRY.app
 ```
 
 Il bundle è un artefatto locale di debug ed è correttamente escluso da Git. Non è
@@ -124,21 +124,17 @@ una release e non deve essere pubblicato come tale.
 
 ## TODO aperti intenzionalmente
 
-### Prima di rendere pubblico il repository
+### Completato per la beta pubblica
 
-- compilare titolare del copyright e contatto pubblico in `NOTICE.md`;
-- abilitare GitHub private vulnerability reporting;
-- sostituire gli URL `TODO` dei Security Advisories;
-- indicare un contatto privato per sicurezza e condotta;
-- configurare il repository remoto e verificare la prima CI.
+- copyright e repository compilati in `NOTICE.md`;
+- URL Security Advisories configurato;
+- repository remoto definito;
+- identità QRY e icone applicate.
 
 ### Prima della prima release
 
-- confermare o sostituire il bundle identifier `app.typepulse.desktop`;
-- scegliere la versione minima di macOS;
-- sostituire le icone Tauri generate;
-- definire artefatto e architetture di release;
-- documentare Gatekeeper dopo aver costruito la pipeline reale.
+- eseguire le checklist manuali TCC e Gatekeeper sugli artefatti beta;
+- verificare la prima CI e la build Intel.
 
 ### Fasi successive
 
@@ -152,7 +148,6 @@ una release e non deve essere pubblicato come tale.
 
 ## Stato successivo
 
-Le Fasi B, C e D sono state completate dopo questo report. Lo spike `MAC-01` ha
-scelto binding Rust diretti; monitor, core metrico e persistenza SQLite sono ora
-integrati. Il prossimo sviluppo è la Fase E (tray e overlay), mentre le prove
-TCC e login item restano checklist manuali sul Mac del proprietario.
+Le Fasi B–G sono state implementate dopo questo report. Monitor, core metrico,
+persistenza, tray, overlay e interfacce sono integrati; le prove TCC, login item,
+Gatekeeper e multi-monitor restano checklist manuali sul Mac del proprietario.

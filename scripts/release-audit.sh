@@ -15,7 +15,7 @@ release_version="${release_tag#v}"
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(cd "$script_dir/.." && pwd)"
-app_root="$project_root/TypePulse"
+app_root="$project_root/QRY"
 
 package_version="$(node -p "require('$app_root/package.json').version")"
 tauri_version="$(node -p "require('$app_root/src-tauri/tauri.conf.json').version")"

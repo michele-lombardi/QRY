@@ -1,13 +1,13 @@
-# Contributing to TypePulse
+# Contributing to QRY
 
-Thanks for helping build TypePulse. The project is in its foundation stage and
-targets macOS first, with a portable Rust core for future Linux support.
+Thanks for helping build QRY. The project is in public beta and targets macOS
+first, with a portable Rust core for future Linux support.
 
 ## License
 
-TypePulse is licensed under `GPL-3.0-only`. By contributing, you agree that your
-contribution is distributed under the same license. Copyright-holder and
-public-contact placeholders are tracked in `NOTICE.md`.
+QRY is licensed under `GPL-3.0-only`. By contributing, you agree that your
+contribution is distributed under the same license. Copyright and project
+contact details are recorded in `NOTICE.md`.
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ See [`docs/development.md`](docs/development.md) for setup and architecture.
 ## Local setup
 
 ```bash
-cd TypePulse
+cd QRY
 npm install
 npm run tauri dev
 ```

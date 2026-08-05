@@ -1,7 +1,7 @@
 {
-  "eslint.workingDirectories": ["TypePulse"],
-  "prettier.configPath": "TypePulse/.prettierrc.json",
-  "rust-analyzer.linkedProjects": ["TypePulse/Cargo.toml"],
+  "eslint.workingDirectories": ["QRY"],
+  "prettier.configPath": "QRY/.prettierrc.json",
+  "rust-analyzer.linkedProjects": ["QRY/Cargo.toml"],
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },

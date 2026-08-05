@@ -2,23 +2,16 @@
 
 ## Supported versions
 
-TypePulse has no public release yet. Security fixes currently apply to the
-`main` branch only.
+Security fixes currently apply to the `0.1.x` beta line and the `main` branch.
+Older development artifacts are unsupported.
 
 ## Reporting a vulnerability
 
 Do not publish sensitive exploit details in a public issue.
 
-TODO before the repository becomes public:
-
-1. enable GitHub private vulnerability reporting;
-2. add the final repository URL to this document;
-3. add an optional private security email controlled by the maintainer;
-4. define response targets after the first stable release.
-
-Until private reporting is configured, create a public issue containing only
-the phrase “Security contact requested” and no technical details. A maintainer
-must then provide a private channel before receiving the report.
+Use [GitHub private vulnerability reporting](https://github.com/michele-lombardi/QRY/security/advisories/new).
+Do not include vulnerability details in a public issue. During the beta,
+reports are handled on a best-effort basis and no response-time SLA is offered.
 
 ## Sensitive areas
 
@@ -33,11 +26,10 @@ review:
 - Tauri capabilities and commands;
 - release and Homebrew automation.
 
-TypePulse must never persist or log individual keys, key codes, written text,
+QRY must never persist or log individual keys, key codes, written text,
 passwords, active applications, window titles or visited sites.
 
 The local and CI quality gate runs `scripts/audit-privacy.sh` to verify the
 aggregate-only schema/DTO boundary, narrow Tauri capability and absence of
 unexpected runtime input logging. Dependency update checks are configured for
-npm, Cargo and GitHub Actions through Dependabot; a private reporting channel
-is still a release blocker because no final GitHub repository is configured.
+npm, Cargo and GitHub Actions through Dependabot.

@@ -37,8 +37,8 @@ una release macOS stabile.
   workflow draft Release e template cask implementati;
 - rollover: automatico sulla data civile locale, con storico conservato;
 - avvio automatico: preferenza e login item macOS implementati in anticipo;
-- licenza open source: GNU GPLv3 only; restano placeholder anagrafici in
-  `NOTICE.md`;
+- licenza open source: GNU GPLv3 only; copyright attribuito a Michele Lombardi
+  in `NOTICE.md`;
 - prossimo lavoro: completare onboarding e svolgere le checklist reali
   TCC/overlay/interfaccia. Gate G rimane aperto fino a queste dipendenze, alle
   prove manuali e alla configurazione del remote GitHub.
@@ -75,7 +75,7 @@ chiari.
 ## 3. Struttura di sviluppo prevista
 
 ```text
-progetto1/
+.
 ├── README.md
 ├── LICENSE
 ├── CONTRIBUTING.md
@@ -96,7 +96,7 @@ progetto1/
 │       ├── 0005-core-metrics-and-sessions.md
 │       ├── 0006-local-day-and-automatic-startup.md
 │       └── 0007-focused-display-accessibility.md
-├── TypePulse/
+├── QRY/
 │   ├── Cargo.toml                     # Workspace Rust
 │   ├── Cargo.lock
 │   ├── package.json
@@ -249,7 +249,7 @@ maggiore. Non si costruisce l'intera UI prima di sapere che il segnale necessari
 | FND-01 | Scegliere licenza open source | P0 | S | — | `LICENSE` presente; README e package metadata coerenti |
 | FND-02 | Aggiungere contribution guide, codice di condotta e security policy | P1 | S | FND-01 | un contributor può fare setup/PR e segnalare vulnerabilità in modo corretto |
 | FND-03 | Creare scaffold Tauri 2 con TypeScript | P0 | M | FND-01 | `npm run tauri dev` apre l'app su macOS |
-| FND-04 | Convertire `TypePulse/` in Cargo workspace | P0 | M | FND-03 | tutti i crate compilano con un solo comando |
+| FND-04 | Convertire `QRY/` in Cargo workspace | P0 | M | FND-03 | tutti i crate compilano con un solo comando |
 | FND-05 | Creare crate core, storage e macOS vuoti | P0 | S | FND-04 | dipendenze rispettano la tabella dei livelli |
 | FND-06 | Configurare formatting e lint | P0 | S | FND-03 | `cargo fmt --check`, `cargo clippy` e controllo frontend passano |
 | FND-07 | Creare workflow CI macOS | P0 | M | FND-06 | push e PR eseguono build, lint e test |
@@ -266,7 +266,7 @@ Stato Fase A:
 | FND-01 | Done | GPL-3.0-only sincronizzata in LICENSE, npm, Cargo e documentazione |
 | FND-02 | Done | contribution guide, condotta e security policy presenti |
 | FND-03 | Done | Tauri 2 + Vite + TypeScript avviabili tramite npm |
-| FND-04 | Done | workspace Cargo unico in `TypePulse/Cargo.toml` |
+| FND-04 | Done | workspace Cargo unico in `QRY/Cargo.toml` |
 | FND-05 | Done | core, storage e adapter macOS compilano separatamente |
 | FND-06 | Done | Prettier, ESLint, TypeScript, rustfmt e Clippy configurati |
 | FND-07 | Done | workflow CI macOS definito; esecuzione remota dopo il push |
@@ -312,7 +312,7 @@ Stato Fase B:
 
 Il codice della Fase B è completo. Il Gate B end-to-end resta `TODO manuale`:
 TCC è `denied` sul Mac di sviluppo e il permesso non può essere auto-concesso.
-Le checklist sono in `TypePulse/tests/manual/` e il dettaglio è nel report di
+Le checklist sono in `QRY/tests/manual/` e il dettaglio è nel report di
 Fase B.
 
 ### Fase C — Core delle metriche
@@ -453,16 +453,16 @@ e comprendere i dati senza istruzioni esterne.
 | QA-04 | Test timezone e cambio giorno — **Done automatico** | P1 | M | DB-07 | offset opposti e date isolate testati; mezzanotte naturale resta smoke test |
 | QA-05 | Eseguire smoke test multi-monitor — **Ready, manuale** | P1 | M | OVR-09 | routing finestra focalizzata e fallback pronti; prova su due display TODO manuale |
 | REL-01 | Definire versioning e changelog — **Done** | P0 | S | FND-07 | SemVer, changelog e audit coerenza metadati |
-| REL-02 | Creare workflow release macOS — **Implemented, non pubblicata** | P0 | L | REL-01, Gate F | due architetture, ZIP, checksum e draft Release su tag |
+| REL-02 | Creare workflow release macOS — **Done code** | P0 | L | REL-01, Gate F | due architetture, ZIP, checksum e draft prerelease su tag |
 | REL-03 | Applicare firma ad-hoc dove utile — **Done nel packaging** | P1 | M | REL-02 | identità `-` e `codesign --verify` obbligatorio |
 | REL-04 | Scrivere istruzioni Gatekeeper — **Done** | P0 | S | REL-02 | limiti e apertura sicura documentati senza bypass globale |
-| REL-05 | Creare tap `homebrew-qry` — **Template done, remote blocked** | P0 | M | REL-02 | struttura cask pronta; owner/repository TODO |
+| REL-05 | Creare tap `homebrew-qry` — **Template done** | P0 | M | REL-02 | owner definito; repository tap ancora da creare |
 | REL-06 | Creare e validare cask — **Blocked da REL-05/release reale** | P0 | M | REL-05 | renderer valida SemVer/hash; install/upgrade/uninstall TODO manuale |
-| REL-07 | Pubblicare release candidate — **Blocked** | P0 | M | QA-01–QA-05, REL-06 | Gate F, QA manuale e remote mancanti |
+| REL-07 | Pubblicare release candidate — **Ready for beta** | P0 | M | QA-01–QA-05, REL-06 | sorgenti pronti; QA manuale richiesta prima di promuovere la draft |
 | REL-08 | Pubblicare V1 macOS — **Blocked** | P0 | S | REL-07 | nessuna release stabile autorizzata |
 
-**Gate G: aperto.** Il codice di audit e distribuzione è pronto, ma nessun utente
-può ancora installare dal tap: mancano Gate F, prove reali, remote GitHub,
+**Gate G stabile: aperto.** Il codice e il remote sono pronti per la beta, ma
+nessun utente può ancora installare dal tap: mancano Gate F, prove reali,
 Release pubblica e repository `homebrew-qry`.
 
 ### Fase H — Linux dopo la V1
@@ -599,7 +599,7 @@ Non sono requisiti per la V1:
 
 | Decisione | Quando serve | Default proposto |
 | --- | --- | --- |
-| Licenza | completata | GPL-3.0-only; TODO titolare e contatto in NOTICE.md |
+| Licenza | completata | GPL-3.0-only; Michele Lombardi e repository in NOTICE.md |
 | Versione minima macOS | completata | macOS 10.15 |
 | Frontend build tool | durante FND-03 | Vite + TypeScript senza framework UI |
 | Binding macOS | durante MAC-01 | Rust diretto; bridge minimo solo se necessario |

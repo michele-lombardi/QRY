@@ -1,12 +1,12 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: /TypePulse
+    directory: /QRY
     schedule:
       interval: weekly
 
   - package-ecosystem: cargo
-    directory: /TypePulse
+    directory: /QRY
     schedule:
       interval: weekly
 

@@ -1,0 +1,22 @@
+[workspace]
+members = [
+    "crates/typepulse-core",
+    "crates/typepulse-platform-macos",
+    "crates/typepulse-storage-sqlite",
+    "src-tauri",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+publish = false
+authors = ["Michele Lombardi"]
+license = "GPL-3.0-only"
+
+[workspace.lints.rust]
+missing_docs = "warn"
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+all = "warn"

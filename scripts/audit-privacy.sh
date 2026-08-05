@@ -3,7 +3,7 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(cd "$script_dir/.." && pwd)"
-app_root="$project_root/TypePulse"
+app_root="$project_root/QRY"
 
 log_hits="$(
   rg -n 'print!|println!|eprint!|eprintln!|dbg!|tracing::|log::|console\.' \

@@ -3,10 +3,10 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(cd "$script_dir/.." && pwd)"
-app_root="$project_root/TypePulse"
+app_root="$project_root/QRY"
 
 if [[ ! -d "$app_root/node_modules" ]]; then
-  echo "Missing TypePulse/node_modules. Run: cd TypePulse && npm install" >&2
+  echo "Missing QRY/node_modules. Run: cd QRY && npm install" >&2
   exit 1
 fi
 

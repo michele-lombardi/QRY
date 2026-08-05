@@ -97,8 +97,7 @@ e mantengono i nuovi valori predefiniti compatibili.
 - concedere Input Monitoring e chiudere le checklist della Fase B;
 - verificare login item dopo logout/login o riavvio reale;
 - osservare un passaggio naturale di mezzanotte;
-- compilare titolare copyright e contatto pubblico in `NOTICE.md`.
 
 La procedura completa è in
-`TypePulse/tests/manual/phase-d-persistence-startup.md`. Nessuno di questi TODO
+`QRY/tests/manual/phase-d-persistence-startup.md`. Nessuno di questi TODO
 nasconde codice mancante della Fase D: richiedono consenso o stato reale del Mac.

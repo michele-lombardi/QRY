@@ -53,7 +53,7 @@ dell'app.
 - selezione forzata Light/Dark oltre al tema System già adattivo;
 - audit accessibilità, contrasto e navigazione da tastiera su bundle reale.
 
-La checklist dedicata è `TypePulse/tests/manual/qry-interface.md`.
+La checklist dedicata è `QRY/tests/manual/qry-interface.md`.
 
 ## Verifiche
 

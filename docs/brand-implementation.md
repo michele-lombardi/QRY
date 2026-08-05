@@ -1,9 +1,10 @@
 # QRY brand implementation
 
-- Source of truth: `brand identity/TypePulse Brand Identity.dc.html`
+- Source of truth: `brand identity/QRY Brand Identity.dc.html`
 - Identity version: v0.1
 - Product name adopted: QRY
-- Previous working name: TypePulse
+- Legacy technical identifiers: `typepulse-*` crates, bundle identifier and
+  local database are retained for compatibility
 - Implementation date: 5 August 2026
 
 ## Rules adopted
@@ -26,8 +27,8 @@ system fonts.
 
 ## Assets
 
-Canonical, editable SVG sources live in `TypePulse/assets/brand/`. Generated
-platform PNG, ICNS and ICO files remain in `TypePulse/src-tauri/icons/`.
+Canonical, editable SVG sources live in `QRY/assets/brand/`. Generated
+platform PNG, ICNS and ICO files remain in `QRY/src-tauri/icons/`.
 
 - normal Pulse mark: four alternating semicircles;
 - menu-bar mark below 20 pt: the allowed three-beat variant;

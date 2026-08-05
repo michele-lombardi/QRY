@@ -1,0 +1,10 @@
+[package]
+name = "typepulse-core"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+license.workspace = true
+description = "Platform-independent domain logic for QRY"
+
+[lints]
+workspace = true

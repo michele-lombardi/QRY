@@ -32,5 +32,18 @@ npm-debug.log*
 # Local configuration and generated exports
 .env
 .env.*
+!.env.example
+!**/.env.example
 exports/
 release/
+
+# Local assistants, credentials and signing material
+.claude/
+.idea/
+*.pem
+*.p12
+*.key
+*.mobileprovision
+*.sqlite
+*.sqlite3
+*.sqlite3-*

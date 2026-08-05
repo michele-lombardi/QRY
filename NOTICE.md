@@ -1,8 +1,9 @@
 # QRY copyright notice
 
-Copyright (C) 2026 [TODO: copyright holder legal name or chosen public alias]
+Copyright (C) 2026 Michele Lombardi
 
-Contact: [TODO: public project contact or repository URL]
+Project: https://github.com/michele-lombardi/QRY
+Security reports: https://github.com/michele-lombardi/QRY/security/advisories/new
 
 QRY is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free Software

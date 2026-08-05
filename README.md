@@ -5,17 +5,17 @@ scrittura senza registrare ciò che viene scritto.
 
 > **See your typing rhythm. Not what you type.**
 
-## Stato del progetto
+## Beta 0.1.0
 
-Le Fasi A–F sono implementate nel codice: fondazioni, monitor macOS
-privacy-safe, core WPM/sessioni, persistenza, overlay, pannello giornaliero,
-Impostazioni e Statistiche sono presenti. I Gate C e D sono chiusi
-automaticamente; i Gate B/E/F end-to-end restano checklist manuali sul Mac con
-i permessi reali.
+QRY `0.1.0` è la prima beta pubblica per macOS. Fondazioni, monitoraggio
+privacy-safe, metriche WPM/sessioni, persistenza locale, overlay, pannello
+giornaliero, Impostazioni e Statistiche sono implementati. Le verifiche
+automatiche sono complete; i test TCC, Gatekeeper, login e multi-monitor restano
+checklist manuali da eseguire sugli artefatti della beta.
 
 QRY è software libero distribuito con licenza GNU GPL versione 3 soltanto
-(`GPL-3.0-only`). Il nome del titolare del copyright e il contatto pubblico
-restano da compilare in [`NOTICE.md`](NOTICE.md).
+(`GPL-3.0-only`). Copyright © 2026 Michele Lombardi; i riferimenti completi sono
+in [`NOTICE.md`](NOTICE.md).
 
 Decisioni attuali:
 
@@ -28,10 +28,10 @@ Decisioni attuali:
 - VS Code come ambiente di lavoro principale;
 - GitHub Releases e tap Homebrew personale come primo canale di distribuzione.
 
-Il nome visibile e il bundle sono `QRY`/`QRY.app`. La cartella di workspace
-`TypePulse/`, l'identificatore `app.typepulse.desktop` e il database
-`typepulse.sqlite3` restano intenzionalmente invariati in questa migrazione per
-preservare storico, preferenze, login item e continuità dei permessi macOS.
+Il nome visibile, il bundle e la cartella del codice sono `QRY`, `QRY.app` e
+`QRY/`. L'identificatore tecnico `app.typepulse.desktop` e il database
+`typepulse.sqlite3` restano invariati per preservare preferenze, login item,
+statistiche locali e continuità dei permessi macOS degli utenti beta esistenti.
 
 ## Obiettivo della V1
 
@@ -55,7 +55,7 @@ Struttura implementata nella Fase A:
 
 ```text
 .
-├── TypePulse/
+├── QRY/
 │   ├── src/                         # UI HTML/CSS/TypeScript
 │   ├── src-tauri/                   # Shell Tauri e configurazione desktop
 │   ├── crates/
@@ -69,7 +69,7 @@ Struttura implementata nella Fase A:
 ```
 
 La responsabilità di ogni area è descritta in
-[`TypePulse/README.md`](TypePulse/README.md). Prima di implementare, consulta
+[`QRY/README.md`](QRY/README.md). Prima di implementare, consulta
 anche:
 
 - [`docs/product-spec.md`](docs/product-spec.md)
@@ -89,7 +89,7 @@ anche:
 ## Sviluppo locale
 
 ```bash
-cd TypePulse
+cd QRY
 npm install
 npm run tauri dev
 ```
@@ -111,7 +111,7 @@ Controllo completo dalla root:
 - **Testabilità:** tempo, eventi di input e persistenza devono essere iniettabili.
 - **Scope ridotto:** una sola animazione con quattro livelli di intensità.
 
-## Prossimi passi tecnici
+## Prima di pubblicare gli artefatti beta
 
 1. Concedere Input Monitoring e completare le checklist manuali della Fase B.
 2. Verificare manualmente login item, riapertura e rollover della Fase D.
@@ -119,9 +119,10 @@ Controllo completo dalla root:
    Oggi/7 giorni/30 giorni/Anno delle Statistiche.
 4. Concedere separatamente Accessibilità e verificare focus, click-through,
    display focalizzato e fallback multi-monitor della Fase E.
-5. Chiudere le prove manuali della Fase G e configurare il remote GitHub prima
-   di creare una Release o il tap Homebrew.
+5. Chiudere le prove manuali della Fase G sugli ZIP generati dalla pipeline.
 6. Completare onboarding, dialog di salvataggio CSV e audit accessibilità UI.
-7. Compilare titolare copyright e contatto pubblico in `NOTICE.md`.
+7. Pubblicare inizialmente la GitHub Release come prerelease e mantenere la
+   firma ad-hoc chiaramente documentata.
 
 Il piano aggiornato è in [`docs/working-plan.md`](docs/working-plan.md).
+Le note della prima beta sono in [`docs/beta-0.1.0.md`](docs/beta-0.1.0.md).

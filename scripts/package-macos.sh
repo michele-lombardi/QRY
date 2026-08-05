@@ -24,7 +24,7 @@ esac
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(cd "$script_dir/.." && pwd)"
-app_root="$project_root/TypePulse"
+app_root="$project_root/QRY"
 release_dir="$project_root/release"
 release_version="$(node -p "require('$app_root/package.json').version")"
 product_name="$(node -p "require('$app_root/src-tauri/tauri.conf.json').productName")"

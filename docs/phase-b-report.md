@@ -85,7 +85,7 @@ Sul Mac di sviluppo il 5 agosto 2026:
 - revoca/ripristino durante il monitor: **TODO manuale** dopo la concessione;
 - comportamento in un campo Secure Input: **TODO manuale** dopo la concessione.
 
-Le procedure esatte sono in `TypePulse/tests/manual/`. Questi TODO non sono
+Le procedure esatte sono in `QRY/tests/manual/`. Questi TODO non sono
 codice mancante: sono criteri runtime che richiedono una decisione esplicita del
 proprietario del Mac.
 
@@ -98,6 +98,5 @@ checklist TCC non viene firmata con esito positivo.
 ## TODO ancora aperti
 
 - eseguire e registrare le tre prove manuali TCC;
-- compilare titolare del copyright e contatto pubblico in `NOTICE.md`;
 - verificare la CI dopo il primo push GitHub;
-- sostituire icone e bundle identifier prima della release.
+- verificare la build distribuita con il bundle identifier compatibile.
