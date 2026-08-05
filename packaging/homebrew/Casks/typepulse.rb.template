@@ -1,0 +1,29 @@
+cask "typepulse" do
+  arch arm: "aarch64", intel: "x86_64"
+
+  version "__VERSION__"
+  sha256 arm:   "__ARM64_SHA256__",
+         intel: "__X86_64_SHA256__"
+
+  url "https://github.com/__OWNER__/typepulse/releases/download/v#{version}/TypePulse-#{version}-#{arch}.app.zip"
+  name "TypePulse"
+  desc "Privacy-first typing rhythm visualizer for the menu bar"
+  homepage "https://github.com/__OWNER__/typepulse"
+
+  depends_on macos: ">= :catalina"
+
+  app "TypePulse.app"
+
+  uninstall quit: "app.typepulse.desktop"
+
+  zap trash: [
+    "~/Library/Application Support/app.typepulse.desktop",
+    "~/Library/LaunchAgents/app.typepulse.desktop.plist",
+  ]
+
+  caveats <<~EOS
+    TypePulse is distributed without Apple notarization. On first launch,
+    macOS may require approval in System Settings > Privacy & Security.
+    Input Monitoring consent must always be granted manually by the user.
+  EOS
+end
