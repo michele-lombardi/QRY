@@ -2,6 +2,7 @@
 
 mod app_state;
 mod commands;
+mod shell;
 
 use app_state::DiagnosticState;
 use commands::monitoring::{
@@ -36,6 +37,7 @@ pub fn run() {
             let preferences = state.load_preferences().map_err(std::io::Error::other)?;
 
             app.manage(state);
+            shell::configure(app)?;
             if preferences.auto_start_enabled {
                 let state = app.state::<DiagnosticState>();
                 if let Err(error) = app.autolaunch().enable() {
@@ -46,6 +48,14 @@ pub fn run() {
                 state.start_automatically();
             }
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                if window.label() == "main" {
+                    api.prevent_close();
+                    shell::hide_main_window(window);
+                }
+            }
         })
         .invoke_handler(tauri::generate_handler![
             input_permission_status,

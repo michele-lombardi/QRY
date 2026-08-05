@@ -13,7 +13,9 @@
     "windows": [
       {
         "label": "main",
-        "title": "TypePulse — Input diagnostics",
+        "title": "TypePulse",
+        "visible": false,
+        "skipTaskbar": true,
         "width": 900,
         "height": 620,
         "minWidth": 760,
