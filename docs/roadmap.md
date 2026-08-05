@@ -19,8 +19,8 @@ locale e in CI.
 
 - adapter macOS, permesso e filtro privacy-safe: implementati nella Fase B;
 - verifica end-to-end TCC/revoca/Secure Input: TODO manuale del proprietario;
-- implementare finestra mobile, smoothing e sessioni;
-- aggiungere test deterministici per soglie e inattività.
+- finestra mobile, smoothing, fasce e sessioni: implementati nella Fase C;
+- test deterministici per soglie, inattività e casi limite: completati.
 
 **Uscita:** una vista diagnostica temporanea mostra WPM affidabili e nessun dato
 sensibile viene persistito o loggato.

@@ -89,8 +89,9 @@ convenzione di 5 caratteri per parola:
 WPM = (caratteri nella finestra / 5) / durata finestra in minuti
 ```
 
-Una media progressiva attenua i salti del valore mostrato. I parametri esatti
-della finestra e dello smoothing vanno validati durante il prototipo.
+Una media esponenziale attenua i salti del valore mostrato. I default validati
+dalla Fase C sono finestra fissa di 10 secondi e fattore EMA 0,25. Overlay,
+sessione e tempo attivo usano rispettivamente 2, 30 e 2 secondi.
 
 ## Dati salvati
 

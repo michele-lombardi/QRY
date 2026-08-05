@@ -25,10 +25,11 @@ una release macOS stabile.
 - Fase B: codice, test e diagnostica implementati;
 - Gate B end-to-end: `TODO manuale`, il Mac di sviluppo non ha ancora concesso
   Input Monitoring;
+- Fase C: core metrico e Gate C completati con test deterministici;
 - licenza open source: `TODO`, decisione del proprietario necessaria;
-- metriche WPM, sessioni e persistenza: non iniziate;
-- prossimo lavoro automatico: Fase C; prima è raccomandata la checklist TCC di
-  Fase B.
+- persistenza e aggregazioni giornaliere: non iniziate;
+- prossimo lavoro automatico: Fase D; resta raccomandata la checklist TCC di
+  Fase B prima dell'integrazione applicativa.
 
 ### Priorità
 
@@ -79,7 +80,8 @@ progetto1/
 │       ├── 0001-desktop-stack.md
 │       ├── 0002-input-privacy-boundary.md
 │       ├── 0003-local-storage.md
-│       └── 0004-macos-input-monitor.md
+│       ├── 0004-macos-input-monitor.md
+│       └── 0005-core-metrics-and-sessions.md
 ├── TypePulse/
 │   ├── Cargo.toml                     # Workspace Rust
 │   ├── Cargo.lock
@@ -128,14 +130,14 @@ progetto1/
 │   │   │       ├── lib.rs
 │   │   │       ├── activity.rs
 │   │   │       ├── clock.rs
+│   │   │       ├── config.rs
 │   │   │       ├── metrics/
+│   │   │       │   ├── animation.rs
 │   │   │       │   ├── rolling_wpm.rs
 │   │   │       │   └── smoothing.rs
 │   │   │       ├── session/
 │   │   │       │   ├── engine.rs
-│   │   │       │   └── state.rs
-│   │   │       ├── summary.rs
-│   │   │       └── export.rs
+│   │   │       │   └── model.rs
 │   │   ├── typepulse-storage-sqlite/  # Persistenza locale
 │   │   │   ├── Cargo.toml
 │   │   │   ├── migrations/
@@ -312,6 +314,24 @@ Fase B.
 
 **Gate C:** il core riceve solo timestamp e produce tutto lo stato necessario
 all'interfaccia con test deterministici.
+
+Stato Fase C:
+
+| Task | Stato | Evidenza |
+| --- | --- | --- |
+| CORE-01 | Done | `Clock`, `SystemClock`, `ManualClock`, `TypingActivity` |
+| CORE-02 | Done | rolling window 10 s; test vuoto/lento/60 WPM/burst |
+| CORE-03 | Done | formula a 5 attività per parola, denominatore fisso |
+| CORE-04 | Done | EMA configurabile, test di stabilizzazione e reset |
+| CORE-05 | Done | fasce e confini esatti 30/60/90 testati |
+| CORE-06 | Done | state machine idle/visible/hidden/completed deterministica |
+| CORE-07 | Done | caratteri, parole, media, picco e tempo attivo riproducibili |
+| CORE-08 | Done | record storico opzionale, evento una volta per sessione |
+| CORE-09 | Done | default V1 centralizzati e configurazione validata |
+| CORE-10 | Done | casi patologici e sequenza deterministica da 10.000 eventi |
+
+Il Gate C è chiuso. Semantica e verifiche sono descritte nell'ADR 0005 e nel
+report di Fase C.
 
 ### Fase D — Persistenza e aggregazioni
 

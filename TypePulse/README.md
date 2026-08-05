@@ -25,8 +25,8 @@ From the repository root:
 - `typepulse-storage-sqlite`: local persistence boundary;
 - `src-tauri`: desktop composition root.
 
-The current Phase B build displays a temporary macOS input-diagnostics window. It can
-request permission and run the privacy-safe passive monitor, but it does not calculate
-WPM or persist statistics yet.
+The Phase C workspace includes the portable WPM/session engine. The temporary macOS
+diagnostic window still exercises only the Phase B monitor; engine wiring belongs to the
+later application-integration phase. Statistics are not persisted yet.
 
 See [`../docs/development.md`](../docs/development.md) for the complete guide.

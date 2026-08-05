@@ -75,6 +75,16 @@ La Fase B ha dimostrato che non serve un bridge Swift/Objective-C.
 Tempo e scheduler devono essere iniettabili per testare i timeout senza attese
 reali.
 
+La Fase C implementa `TypingEngine<C: Clock>`. Il motore riceve soltanto
+`TypingActivity`, usa una finestra fissa di 10 secondi e produce `EngineUpdate`
+con snapshot, eventuale sessione conclusa ed eventuale nuovo record. I clock di
+produzione e test sono separati; nessun polling UI modifica la semantica delle
+metriche.
+
+Gli aggregati di sessione sono definiti nell'ADR 0005. Restano monotoni nel core:
+la futura persistenza associa data e fuso orario nel layer applicativo senza
+portare dipendenze civili o di piattaforma nel dominio live.
+
 ### DesktopShell
 
 Il layer `src-tauri` crea la tray e le finestre, registra i comandi e inoltra gli
@@ -166,6 +176,8 @@ direttamente dispositivi di input senza un modello di consenso comprensibile.
 2. Intervallo di aggregazione: 30 o 60 secondi.
 3. Formato dell'artefatto GitHub: `.app.zip`, `.tar.gz` o entrambi.
 4. Risultato manuale end-to-end del Gate B dopo il consenso TCC.
+5. Rappresentazione persistita delle parole frazionarie e conversione tra
+   `Instant` e data civile nella Fase D.
 
 ## Riferimenti tecnici
 

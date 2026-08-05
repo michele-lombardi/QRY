@@ -52,6 +52,16 @@ Testo breve previsto nell'app:
 - Secure Input viene rispettato: dati non osservabili restano non osservati;
 - revoca del permesso ferma il worker e non genera dati simulati.
 
+## Garanzie implementate nella Fase C
+
+- il motore accetta soltanto `TypingActivity` con tempo monotono;
+- i timestamp individuali restano nella rolling window in memoria e vengono
+  eliminati allo scadere dei 10 secondi o alla fine della sessione;
+- snapshot e riepiloghi contengono solo conteggi, durate, WPM e stati;
+- nessun tipo live implementa una serializzazione automatica verso frontend o
+  disco;
+- test patologici verificano che non escano `NaN`, infiniti o valori negativi.
+
 ## Checklist per ogni modifica
 
 - Il nuovo dato è davvero necessario per una funzione promessa?

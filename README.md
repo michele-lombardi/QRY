@@ -7,10 +7,10 @@ scrittura senza registrare ciò che viene scritto.
 
 ## Stato del progetto
 
-Le Fasi A e B sono implementate: fondazioni, permesso Input Monitoring, event
-tap passivo, filtro privacy-safe, diagnostica e test sono presenti. Sul Mac di
-sviluppo il consenso TCC è ancora negato, quindi il Gate B end-to-end resta una
-checklist manuale del proprietario prima di iniziare le metriche WPM.
+Le Fasi A, B e C sono implementate: fondazioni, monitor macOS privacy-safe e core
+portabile di WPM/sessioni sono presenti. Il Gate C è chiuso con test
+deterministici. Sul Mac di sviluppo il consenso TCC è ancora negato, quindi il
+Gate B end-to-end resta una checklist manuale prima dell'integrazione.
 
 La licenza è ancora un `TODO`. Finché non viene scelta una licenza OSI, il codice
 è visibile ma non concede diritti di utilizzo o redistribuzione.
@@ -74,6 +74,7 @@ anche:
 - [`docs/development.md`](docs/development.md)
 - [`docs/phase-a-report.md`](docs/phase-a-report.md)
 - [`docs/phase-b-report.md`](docs/phase-b-report.md)
+- [`docs/phase-c-report.md`](docs/phase-c-report.md)
 
 ## Sviluppo locale
 
@@ -103,7 +104,7 @@ Controllo completo dalla root:
 ## Prossimi passi tecnici
 
 1. Concedere Input Monitoring e completare le checklist manuali della Fase B.
-2. Iniziare la Fase C: finestra mobile, WPM, smoothing e sessioni nel core.
+2. Iniziare la Fase D: repository, SQLite e aggregazioni locali.
 3. Scegliere la licenza OSI prima di rendere pubblico il repository.
 
 Il piano aggiornato è in [`docs/working-plan.md`](docs/working-plan.md).

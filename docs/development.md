@@ -2,10 +2,10 @@
 
 ## Current milestone
 
-Phase B implements the privacy-safe macOS input-monitoring spike and a temporary
-diagnostic window. The next implementation milestone is Phase C, the portable
-metric/session core. Before Phase C, the Mac owner should complete the manual
-TCC checklist so Gate B is verified end to end.
+Phase C implements the portable metric and session engine. The next milestone is
+Phase D, local persistence and daily aggregation. The Phase B diagnostic window
+remains available; its TCC checklist should be completed before application
+integration in Phase E.
 
 ## Toolchain
 
@@ -89,6 +89,10 @@ Run the complete local gate from the repository root:
 Owns portable domain logic. It may define activity timestamps, rolling WPM,
 smoothing, sessions, summaries and repository traits. It cannot import Tauri,
 SQLite or platform frameworks.
+
+`TypingEngine` accepts an injected `Clock`. Use `ManualClock` in deterministic
+tests and `SystemClock` in production. Do not add sleeps to core tests. Metric
+semantics and default parameters are in ADR 0005.
 
 ### `typepulse-platform-macos`
 
