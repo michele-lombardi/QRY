@@ -34,6 +34,8 @@ permission prompt.
    window center; the PiP must use that display.
 5. Repeat all four overlay corner settings and at least two different display scale
    factors.
+6. With three displays in a horizontal chain, jump directly from a Retina 2× display to
+   the farthest 1× display. The PiP must not stop on the intermediate display.
 
 Expected: the focused window—not the mouse and not the configured primary
 display—selects the PiP display when Accessibility is granted.
@@ -65,6 +67,7 @@ exported or stored.
 - secondary focused display: PASS / FAIL
 - active-session display switch: PASS / FAIL
 - mixed scaling/corners: PASS / FAIL
+- direct Retina-to-third-display jump: PASS / FAIL
 - revocation/unsupported-window fallback: PASS / FAIL
 - privacy observation: PASS / FAIL
 - notes without app, title or content data:

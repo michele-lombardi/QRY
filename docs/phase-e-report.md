@@ -38,6 +38,10 @@ assente o geometria temporaneamente non disponibile conservano il monitor
 corrente quando esiste; all'avvio il fallback resta il display principale. Una
 lettura focalizzata valida torna immediatamente ad avere precedenza.
 
+Il posizionamento usa coordinate logiche derivate dalla scala del monitor di
+destinazione. Questo evita che un salto diretto da un Retina 2× verso il terzo
+monitor 1× dimezzi una coordinata negativa e collochi il PiP sul secondo monitor.
+
 Il nuovo adapter macOS legge soltanto `AXPosition` e `AXSize` della finestra
 focalizzata e restituisce un centro globale effimero. Non legge o conserva nome
 applicazione, titolo, ruolo, valore o contenuto. Input Monitoring e Accessibilità
@@ -107,7 +111,7 @@ monitor funziona sull'hardware dell'utente.
 - `./scripts/check.sh`: superato;
 - frontend: Prettier, ESLint, TypeScript e bundle Vite multipagina superati;
 - Rust: rustfmt, Clippy con warning negati, check e test superati;
-- 69 test Rust passati e un benchmark manuale ignorato;
+- 70 test Rust passati e un benchmark manuale ignorato;
 - audit privacy: schema, capability e DTO overlay superati;
 - migrazione simulata da schema v1/v2 a v3 con backup: superata;
 - bundle debug macOS creato e verificato con `codesign --verify --deep --strict`;

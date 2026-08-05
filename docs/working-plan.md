@@ -392,6 +392,7 @@ finestre. La prova reale del login item resta nella checklist manuale.
 | OVR-08 | Implementare dimensioni e contenuti configurabili — **Done** | P1 | M | OVR-05, OVR-06 | tre dimensioni e tre modalità persistono e si applicano live |
 | OVR-09 | Seguire il display della finestra focalizzata — **Done nel codice; manuale aperto** | P0 | L | OVR-03, MAC-03 | consenso Accessibilità separato, solo centro geometrico effimero, fallback principale e refresh ≤250 ms durante attività |
 | OVR-10 | Conservare il display valido su errore AX transitorio — **Done nel codice; manuale aperto** | P0 | S | OVR-09 | monitor corrente precede il fallback principale e ha test di regressione |
+| OVR-11 | Correggere salto diretto Retina → terzo display — **Done nel codice; manuale aperto** | P0 | S | OVR-09 | posizione logica usa la scala del target; layout 2×/1× con coordinate negative testato |
 
 **Gate E: implementazione completata, prova reale aperta.** Test automatici
 coprono coordinate, preset, DTO, fasce e persistenza. Le checklist manuali devono

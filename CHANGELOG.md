@@ -43,6 +43,8 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
   session statistics or the personal best until three seconds are observed;
 - a transient focused-window Accessibility failure keeps the PiP on its current
   valid display instead of immediately moving it to the primary display.
+- direct jumps from a Retina display to a farther 1× monitor now use the target
+  scale, preventing the PiP from landing on an intermediate display.
 
 ## [0.1.0] - 2026-08-05
 

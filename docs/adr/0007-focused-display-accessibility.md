@@ -27,7 +27,10 @@ soltanto questi quattro attributi:
 L'adapter riduce subito posizione e dimensione a un singolo `ScreenPoint`, il
 centro della finestra. `src-tauri` passa il punto a `monitor_from_point`, che su
 macOS usa lo stesso spazio globale Core Graphics, e colloca il PiP nell'angolo
-configurato dell'area utile di quel monitor.
+configurato dell'area utile di quel monitor. La posizione finale viene passata
+alla finestra come coordinata logica calcolata con la scala del monitor di
+destinazione: non deve essere riconvertita usando la scala del monitor dal quale
+il PiP si sta spostando.
 
 Il controllo avviene:
 
