@@ -7,6 +7,7 @@ type OverlayState = {
   behavior: "breathe" | "walk" | "run" | "tired";
   content: "wpm" | "animation" | "both";
   size: "small" | "medium" | "large";
+  backgroundEnabled: boolean;
   celebrationSequence: number;
 };
 
@@ -35,6 +36,7 @@ const render = (state: OverlayState): void => {
   card.dataset.behavior = state.behavior;
   card.dataset.content = state.content;
   card.dataset.size = state.size;
+  card.dataset.background = state.backgroundEnabled ? "card" : "transparent";
   card.classList.toggle("is-visible", state.visible);
   const normalizedTempo = Math.min(Math.max(state.displayedWpm, 0), 120) / 120;
   card.style.setProperty(

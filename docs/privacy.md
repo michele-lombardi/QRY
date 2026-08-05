@@ -108,6 +108,8 @@ posizione e non viene serializzato, registrato o conservato.
 - la copia CSV usa lo stesso exporter giornaliero aggregato già sottoposto ad
   audit;
 - nessuna nuova capability Tauri oltre `core:default` è stata aggiunta.
+- la preferenza della card trasparente è un singolo booleano visuale locale e
+  non modifica i dati osservati.
 
 ## Display focalizzato e permesso Accessibilità
 

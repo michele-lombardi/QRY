@@ -28,6 +28,9 @@ Expected: the overlay never accepts focus, typing or pointer input.
 
 While the monitor is running, exercise every option from QRY Settings:
 
+- [ ] Disable **Show background card** and confirm only Pip/WPM remain visible, with no
+      material rectangle, border or blur.
+
 - four positions: top-left, top-right, bottom-left, bottom-right;
 - three sizes: small, medium, large;
 - content: WPM, animation, both;

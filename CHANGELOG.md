@@ -19,6 +19,9 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 - detailed words, average WPM, peak WPM and active-time chart/table views;
 - Settings control for menu-bar WPM synchronized with the native context menu;
 - idle midnight rollover that closes the previous local day's active session.
+- persisted background-card switch that can render only Pip and its WPM counter
+  over a fully transparent, click-through desktop surface;
+- SQLite schema v4 and safe migration for the overlay background preference.
 
 - transparent click-through macOS overlay with live WPM and four visual bands;
 - four screen positions, three size presets and three content modes;

@@ -113,7 +113,7 @@ monitor funziona sull'hardware dell'utente.
 - Rust: rustfmt, Clippy con warning negati, check e test superati;
 - 70 test Rust passati e un benchmark manuale ignorato;
 - audit privacy: schema, capability e DTO overlay superati;
-- migrazione simulata da schema v1/v2 a v3 con backup: superata;
+- migrazioni simulate fino allo schema v4, inclusa v3 → v4 con backup: superate;
 - bundle debug macOS creato e verificato con `codesign --verify --deep --strict`;
 - smoke test di avvio: processo background avviato senza panic e poi terminato;
 - focus, click-through, TCC e due display: restano verifiche manuali, non simulate.

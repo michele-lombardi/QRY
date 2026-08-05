@@ -17,11 +17,12 @@ use typepulse_core::{
     StatisticsRepository,
 };
 
-const LATEST_SCHEMA_VERSION: usize = 3;
+const LATEST_SCHEMA_VERSION: usize = 4;
 const MIGRATION_LIST: &[M<'_>] = &[
     M::up(include_str!("../migrations/0001_initial.sql")),
     M::up(include_str!("../migrations/0002_overlay_preferences.sql")),
     M::up(include_str!("../migrations/0003_menu_bar_wpm.sql")),
+    M::up(include_str!("../migrations/0004_overlay_background.sql")),
 ];
 const MIGRATIONS: Migrations<'_> = Migrations::from_slice(MIGRATION_LIST);
 
@@ -308,7 +309,8 @@ impl StatisticsRepository for SqliteStatisticsRepository {
             .connection
             .query_row(
                 "SELECT auto_start_enabled, menu_bar_wpm_enabled, overlay_enabled,
-                        overlay_position, overlay_size, overlay_content
+                        overlay_position, overlay_size, overlay_content,
+                        overlay_background_enabled
                  FROM app_preferences WHERE singleton_id = 1",
                 [],
                 |row| {
@@ -319,12 +321,21 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                         row.get::<_, String>(3)?,
                         row.get::<_, String>(4)?,
                         row.get::<_, String>(5)?,
+                        row.get::<_, i64>(6)?,
                     ))
                 },
             )
             .optional()
             .map_err(query_error)?;
-        let Some((auto_start, menu_bar_wpm, overlay_enabled, position, size, content)) = stored
+        let Some((
+            auto_start,
+            menu_bar_wpm,
+            overlay_enabled,
+            position,
+            size,
+            content,
+            background_enabled,
+        )) = stored
         else {
             return Ok(AppPreferences::default());
         };
@@ -338,6 +349,10 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                 .ok_or_else(|| invalid_data("invalid overlay size preference"))?,
             overlay_content: OverlayContent::from_stored(&content)
                 .ok_or_else(|| invalid_data("invalid overlay content preference"))?,
+            overlay_background_enabled: stored_bool(
+                background_enabled,
+                "overlay background enabled",
+            )?,
         })
     }
 
@@ -346,15 +361,17 @@ impl StatisticsRepository for SqliteStatisticsRepository {
             .execute(
                 "INSERT INTO app_preferences(
                     singleton_id, auto_start_enabled, menu_bar_wpm_enabled,
-                    overlay_enabled, overlay_position, overlay_size, overlay_content
-                 ) VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6)
+                    overlay_enabled, overlay_position, overlay_size, overlay_content,
+                    overlay_background_enabled
+                 ) VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7)
                  ON CONFLICT(singleton_id) DO UPDATE SET
                     auto_start_enabled = excluded.auto_start_enabled,
                     menu_bar_wpm_enabled = excluded.menu_bar_wpm_enabled,
                     overlay_enabled = excluded.overlay_enabled,
                     overlay_position = excluded.overlay_position,
                     overlay_size = excluded.overlay_size,
-                    overlay_content = excluded.overlay_content",
+                    overlay_content = excluded.overlay_content,
+                    overlay_background_enabled = excluded.overlay_background_enabled",
                 params![
                     i64::from(preferences.auto_start_enabled),
                     i64::from(preferences.menu_bar_wpm_enabled),
@@ -362,6 +379,7 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                     preferences.overlay_position.as_str(),
                     preferences.overlay_size.as_str(),
                     preferences.overlay_content.as_str(),
+                    i64::from(preferences.overlay_background_enabled),
                 ],
             )
             .map_err(query_error)?;
@@ -564,6 +582,7 @@ mod tests {
                     overlay_position: OverlayPosition::BottomLeft,
                     overlay_size: OverlaySize::Large,
                     overlay_content: OverlayContent::Animation,
+                    overlay_background_enabled: false,
                 })
                 .unwrap();
         }
@@ -582,6 +601,7 @@ mod tests {
                 overlay_position: OverlayPosition::BottomLeft,
                 overlay_size: OverlaySize::Large,
                 overlay_content: OverlayContent::Animation,
+                overlay_background_enabled: false,
             }
         );
         assert_eq!(reopened.personal_best_wpm().unwrap(), Some(72.0));
@@ -601,7 +621,7 @@ mod tests {
                 .unwrap();
         }
         let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
-        assert_eq!(repository.schema_version().unwrap(), 3);
+        assert_eq!(repository.schema_version().unwrap(), 4);
         assert_eq!(
             repository.load_preferences().unwrap(),
             AppPreferences::default()
@@ -627,10 +647,38 @@ mod tests {
         }
         let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
         let preferences = repository.load_preferences().unwrap();
-        assert_eq!(repository.schema_version().unwrap(), 3);
+        assert_eq!(repository.schema_version().unwrap(), 4);
         assert!(preferences.menu_bar_wpm_enabled);
         assert!(!preferences.overlay_enabled);
         assert_eq!(preferences.overlay_size, OverlaySize::Large);
+        assert!(preferences.overlay_background_enabled);
+        assert!(repository.last_backup_path().is_some());
+    }
+
+    #[test]
+    fn version_three_database_gains_the_safe_background_default() {
+        let directory = tempdir().unwrap();
+        let path = directory.path().join("typepulse.sqlite3");
+        {
+            let connection = rusqlite::Connection::open(&path).unwrap();
+            connection
+                .execute_batch(concat!(
+                    include_str!("../migrations/0001_initial.sql"),
+                    "\n",
+                    include_str!("../migrations/0002_overlay_preferences.sql"),
+                    "\n",
+                    include_str!("../migrations/0003_menu_bar_wpm.sql"),
+                    "\nUPDATE app_preferences SET overlay_content = 'both', menu_bar_wpm_enabled = 0;",
+                    "\nPRAGMA user_version = 3;"
+                ))
+                .unwrap();
+        }
+        let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
+        let preferences = repository.load_preferences().unwrap();
+        assert_eq!(repository.schema_version().unwrap(), 4);
+        assert!(!preferences.menu_bar_wpm_enabled);
+        assert_eq!(preferences.overlay_content, OverlayContent::Both);
+        assert!(preferences.overlay_background_enabled);
         assert!(repository.last_backup_path().is_some());
     }
 

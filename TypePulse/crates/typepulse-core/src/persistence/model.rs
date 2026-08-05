@@ -201,6 +201,8 @@ pub struct AppPreferences {
     pub overlay_size: OverlaySize,
     /// Overlay visual content.
     pub overlay_content: OverlayContent,
+    /// Whether the overlay renders its material card behind Pip and WPM.
+    pub overlay_background_enabled: bool,
 }
 
 impl Default for AppPreferences {
@@ -212,6 +214,7 @@ impl Default for AppPreferences {
             overlay_position: OverlayPosition::TopRight,
             overlay_size: OverlaySize::Medium,
             overlay_content: OverlayContent::Both,
+            overlay_background_enabled: true,
         }
     }
 }
@@ -228,6 +231,7 @@ mod tests {
         assert_eq!(defaults.overlay_position, OverlayPosition::TopRight);
         assert_eq!(defaults.overlay_size, OverlaySize::Medium);
         assert_eq!(defaults.overlay_content, OverlayContent::Both);
+        assert!(defaults.overlay_background_enabled);
 
         for value in [
             OverlayPosition::TopLeft,

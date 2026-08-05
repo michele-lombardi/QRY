@@ -370,6 +370,7 @@ report di Fase C.
 | DB-09 | Implementare export CSV | Done | P0 | M | DB-06 | header, decimali e ordinamento stabili testati |
 | DB-10 | Definire strategia backup/migrazione fallita | Done | P1 | Spike | DB-03 | copia `.bak` pre-migrazione ed errore categorizzato |
 | DB-11 | Persistenza visibilità WPM menu bar — **Done** | P1 | S | DB-10, APP-03 | schema v3, default attivo e migrazione v1/v2 con backup testati |
+| DB-12 | Persistenza sfondo overlay — **Done** | P1 | S | DB-11, OVR-12 | schema v4, default card attiva e migrazione v3 con backup testata |
 
 **Gate D: chiuso.** Statistiche e preferenze sopravvivono alla riapertura;
 l'audit automatico dello schema SQLite esclude tasti, testo, app e titoli di
@@ -394,6 +395,7 @@ finestre. La prova reale del login item resta nella checklist manuale.
 | OVR-09 | Seguire il display della finestra focalizzata — **Done nel codice; manuale aperto** | P0 | L | OVR-03, MAC-03 | consenso Accessibilità separato, solo centro geometrico effimero, fallback principale e refresh ≤250 ms durante attività |
 | OVR-10 | Conservare il display valido su errore AX transitorio — **Done nel codice; manuale aperto** | P0 | S | OVR-09 | monitor corrente precede il fallback principale e ha test di regressione |
 | OVR-11 | Correggere salto diretto Retina → terzo display — **Done nel codice; manuale aperto** | P0 | S | OVR-09 | posizione logica usa la scala del target; layout 2×/1× con coordinate negative testato |
+| OVR-12 | Aggiungere modalità Pip senza sfondo — **Done nel codice; manuale aperto** | P1 | M | OVR-08 | preferenza persistente; niente materiale, bordo, blur o ombra; restano solo Pip/WPM click-through |
 
 **Gate E: implementazione completata, prova reale aperta.** Test automatici
 coprono coordinate, preset, DTO, fasce e persistenza. Le checklist manuali devono
@@ -430,7 +432,7 @@ Accessibilità concessi, oltre al fallback senza Accessibilità.
 | UI-03 | Creare finestra statistiche — **Done** | P0 | L | DB-06, DB-07 | quattro metriche e viste oggi/settimana/mese/anno visibili |
 | UI-04 | Creare grafico giornaliero — **Done** | P1 | L | DB-05 | bucket WPM/parole/picco e breakdown leggibili |
 | UI-05 | Creare settings General — **Done** | P0 | M | APP-03 | monitor, login, WPM e navigazione persistono |
-| UI-06 | Creare settings Overlay — **Done** | P0 | M | OVR-08 | posizione, dimensione e contenuto applicati live |
+| UI-06 | Creare settings Overlay — **Done** | P0 | M | OVR-08 | sfondo, posizione, dimensione e contenuto applicati live |
 | UI-07 | Creare settings Appearance — **Partial** | P1 | S | UI-01 | tema System adattivo pronto; override Light/Dark futuro |
 | UI-08 | Implementare avvio al login — **Done anticipato in D** | P1 | M | UI-05 | login item e monitor automatico seguono la stessa preferenza |
 | UI-09 | Creare onboarding in tre passaggi | P0 | L | MAC-03, MAC-07, OVR-09 | primo avvio spiega privacy e i due permessi distinti |

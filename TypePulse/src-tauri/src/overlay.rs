@@ -33,6 +33,7 @@ pub(crate) struct OverlayPreferenceDto {
     position: &'static str,
     size: &'static str,
     content: &'static str,
+    background_enabled: bool,
 }
 
 impl From<AppPreferences> for OverlayPreferenceDto {
@@ -42,6 +43,7 @@ impl From<AppPreferences> for OverlayPreferenceDto {
             position: preferences.overlay_position.as_str(),
             size: preferences.overlay_size.as_str(),
             content: preferences.overlay_content.as_str(),
+            background_enabled: preferences.overlay_background_enabled,
         }
     }
 }
@@ -54,6 +56,7 @@ pub(crate) struct OverlayPreferenceInput {
     position: String,
     size: String,
     content: String,
+    background_enabled: bool,
 }
 
 /// Complete frontend presentation state emitted by the controller.
@@ -66,6 +69,7 @@ struct OverlayEventDto {
     behavior: &'static str,
     content: &'static str,
     size: &'static str,
+    background_enabled: bool,
     celebration_sequence: u64,
 }
 
@@ -160,6 +164,7 @@ pub(crate) fn set_overlay_preference(
     preferences.overlay_position = position;
     preferences.overlay_size = size;
     preferences.overlay_content = content;
+    preferences.overlay_background_enabled = preference.background_enabled;
     state.save_preferences(preferences)?;
     runtime.update(preferences);
     Ok(preferences.into())
@@ -233,6 +238,7 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
             ),
             content: preferences.overlay_content.as_str(),
             size: preferences.overlay_size.as_str(),
+            background_enabled: preferences.overlay_background_enabled,
             celebration_sequence: snapshot.live_metrics.celebration_sequence,
         };
         let tray_status = (
@@ -506,16 +512,18 @@ mod tests {
             overlay_position: OverlayPosition::BottomRight,
             overlay_size: OverlaySize::Large,
             overlay_content: OverlayContent::Both,
+            overlay_background_enabled: false,
         }))
         .unwrap();
         let Value::Object(object) = value else {
             panic!("overlay preference must serialize as an object");
         };
-        assert_eq!(object.len(), 4);
+        assert_eq!(object.len(), 5);
         assert!(object.contains_key("enabled"));
         assert!(object.contains_key("position"));
         assert!(object.contains_key("size"));
         assert!(object.contains_key("content"));
+        assert!(object.contains_key("backgroundEnabled"));
     }
 
     #[test]
@@ -527,13 +535,14 @@ mod tests {
             behavior: "run",
             content: "both",
             size: "medium",
+            background_enabled: false,
             celebration_sequence: 1,
         })
         .unwrap();
         let Value::Object(object) = value else {
             panic!("overlay event must serialize as an object");
         };
-        assert_eq!(object.len(), 7);
+        assert_eq!(object.len(), 8);
         for expected in [
             "visible",
             "displayedWpm",
@@ -541,6 +550,7 @@ mod tests {
             "behavior",
             "content",
             "size",
+            "backgroundEnabled",
             "celebrationSequence",
         ] {
             assert!(object.contains_key(expected));

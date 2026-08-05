@@ -55,6 +55,33 @@ body {
   transform: translateY(0);
 }
 
+.overlay-card[data-background="transparent"] {
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.overlay-card[data-background="transparent"] .pip-motion,
+.overlay-card[data-background="transparent"] .pulse-ring,
+.overlay-card[data-background="transparent"] .speed-line,
+.overlay-card[data-background="transparent"] .cheer-spark {
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 55%));
+}
+
+.overlay-card[data-background="transparent"] .metric strong,
+.overlay-card[data-background="transparent"] .metric span {
+  text-shadow:
+    0 1px 3px rgb(0 0 0 / 90%),
+    0 0 1px #111;
+}
+
+.overlay-card[data-background="transparent"] .metric span {
+  color: rgb(245 245 243 / 78%);
+}
+
 .pip-stage {
   position: relative;
   display: grid;

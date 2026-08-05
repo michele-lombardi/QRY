@@ -34,7 +34,9 @@ specifiche della piattaforma.
 
 La card è larga indicativamente 180–220 pt, usa un materiale traslucido macOS,
 non intercetta i click ed è sempre sopra le finestre normali. L'utente può
-scegliere uno dei quattro angoli dello schermo. Il monitor di destinazione segue
+scegliere uno dei quattro angoli dello schermo e può rimuovere completamente
+materiale, bordo, blur e ombra della card per mostrare soltanto Pip e contatore
+WPM sul desktop trasparente. Il monitor di destinazione segue
 il centro della finestra focalizzata e non la posizione del mouse.
 
 L'ingresso usa fade-in e un lieve spostamento verticale di circa 150 ms. In
@@ -90,6 +92,7 @@ ogni evento.
 - reset delle statistiche di oggi;
 - overlay attivo, posizione, dimensione e ritardo di scomparsa;
 - contenuto overlay: WPM, animazione o entrambi;
+- card overlay visibile oppure superficie totalmente trasparente;
 - aspetto System, Light o Dark;
 - collegamento alle impostazioni di Input Monitoring.
 - stato e collegamento separati al permesso opzionale Accessibilità per seguire

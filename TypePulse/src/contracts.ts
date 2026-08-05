@@ -37,6 +37,7 @@ export type OverlayPreference = {
   position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
   size: "small" | "medium" | "large";
   content: "wpm" | "animation" | "both";
+  backgroundEnabled: boolean;
 };
 
 export type DailySummary = {

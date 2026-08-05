@@ -35,6 +35,10 @@ focused-display Pip behavior.
       right-click check state synchronized.
 - [ ] Number changes do not move the Pulse icon because the slot stays fixed.
 - [ ] Pip enabled, position, size and content apply live and persist after quit.
+- [ ] Disabling Show background card removes fill, border, blur and panel shadow; only
+      Pip and the selected WPM counter remain over the desktop.
+- [ ] The transparent mode remains click-through and readable over both a light and a
+      dark window, and persists after Quit/reopen.
 - [ ] Input Monitoring and Accessibility show independent accurate states.
 - [ ] Request/Open System Settings actions target the correct macOS panes.
 - [ ] Light and Dark system appearances keep text, controls and brand readable.

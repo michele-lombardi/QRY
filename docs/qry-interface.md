@@ -67,7 +67,8 @@ The Apple-style sidebar separates four concerns:
 
 - **General**: start/pause, launch and monitor automatically, menu-bar WPM and
   Today-panel access;
-- **Appearance**: Pip enabled, corner, size, content and a live visual preview;
+- **Appearance**: Pip enabled, optional background card, corner, size, content
+  and a live visual preview;
 - **Permissions**: separate Input Monitoring and optional Accessibility states,
   request actions and System Settings links;
 - **Privacy**: local-storage, no-network and license explanation.
@@ -75,6 +76,12 @@ The Apple-style sidebar separates four concerns:
 The interface follows the macOS system appearance automatically. Explicit
 Light/Dark overrides remain a later task; System appearance is the supported
 mode in this increment.
+
+When **Show background card** is off, the overlay WebView and native window stay
+transparent and click-through. QRY removes card fill, border, blur, radius and
+box shadow, leaving only Pip, its motion and the selected WPM content. A small
+element-level contrast shadow keeps Pip and the counter legible without
+creating a panel-shaped background.
 
 ## Detailed statistics
 

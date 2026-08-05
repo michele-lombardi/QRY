@@ -340,6 +340,17 @@ select {
   vector-effect: non-scaling-stroke;
 }
 
+.preview-card.is-transparent {
+  border: 1px dashed var(--border);
+  color: var(--black);
+  background: transparent;
+}
+
+.preview-card.is-transparent > span,
+.preview-card.is-transparent small {
+  color: var(--muted);
+}
+
 .permission-pill {
   padding: 5px 9px;
   border-radius: 99px;

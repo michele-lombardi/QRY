@@ -110,6 +110,16 @@
               </div>
               <input id="overlay-enabled" class="switch" type="checkbox" />
             </label>
+            <label class="setting-row interactive">
+              <div>
+                <strong>Show background card</strong
+                ><small
+                  >Turn this off to keep the desktop fully visible behind Pip and the
+                  WPM counter.</small
+                >
+              </div>
+              <input id="overlay-background-enabled" class="switch" type="checkbox" />
+            </label>
             <label class="setting-row"
               ><div>
                 <strong>Position</strong
@@ -142,7 +152,7 @@
               </select></label
             >
           </div>
-          <div class="preview-card">
+          <div id="overlay-preview" class="preview-card">
             <span>Preview</span><strong id="preview-wpm">82</strong><small>WPM</small
             ><svg viewBox="0 0 154 36" preserveAspectRatio="none" aria-hidden="true">
               <path id="settings-wave"></path>

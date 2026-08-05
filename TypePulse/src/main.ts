@@ -19,9 +19,11 @@ const stopButton = byId<HTMLButtonElement>("stop-monitor");
 const autoStart = byId<HTMLInputElement>("auto-start");
 const menuBarWpm = byId<HTMLInputElement>("menu-bar-wpm");
 const overlayEnabled = byId<HTMLInputElement>("overlay-enabled");
+const overlayBackgroundEnabled = byId<HTMLInputElement>("overlay-background-enabled");
 const overlayPosition = byId<HTMLSelectElement>("overlay-position");
 const overlaySize = byId<HTMLSelectElement>("overlay-size");
 const overlayContent = byId<HTMLSelectElement>("overlay-content");
+const overlayPreview = byId<HTMLElement>("overlay-preview");
 byId<SVGPathElement>("settings-wave").setAttribute("d", pulsePath);
 
 const setMessage = (value: string, isError = false): void => {
@@ -60,6 +62,8 @@ const renderOverlay = (preference: OverlayPreference): void => {
   overlayPosition.value = preference.position;
   overlaySize.value = preference.size;
   overlayContent.value = preference.content;
+  overlayBackgroundEnabled.checked = preference.backgroundEnabled;
+  overlayPreview.classList.toggle("is-transparent", !preference.backgroundEnabled);
 };
 
 const refresh = async (): Promise<void> => {
@@ -226,7 +230,13 @@ menuBarWpm.addEventListener("change", async () => {
 });
 
 const saveOverlay = async (): Promise<void> => {
-  const controls = [overlayEnabled, overlayPosition, overlaySize, overlayContent];
+  const controls = [
+    overlayEnabled,
+    overlayBackgroundEnabled,
+    overlayPosition,
+    overlaySize,
+    overlayContent,
+  ];
   controls.forEach((control) => (control.disabled = true));
   try {
     renderOverlay(
@@ -236,6 +246,7 @@ const saveOverlay = async (): Promise<void> => {
           position: overlayPosition.value,
           size: overlaySize.value,
           content: overlayContent.value,
+          backgroundEnabled: overlayBackgroundEnabled.checked,
         },
       }),
     );
@@ -248,9 +259,13 @@ const saveOverlay = async (): Promise<void> => {
   }
 };
 
-[overlayEnabled, overlayPosition, overlaySize, overlayContent].forEach((control) =>
-  control.addEventListener("change", () => void saveOverlay()),
-);
+[
+  overlayEnabled,
+  overlayBackgroundEnabled,
+  overlayPosition,
+  overlaySize,
+  overlayContent,
+].forEach((control) => control.addEventListener("change", () => void saveOverlay()));
 byId<HTMLButtonElement>("open-full-statistics").addEventListener(
   "click",
   () => void invoke("open_statistics_window"),

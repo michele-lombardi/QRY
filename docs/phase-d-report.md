@@ -87,9 +87,10 @@ Risultato al completamento:
 - persistenza dopo riapertura, migrazione, backup, rollover, reset isolato, CSV
   e audit privacy coperti da test.
 
-Lo schema corrente è v3: `0002` aggiunge le preferenze overlay e `0003` la sola
-preferenza booleana del WPM nella menu bar. Migrazioni da v1 e v2 conservano i
-valori esistenti, creano il backup previsto e abilitano il numero per default.
+Lo schema corrente è v4: `0002` aggiunge le preferenze overlay, `0003` la sola
+visibilità WPM nella menu bar e `0004` la preferenza visuale della card di sfondo.
+Migrazioni da v1, v2 e v3 conservano i valori esistenti, creano il backup previsto
+e mantengono i nuovi valori predefiniti compatibili.
 
 ## TODO manuali lasciati aperti
 
