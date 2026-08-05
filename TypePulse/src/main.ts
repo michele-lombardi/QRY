@@ -131,7 +131,7 @@ const refresh = async (): Promise<void> => {
 byId<HTMLButtonElement>("check-permission").addEventListener("click", async () => {
   try {
     renderPermission(await call<PermissionStatus>("input_permission_status"));
-    setMessage("Permission status refreshed.");
+    setMessage("Input Monitoring status refreshed.");
   } catch (error) {
     setMessage(String(error), true);
   }
@@ -160,7 +160,7 @@ byId<HTMLButtonElement>("open-settings").addEventListener("click", async () => {
 startButton.addEventListener("click", async () => {
   try {
     renderMonitor(await call<MonitorStatus>("start_input_monitoring"));
-    setMessage("Passive monitoring started. Type in another application to test it.");
+    setMessage("Your keyboard has a heartbeat. Type elsewhere to see its rhythm.");
   } catch (error) {
     setMessage(String(error), true);
     await refresh();
@@ -170,7 +170,7 @@ startButton.addEventListener("click", async () => {
 stopButton.addEventListener("click", async () => {
   try {
     renderMonitor(await call<MonitorStatus>("stop_input_monitoring"));
-    setMessage("Monitoring stopped.");
+    setMessage("The rhythm is paused.");
   } catch (error) {
     setMessage(String(error), true);
   }
@@ -185,8 +185,8 @@ autoStart.addEventListener("change", async () => {
     renderStartup(preference);
     setMessage(
       preference.autoStartEnabled
-        ? "Automatic login launch and monitoring enabled."
-        : "Automatic startup disabled.",
+        ? "TypePulse will be ready when you log in."
+        : "Automatic startup is off.",
     );
   } catch (error) {
     setMessage(String(error), true);
@@ -209,7 +209,7 @@ const saveOverlayPreference = async (): Promise<void> => {
       },
     });
     renderOverlayPreference(preference);
-    setMessage("Overlay preferences saved and applied live.");
+    setMessage("Your rhythm view is updated.");
   } catch (error) {
     setMessage(String(error), true);
     await refresh();
@@ -226,7 +226,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   try {
     await refresh();
     setMessage(
-      "Local metrics initialized. Daily totals roll over automatically at the local date change.",
+      "Ready. Today's rhythm starts fresh automatically at your local midnight.",
     );
     window.setInterval(
       () =>

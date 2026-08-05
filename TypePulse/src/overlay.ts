@@ -4,6 +4,7 @@ type OverlayState = {
   visible: boolean;
   displayedWpm: number;
   animationBand: "still" | "steady" | "fast" | "intense";
+  behavior: "breathe" | "walk" | "run" | "tired";
   content: "wpm" | "animation" | "both";
   size: "small" | "medium" | "large";
   celebrationSequence: number;
@@ -24,19 +25,25 @@ const celebrate = (): void => {
   card.classList.add("is-celebrating");
   celebrationTimer = window.setTimeout(
     () => card.classList.remove("is-celebrating"),
-    900,
+    1_600,
   );
 };
 
 const render = (state: OverlayState): void => {
   wpm.textContent = Math.round(state.displayedWpm).toLocaleString();
   card.dataset.band = state.animationBand;
+  card.dataset.behavior = state.behavior;
   card.dataset.content = state.content;
   card.dataset.size = state.size;
   card.classList.toggle("is-visible", state.visible);
+  const normalizedTempo = Math.min(Math.max(state.displayedWpm, 0), 120) / 120;
+  card.style.setProperty(
+    "--pulse-duration",
+    `${(1.6 - normalizedTempo * 1.2).toFixed(2)}s`,
+  );
   card.setAttribute(
     "aria-label",
-    `${Math.round(state.displayedWpm)} words per minute, ${state.animationBand} rhythm`,
+    `${Math.round(state.displayedWpm)} words per minute, ${state.behavior} rhythm`,
   );
   if (
     state.celebrationSequence > 0 &&

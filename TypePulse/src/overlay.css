@@ -1,11 +1,7 @@
 :root {
-  color: #f8fff9;
+  color: #f5f5f3;
   font-family:
-    Inter,
-    ui-rounded,
-    -apple-system,
-    BlinkMacSystemFont,
-    "SF Pro Rounded",
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui,
     sans-serif;
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
@@ -33,7 +29,8 @@ body {
 }
 
 .overlay-card {
-  --accent: #76d58d;
+  --pip-color: #3cefff;
+  --pulse-duration: 1.6s;
   display: flex;
   width: 100%;
   height: 100%;
@@ -41,84 +38,169 @@ body {
   justify-content: center;
   gap: 14px;
   padding: 14px 18px;
-  border: 1px solid rgb(255 255 255 / 24%);
-  border-radius: 24px;
+  border: 1px solid rgb(245 245 243 / 14%);
+  border-radius: 20px;
   opacity: 0;
-  background: rgb(20 30 24 / 82%);
-  box-shadow:
-    0 14px 34px rgb(0 0 0 / 24%),
-    inset 0 1px rgb(255 255 255 / 10%);
-  backdrop-filter: blur(24px) saturate(130%);
-  transform: translateY(8px) scale(0.98);
+  background: rgb(28 28 32 / 82%);
+  box-shadow: 0 20px 40px -16px rgb(0 0 0 / 70%);
+  backdrop-filter: blur(24px);
+  transform: translateY(8px);
   transition:
-    opacity 150ms ease-out,
-    transform 150ms ease-out;
+    opacity 120ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 120ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .overlay-card.is-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translateY(0);
 }
 
-.rhythm-character {
+.pip-stage {
   position: relative;
   display: grid;
-  width: 58px;
-  height: 58px;
+  width: 62px;
+  height: 64px;
   flex: 0 0 auto;
   place-items: center;
 }
 
-.creature {
+.pip-motion {
   position: relative;
   z-index: 2;
-  width: 47px;
-  height: 47px;
-  border-radius: 44% 54% 46% 52%;
-  background: linear-gradient(145deg, #a4efae, var(--accent));
-  box-shadow:
-    0 8px 18px rgb(19 79 39 / 32%),
-    inset 5px 6px 10px rgb(255 255 255 / 25%);
-  transform-origin: 50% 78%;
-  animation: breathe 2.4s ease-in-out infinite;
+  width: 58px;
+  height: 58px;
+  transform-origin: 50% 85%;
 }
 
-.eye {
-  position: absolute;
-  top: 16px;
-  width: 5px;
-  height: 7px;
-  border-radius: 50%;
-  background: #16301d;
+.pip {
+  display: block;
+  width: 58px;
+  height: 58px;
+  overflow: visible;
 }
 
-.eye-left {
-  left: 13px;
+.pip-body,
+.pip-foot {
+  fill: var(--pip-color);
 }
 
-.eye-right {
-  right: 13px;
+.pip-eye {
+  fill: #111111;
 }
 
-.smile {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  width: 13px;
-  height: 7px;
-  border-bottom: 2px solid #16301d;
-  border-radius: 50%;
-  transform: translateX(-50%);
+.cheer-eye,
+.tired-eye {
+  display: none;
+  fill: none;
+  stroke: #111111;
+  stroke-width: 5;
+  stroke-linecap: round;
 }
 
 .pulse-ring {
   position: absolute;
   z-index: 1;
-  width: 46px;
-  height: 46px;
-  border: 2px solid var(--accent);
+  width: 50px;
+  height: 50px;
+  border: 1.5px solid var(--pip-color);
   border-radius: 50%;
   opacity: 0;
+  animation: pulse-ring var(--pulse-duration) ease-out infinite;
+}
+
+.speed-line,
+.cheer-spark {
+  position: absolute;
+  z-index: 3;
+  display: none;
+  background: var(--pip-color);
+}
+
+.speed-line {
+  left: -1px;
+  height: 2px;
+  border-radius: 2px;
+  animation: speed-line 420ms linear infinite;
+}
+
+.speed-line-one {
+  top: 25px;
+  width: 17px;
+  opacity: 0.45;
+}
+
+.speed-line-two {
+  top: 39px;
+  width: 11px;
+  opacity: 0.3;
+  animation-delay: 150ms;
+}
+
+[data-behavior="breathe"] .pip-motion {
+  animation: breathe 3.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+[data-behavior="walk"] .pip-motion {
+  animation: walk 620ms ease-in-out infinite;
+}
+
+[data-behavior="walk"] .foot-left {
+  animation: leg-a 620ms ease-in-out infinite;
+}
+
+[data-behavior="walk"] .foot-right {
+  animation: leg-b 620ms ease-in-out infinite;
+}
+
+[data-band="fast"][data-behavior="walk"] .pip-motion,
+[data-band="fast"][data-behavior="walk"] .pip-foot {
+  animation-duration: 420ms;
+}
+
+[data-behavior="run"] .pip-motion {
+  animation: run 260ms ease-in-out infinite;
+}
+
+[data-behavior="run"] .pip {
+  transform: rotate(10deg);
+}
+
+[data-behavior="run"] .pip-foot {
+  height: 20px;
+  animation-duration: 260ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+[data-behavior="run"] .foot-left {
+  animation-name: leg-a;
+}
+
+[data-behavior="run"] .foot-right {
+  animation-name: leg-b;
+}
+
+[data-behavior="run"] .speed-line {
+  display: block;
+}
+
+[data-behavior="tired"] .pip-motion {
+  opacity: 0.72;
+  animation: tired 2.8s ease-in-out infinite;
+}
+
+[data-behavior="tired"] .normal-eye {
+  display: none;
+}
+
+[data-behavior="tired"] .tired-eye {
+  display: block;
+}
+
+[data-behavior="tired"] .pip-foot {
+  y: 106px;
+  width: 14px;
+  height: 12px;
 }
 
 .metric {
@@ -127,58 +209,23 @@ body {
 }
 
 .metric strong {
+  color: #f5f5f3;
   font-size: 2rem;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.06em;
-  line-height: 0.94;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
 }
 
 .metric span {
   margin-top: 5px;
-  color: #aebdb2;
+  color: rgb(245 245 243 / 45%);
   font-size: 0.66rem;
-  font-weight: 750;
-  letter-spacing: 0.15em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
 }
 
-[data-band="steady"] {
-  --accent: #76d58d;
-}
-
-[data-band="steady"] .creature {
-  animation: bounce 1.05s ease-in-out infinite;
-}
-
-[data-band="fast"] {
-  --accent: #f5c45f;
-}
-
-[data-band="fast"] .creature {
-  animation: bounce 620ms ease-in-out infinite;
-}
-
-[data-band="fast"] .ring-one,
-[data-band="intense"] .ring-one {
-  animation: pulse 1s ease-out infinite;
-}
-
-[data-band="intense"] {
-  --accent: #ff846f;
-}
-
-[data-band="intense"] .creature {
-  animation: intense 330ms ease-in-out infinite alternate;
-}
-
-[data-band="intense"] .ring-one {
-  animation-duration: 700ms;
-}
-
-[data-band="intense"] .ring-two {
-  animation: pulse 700ms 350ms ease-out infinite;
-}
-
-[data-content="wpm"] .rhythm-character,
+[data-content="wpm"] .pip-stage,
 [data-content="animation"] .metric {
   display: none;
 }
@@ -193,10 +240,10 @@ body {
 }
 
 [data-size="small"] {
-  border-radius: 20px;
+  border-radius: 17px;
 }
 
-[data-size="small"] .rhythm-character {
+[data-size="small"] .pip-stage {
   transform: scale(0.82);
 }
 
@@ -204,7 +251,7 @@ body {
   font-size: 1.55rem;
 }
 
-[data-size="large"] .rhythm-character {
+[data-size="large"] .pip-stage {
   transform: scale(1.18);
 }
 
@@ -212,84 +259,160 @@ body {
   font-size: 2.5rem;
 }
 
-.record-burst {
-  position: absolute;
-  z-index: 4;
-  top: -9px;
-  right: -7px;
-  color: #ffe17b;
-  font-size: 1.35rem;
-  opacity: 0;
-  text-shadow: 0 3px 10px rgb(255 194 61 / 60%);
-  transform: scale(0.2) rotate(-25deg);
+.cheer-spark {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #30d158;
+  animation: cheer-spark 1.1s ease-in-out infinite;
+}
+
+.cheer-spark-one {
+  top: 5px;
+  left: 3px;
+}
+
+.cheer-spark-two {
+  top: 10px;
+  right: 3px;
+  width: 4px;
+  height: 4px;
+  animation-delay: 350ms;
 }
 
 .is-celebrating {
-  animation: card-celebration 680ms ease-out;
+  --pip-color: #30d158;
 }
 
-.is-celebrating .record-burst {
-  animation: record-star 850ms ease-out;
+.is-celebrating .pip-motion {
+  animation: record-jump 1.5s cubic-bezier(0.3, 0, 0.5, 1) 1;
+}
+
+.is-celebrating .normal-eye {
+  display: none;
+}
+
+.is-celebrating .tired-eye {
+  display: none;
+}
+
+.is-celebrating .cheer-eye,
+.is-celebrating .cheer-spark {
+  display: block;
 }
 
 @keyframes breathe {
   50% {
-    transform: scale(1.045);
+    transform: scale(1.055);
   }
 }
 
-@keyframes bounce {
+@keyframes walk {
   50% {
-    transform: translateY(-5px) rotate(2deg);
+    transform: translateY(-3px);
   }
 }
 
-@keyframes intense {
-  from {
-    transform: translate(-2px, -3px) rotate(-4deg) scale(1.02);
-  }
-  to {
-    transform: translate(2px, 1px) rotate(4deg) scale(1.08);
+@keyframes run {
+  50% {
+    transform: translateY(-3px);
   }
 }
 
-@keyframes pulse {
-  from {
-    opacity: 0.6;
-    transform: scale(0.75);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.45);
+@keyframes tired {
+  50% {
+    transform: translateY(4px) rotate(-4deg);
   }
 }
 
-@keyframes card-celebration {
-  45% {
-    border-color: rgb(255 225 123 / 80%);
-    box-shadow: 0 0 38px rgb(255 206 89 / 50%);
-    transform: scale(1.045);
+@keyframes leg-a {
+  50% {
+    transform: translateY(-7px);
   }
 }
 
-@keyframes record-star {
-  25%,
-  65% {
-    opacity: 1;
-    transform: scale(1.25) rotate(12deg);
-  }
+@keyframes leg-b {
+  0%,
   100% {
+    transform: translateY(-7px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-ring {
+  from {
+    opacity: 0.85;
+    transform: scale(0.55);
+  }
+  to {
     opacity: 0;
-    transform: translateY(-8px) scale(0.8) rotate(28deg);
+    transform: scale(1.6);
+  }
+}
+
+@keyframes speed-line {
+  from {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+  40% {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+
+@keyframes record-jump {
+  0%,
+  62%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  12% {
+    transform: translateY(0) scale(1.12, 0.88);
+  }
+  22% {
+    transform: translateY(-22px) scale(0.94, 1.06);
+  }
+  40% {
+    transform: translateY(-4px) scale(1);
+  }
+}
+
+@keyframes cheer-spark {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .overlay-card,
-  .creature,
+  .overlay-card {
+    transform: none;
+    transition: opacity 120ms linear;
+  }
+
+  .pip-motion,
+  .pip-foot,
   .pulse-ring,
-  .record-burst {
+  .speed-line,
+  .cheer-spark {
     animation: none !important;
-    transition-duration: 1ms;
+    transform: none !important;
+  }
+
+  .pulse-ring,
+  .speed-line,
+  .cheer-spark {
+    display: none !important;
   }
 }

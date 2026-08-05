@@ -4,30 +4,38 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="TypePulse local metrics diagnostics" />
-    <title>TypePulse — Local metrics</title>
+    <meta name="description" content="TypePulse — see your typing rhythm" />
+    <title>TypePulse — Find your rhythm</title>
     <script type="module" src="/src/main.ts" defer></script>
   </head>
 
   <body>
     <main class="shell">
       <header class="hero">
-        <span class="eyebrow">Phase D · local metrics</span>
-        <h1>TypePulse diagnostics</h1>
+        <div class="brand-lockup" aria-label="TypePulse">
+          <svg viewBox="0 0 62 40" aria-hidden="true">
+            <path
+              d="M3 20 A7 7 0 0 1 17 20 A7 7 0 0 0 31 20 A7 7 0 0 1 45 20 A7 7 0 0 0 59 20"
+            ></path>
+          </svg>
+          <span>TypePulse</span>
+        </div>
+        <span class="eyebrow">Live rhythm · private by design</span>
+        <h1>Find your rhythm.</h1>
         <p class="promise">
-          Counts typing-like activity. Never characters or key codes.
+          Your keyboard has a heartbeat. TypePulse shows its pace, never what you type.
         </p>
       </header>
 
       <section class="status-card" aria-labelledby="permission-heading">
         <div>
-          <p class="section-label">Input Monitoring permission</p>
+          <p class="section-label">Input Monitoring</p>
           <h2 id="permission-heading">
             Access: <strong id="permission-value">checking</strong>
           </h2>
           <p>
-            macOS controls this permission. The app can request access and open the
-            exact System Settings section, but it cannot grant access itself.
+            macOS controls this permission. TypePulse only notices typing rhythm;
+            characters and key codes never leave the system adapter.
           </p>
         </div>
         <div class="actions">
@@ -42,7 +50,7 @@
       <section class="monitor-card" aria-labelledby="monitor-heading">
         <div class="monitor-header">
           <div>
-            <p class="section-label">Passive event tap</p>
+            <p class="section-label">Your keyboard's heartbeat</p>
             <h2 id="monitor-heading">
               Monitor: <strong id="monitor-value">stopped</strong>
             </h2>
@@ -158,16 +166,16 @@
       </section>
 
       <aside class="privacy-note">
-        <strong>Diagnostic boundary</strong>
+        <strong>Private by design</strong>
         <p>
-          The interface receives live WPM and local aggregates. SQLite stores sessions,
-          minute buckets and preferences—never key identity, text, application, or
-          window metadata.
+          TypePulse keeps only local rhythm summaries. Never individual keys, written
+          text, application names, or window titles.
         </p>
       </aside>
 
       <footer>
         <p id="runtime-status" role="status">Initializing diagnostics…</p>
+        <p class="endorsement">A personal project by Micro-Y Labs</p>
       </footer>
     </main>
   </body>

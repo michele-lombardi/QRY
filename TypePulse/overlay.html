@@ -13,20 +13,45 @@
       id="overlay-card"
       class="overlay-card"
       data-band="still"
+      data-behavior="breathe"
       data-content="both"
       data-size="medium"
       aria-live="polite"
       aria-atomic="true"
     >
-      <div class="rhythm-character" aria-hidden="true">
-        <div class="pulse-ring ring-one"></div>
-        <div class="pulse-ring ring-two"></div>
-        <div class="creature">
-          <span class="eye eye-left"></span>
-          <span class="eye eye-right"></span>
-          <span class="smile"></span>
+      <div class="pip-stage" aria-hidden="true">
+        <span class="pulse-ring"></span>
+        <span class="speed-line speed-line-one"></span>
+        <span class="speed-line speed-line-two"></span>
+        <span class="cheer-spark cheer-spark-one"></span>
+        <span class="cheer-spark cheer-spark-two"></span>
+        <div class="pip-motion">
+          <svg class="pip" viewBox="0 0 140 140">
+            <circle class="pip-body" cx="70" cy="62" r="40"></circle>
+            <circle class="pip-eye normal-eye" cx="56" cy="56" r="6.5"></circle>
+            <circle class="pip-eye normal-eye" cx="84" cy="56" r="6.5"></circle>
+            <path class="pip-eye cheer-eye" d="M50 58 q6 -8 12 0"></path>
+            <path class="pip-eye cheer-eye" d="M78 58 q6 -8 12 0"></path>
+            <path class="pip-eye tired-eye" d="M49 56 q7 6 14 0"></path>
+            <path class="pip-eye tired-eye" d="M77 56 q7 6 14 0"></path>
+            <rect
+              class="pip-foot foot-left"
+              x="56"
+              y="105"
+              width="12"
+              height="16"
+              rx="6"
+            ></rect>
+            <rect
+              class="pip-foot foot-right"
+              x="72"
+              y="105"
+              width="12"
+              height="16"
+              rx="6"
+            ></rect>
+          </svg>
         </div>
-        <div class="record-burst">★</div>
       </div>
       <div class="metric">
         <strong id="overlay-wpm">0</strong>
