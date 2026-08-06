@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, windows-parity]
   pull_request:
 
 permissions:
@@ -13,9 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Validate macOS foundation
-    runs-on: macos-14
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: QRY
@@ -31,16 +31,6 @@ jobs:
           cache: npm
           cache-dependency-path: QRY/package-lock.json
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy,rustfmt
-
-      - name: Cache Rust build
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: QRY -> target
-
       - name: Install frontend dependencies
         run: npm ci
 
@@ -53,83 +43,60 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Audit generated frontend release content
+        run: node ../scripts/audit-release-content.mjs dist src-tauri/icons
+
+  desktop:
+    name: Desktop workspace (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            os: macos-14
+            target: aarch64-apple-darwin
+            cache-key: desktop-macos-aarch64
+          - name: Windows
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            cache-key: desktop-windows-x86_64
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: QRY
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install Node.js for privacy audit
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+          targets: ${{ matrix.target }}
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.cache-key }}
+          workspaces: QRY -> target
+
       - name: Check Rust formatting
         run: cargo fmt --all --check
 
-      - name: Lint Rust workspace
+      - name: Lint complete desktop workspace
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
-      - name: Test Rust workspace
+      - name: Test complete desktop workspace
         run: cargo test --workspace --all-targets
 
-      - name: Check Rust workspace
+      - name: Check complete desktop workspace
         run: cargo check --workspace --all-targets
 
-  validate-portable-windows:
-    name: Validate portable Windows foundation
-    runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: QRY
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Install Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: QRY/package-lock.json
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy,rustfmt
-
-      - name: Cache Rust build
-        uses: Swatinem/rust-cache@v2
-        with:
-          key: portable-windows
-          workspaces: QRY -> target
-
-      - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Check frontend formatting
-        run: npm run format:check
-
-      - name: Lint frontend
-        run: npm run lint
-
-      - name: Build frontend
-        run: npm run build
-
-      - name: Check Rust formatting
-        run: cargo fmt --all --check
-
-      - name: Lint portable Rust crates
-        run: >-
-          cargo clippy
-          -p typepulse-core
-          -p typepulse-platform-desktop
-          -p typepulse-storage-sqlite
-          --all-targets
-          -- -D warnings
-
-      - name: Test portable Rust crates
-        run: >-
-          cargo test
-          -p typepulse-core
-          -p typepulse-platform-desktop
-          -p typepulse-storage-sqlite
-          --all-targets
-
-      - name: Check portable Rust crates
-        run: >-
-          cargo check
-          -p typepulse-core
-          -p typepulse-platform-desktop
-          -p typepulse-storage-sqlite
-          --all-targets
+      - name: Audit privacy boundary
+        run: node ../scripts/audit-privacy.mjs

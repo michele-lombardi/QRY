@@ -5,6 +5,7 @@ Describe the outcome and link the task or issue.
 ## Validation
 
 - [ ] `./scripts/check.sh` passes locally
+- [ ] `Frontend`, `Desktop workspace (macOS)` and `Desktop workspace (Windows)` are green
 - [ ] acceptance criteria were verified
 - [ ] documentation was updated where necessary
 
