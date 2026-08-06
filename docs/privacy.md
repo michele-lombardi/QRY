@@ -1,143 +1,103 @@
-# Privacy e trattamento dei dati
+# Privacy model
 
-## Impegno di prodotto
+QRY measures when privacy-safe typing activity occurs, not which key was
+pressed or what was written. Privacy is enforced by architecture, not only by a
+promise in the interface.
 
-QRY conta attività compatibili con la digitazione per stimarne la velocità.
-Non registra ciò che l'utente scrive.
+## Data QRY may process
 
-Testo breve previsto nell'app:
+Transiently in memory:
 
-> QRY counts keyboard activity to estimate typing speed. It never stores
-> individual keys, words, passwords or written content. All statistics remain
-> locally on your Mac.
+- a monotonic timestamp for each accepted typing activity;
+- temporary key identity inside the private macOS filter only, long enough to
+  reject modifiers, auto-repeat, and abusive repetition;
+- temporary focused-window position and size when optional Accessibility access
+  is enabled, reduced immediately to a display point.
 
-## Dati ammessi
+Persisted locally:
 
-- timestamp necessari al calcolo effimero;
-- conteggi aggregati di caratteri e parole stimate;
-- WPM medio e massimo;
-- durata della digitazione attiva;
-- inizio e fine delle sessioni;
-- preferenze locali dell'app.
+- completed-session duration, estimated words, average WPM, and peak WPM;
+- fixed aggregate metric buckets;
+- peak, 30-second, and 60-second record values;
+- local-date summaries and streak inputs;
+- onboarding and user preferences.
 
-Per collocare il PiP sul display corretto è inoltre ammesso il centro geometrico
-effimero della finestra focalizzata. Vive soltanto durante il calcolo della
-posizione e non viene serializzato, registrato o conservato.
+## Data QRY does not collect
 
-## Dati vietati
+- characters, key codes, scancodes, words, passwords, or written text;
+- per-key history or a persistent event timeline;
+- application names, bundle identifiers, process identifiers, or window titles;
+- URLs, browser history, document names, selected text, or clipboard contents;
+- account identity, advertising identifiers, analytics, or crash telemetry;
+- focused-window geometry in the frontend, database, CSV, logs, or backups.
 
-- singoli tasti o key code persistiti;
-- parole, testo, password o contenuto degli appunti;
-- applicazione attiva e titolo delle finestre;
-- siti visitati;
-- identificatori di account o dati cloud nella V1.
+## Structural guarantees
 
-## Regole tecniche
+The public platform API emits `TypingActivity { occurred_at: Instant }`. Raw
+key information has no serializable domain type and cannot enter the engine,
+Tauri DTOs, frontend, or storage repository.
 
-1. Filtrare gli eventi dentro l'adapter specifico della piattaforma.
-2. Non esporre caratteri o key code al core, a Tauri o al frontend.
-3. Conservare in memoria solo timestamp/conteggi necessari alla finestra mobile.
-4. Scrivere su disco esclusivamente sessioni e aggregati.
-5. Non aggiungere logging degli eventi di tastiera, nemmeno in build di debug.
-6. L'export contiene unicamente il riepilogo giornaliero documentato.
-7. Pausa e revoca del permesso devono fermare immediatamente l'acquisizione.
-8. L'adapter Linux futuro non deve richiedere accesso privilegiato ai dispositivi
-   di input per aggirare le protezioni del desktop.
+The macOS event tap is passive (`ListenOnly`) and returns events unchanged. Its
+callback performs no disk, network, UI, or synchronous database work. Secure
+Input gaps are accepted; QRY does not attempt to work around protected fields.
 
-## Garanzie implementate nella Fase B
+The SQLite schema contains aggregate rows only. Migrations are embedded and a
+local backup may be created before upgrading an older non-empty database. That
+backup contains the same aggregate data as the source database.
 
-- il tap macOS è passivo (`ListenOnly`) e non può modificare la digitazione;
-- key code e modificatori sono confinati in `event_filter.rs`, che non è
-  pubblico;
-- `TypingActivity` contiene solo un `Instant` monotono e non implementa
-  serializzazione;
-- il frontend diagnostico riceve solo conteggi e metriche aggregate;
-- il callback usa un canale limitato non bloccante e non effettua I/O o log;
-- Secure Input viene rispettato: dati non osservabili restano non osservati;
-- revoca del permesso ferma il worker e non genera dati simulati.
-- auto-repeat e sequenze identiche artificiali vengono filtrati nello stesso
-  modulo privato: l'ultimo key code e la lunghezza della sequenza vivono soltanto
-  in atomiche effimere del callback e non attraversano il confine adapter;
-- due pressioni identiche restano valide per supportare le doppie lettere.
+Tauri capabilities do not grant general filesystem, shell, opener, global
+shortcut, or network plugin access to the application windows.
 
-## Garanzie implementate nella Fase C
+## Permissions
 
-- il motore accetta soltanto `TypingActivity` con tempo monotono;
-- i timestamp individuali restano nella rolling window in memoria e vengono
-  eliminati allo scadere dei 10 secondi o alla fine della sessione;
-- snapshot e riepiloghi contengono solo conteggi, durate, WPM e stati;
-- nessun tipo live implementa una serializzazione automatica verso frontend o
-  disco;
-- test patologici verificano che non escano `NaN`, infiniti o valori negativi.
-- il warm-up usa soltanto intervalli monotoni anonimi e applica un limite di 300
-  WPM; non richiede identità di tasto nel core.
-- i campioni dei primi 3 secondi restano effimeri e non aggiornano media, picco
-  o record personale.
+### Input Monitoring
 
-## Garanzie implementate nella Fase D
+Required for observing global typing activity on macOS. QRY cannot grant it.
+Without permission, the normal shell and monitor do not start; closing or
+denying the guided flow exits the app.
 
-- SQLite contiene soltanto `completed_sessions`, `metric_buckets` e
-  `app_preferences`;
-- lo schema non ha colonne per key code, testo, contenuto, applicazione o titolo
-  della finestra, e un test automatico ne impedisce l'introduzione accidentale;
-- i bucket persistiti sono aggregati da 60 secondi, non eventi individuali;
-- il CSV legge soltanto riepiloghi giornalieri ed espone valori aggregati;
-- il giorno nuovo parte automaticamente da zero tramite una nuova chiave data,
-  senza cancellare lo storico;
-- il login item salva un booleano locale e non amplia i dati osservati;
-- le copie `.bak` pre-migrazione contengono gli stessi soli aggregati locali del
-  database sorgente.
+### Accessibility
 
-## Garanzie implementate nella Fase E
+Optional. It is used only to determine which display contains the focused
+window. QRY requests `AXFocusedApplication`, `AXFocusedWindow`, `AXPosition`,
+and `AXSize`, then discards the temporary geometry. Without it, Pip uses the
+fallback display and all metrics continue to work.
 
-- l'evento frontend dell'overlay contiene soltanto visibilità, WPM aggregato,
-  fascia/comportamento visuale, preferenze e un contatore di celebrazione;
-- le nuove colonne SQLite rappresentano esclusivamente abilitazione, posizione,
-  dimensione e contenuto visuale dell'overlay;
-- il controller di posizionamento osserva geometria e scala dei display, mai
-  applicazione attiva, titolo finestra o contenuto digitato;
-- l'audit DTO include anche le preferenze dell'overlay.
+### Start at login
 
-## Garanzie implementate nella Fase F
+Optional and off by default during onboarding. It creates a macOS LaunchAgent
+only after required permission is valid. It does not change what QRY collects.
 
-- pannello QRY, Impostazioni e Statistiche ricevono soltanto stato permessi,
-  preferenze e aggregati;
-- i grafici usano bucket al minuto o riepiloghi giornalieri, mai eventi singoli;
-- l'orario “Quiet since” deriva dall'ultimo timestamp accettato e non include
-  identità del tasto o contesto applicativo;
-- la copia CSV usa lo stesso exporter giornaliero aggregato già sottoposto ad
-  audit;
-- nessuna nuova capability Tauri oltre `core:default` è stata aggiunta.
-- la preferenza della card trasparente è un singolo booleano visuale locale e
-  non modifica i dati osservati.
+## Local storage and export
 
-## Display focalizzato e permesso Accessibilità
+Application data is stored under the macOS application-data directory in
+`typepulse.sqlite3`. QRY does not automatically upload it. CSV export occurs
+only after a direct user action and contains aggregate statistics.
 
-- Input Monitoring e Accessibilità sono consensi macOS distinti;
-- Accessibilità è opzionale: senza consenso il PiP usa il display principale;
-- l'adapter interroga soltanto applicazione/finestra focalizzata e i due
-  attributi geometrici `AXPosition` e `AXSize`;
-- il risultato pubblico è soltanto il centro globale della finestra;
-- non vengono richiesti titolo, valore, testo, ruolo, URL, nome o bundle ID;
-- il punto non attraversa i DTO, non entra nel frontend e non viene persistito;
-- revoca, timeout o attributi non supportati producono un fallback, non dati
-  simulati né log contenenti metadati della finestra.
+Resetting a day removes its completed sessions and minute buckets. Removing the
+app does not necessarily remove its application-data directory; users may
+delete that directory separately if they also want to erase local history.
 
-## Checklist per ogni modifica
+## Logging policy
 
-- Il nuovo dato è davvero necessario per una funzione promessa?
-- Può essere sostituito da un aggregato meno sensibile?
-- Dove nasce, quanto vive e quando viene eliminato?
-- Compare in log, crash report, analytics, backup o export?
-- L'interfaccia spiega in modo fedele ciò che avviene?
+Allowed logs are limited to lifecycle transitions, permission state, aggregate
+counts in explicit diagnostics, and categorized errors.
 
-Qualunque funzione futura che richieda dati oggi vietati va trattata come una
-nuova decisione di prodotto e privacy, non come una semplice estensione tecnica.
+Logs must never contain raw events, characters, key codes, per-key timestamps,
+typed text, focused applications, windows, URLs, or clipboard data.
 
-## Audit di release
+## Review requirements
 
-La Fase G aggiunge `scripts/audit-privacy.sh` al gate ordinario. Il controllo
-fallisce in presenza di logging runtime inatteso, capability Tauri più ampie di
-`core:default`, colonne SQLite sensibili o DTO non aggregati. Il solo output di
-profilazione ammesso è CPU/RSS aggregato; database personali, eventi e testo non
-devono essere allegati a issue o release report.
+Every change involving input, permissions, storage, logging, exports, Tauri
+capabilities, or external communication must answer:
+
+1. Does raw input identity remain inside the private platform filter?
+2. Can a new field reconstruct text or identify an application/window?
+3. Is persistence aggregate-only and migration-safe?
+4. Is a new permission or capability strictly necessary and visible to users?
+5. Does `./scripts/check.sh` and the privacy audit still pass?
+
+Security issues should be reported privately as described in
+[SECURITY.md](../SECURITY.md). The architectural rationale is documented in
+[ADR 0002](decisions/0002-input-privacy-boundary.md) and
+[ADR 0007](decisions/0007-focused-display-accessibility.md).

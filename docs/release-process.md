@@ -1,59 +1,67 @@
-# Processo di release macOS
+# macOS release process
 
-## Stato
-
-La pipeline è pronta per produrre la prima beta `0.1.0` come draft prerelease.
-La pubblicazione stabile resta bloccata dalle prove manuali indicate nel report
-di Fase G.
+This guide is for maintainers publishing a QRY release. Public roadmap items
+are not release approval: every artifact must pass automated checks and the
+real-device release checklist.
 
 ## Versioning
 
-QRY usa Semantic Versioning. I tag hanno forma `vMAJOR.MINOR.PATCH` oppure
-`vMAJOR.MINOR.PATCH-PRERELEASE`. Prima del tag, lo stesso numero deve comparire
-in:
+QRY follows Semantic Versioning. Tags use `vMAJOR.MINOR.PATCH` or a SemVer
+prerelease suffix such as `v1.0.0-rc.1`.
 
-- `QRY/package.json`;
+Before tagging, update the same version in:
+
+- `QRY/package.json` and its lockfile;
 - `QRY/src-tauri/tauri.conf.json`;
 - `[workspace.package].version` in `QRY/Cargo.toml`;
-- una sezione datata di `CHANGELOG.md`.
+- a dated section in `CHANGELOG.md`.
 
-Verifica:
+Validate the metadata:
 
 ```bash
 ./scripts/release-audit.sh v0.1.0
 ```
 
-## Pipeline GitHub
+## Pre-release gate
 
-Un push di un tag `v*` esegue `.github/workflows/release-macos.yml`:
+1. Review the release diff and changelog.
+2. Run `./scripts/check.sh` from the repository root.
+3. Complete the relevant procedures in `QRY/tests/manual/` on a clean macOS
+   account without recording raw input logs.
+4. Confirm Input Monitoring, optional Accessibility, permission revocation,
+   clean relaunch, login launch, sleep/wake, and multi-monitor behavior.
+5. Confirm the unsigned installation flow in [installation.md](installation.md).
 
-1. verifica metadati, qualità e privacy;
-2. costruisce separatamente `aarch64-apple-darwin` e
-   `x86_64-apple-darwin`;
-3. applica e verifica la firma ad-hoc configurata da Tauri;
-4. crea ZIP determinati per versione/architettura e checksum SHA-256;
-5. crea una **draft GitHub prerelease** con entrambi gli artefatti.
+## Local packaging dry run
 
-La bozza deve essere ispezionata e provata prima della pubblicazione. La
-pipeline non aggiorna automaticamente Homebrew e non pubblica una release
-stabile senza una decisione umana.
-
-## Dry-run locale
-
-Sul Mac di sviluppo:
+On compatible macOS hardware:
 
 ```bash
 ./scripts/package-macos.sh aarch64-apple-darwin
+./scripts/package-macos.sh x86_64-apple-darwin
 ```
 
-Gli output finiscono in `release/`, che è ignorata da Git. Su hardware e CI
-compatibili va ripetuto anche per `x86_64-apple-darwin`.
+Each command builds an ad-hoc-signed `.app`, verifies the bundle, creates an
+architecture-specific ZIP, and writes a matching SHA-256 file under the ignored
+`release/` directory. Cross-architecture builds still need compatible SDK and
+toolchain support.
 
-## Homebrew
+## GitHub release pipeline
 
-Il template è `packaging/homebrew/Casks/qry.rb.template`. Dopo la
-pubblicazione della Release, copia i due hash dai file `.sha256` e genera il
-cask:
+Pushing a `v*` tag starts `.github/workflows/release-macos.yml`:
+
+1. validate version metadata, source quality, and privacy boundaries;
+2. build `aarch64-apple-darwin` and `x86_64-apple-darwin` separately;
+3. verify ad-hoc signing and bundle architecture;
+4. generate immutable ZIPs and SHA-256 files;
+5. create a draft GitHub prerelease containing all assets.
+
+The workflow deliberately stops at a draft. A maintainer must inspect and test
+the downloaded artifacts before publication.
+
+## Homebrew cask
+
+After the GitHub release is public, render the cask with its real checksums:
 
 ```bash
 ./scripts/render-homebrew-cask.sh \
@@ -63,9 +71,8 @@ cask:
   X86_64_SHA256
 ```
 
-Prima di pubblicarlo, copia il file generato nel futuro repository
-`homebrew-qry/Casks/qry.rb`. Con il tap installato, valida il cask
-tramite il suo token:
+Copy the generated `release/qry.rb` to `Casks/qry.rb` in the separate
+`homebrew-qry` tap, then validate it:
 
 ```bash
 ruby -c release/qry.rb
@@ -73,20 +80,28 @@ brew style --cask michele-lombardi/qry/qry
 brew audit --cask --strict michele-lombardi/qry/qry
 ```
 
-Poi verificare su un account/macchina pulita:
+Test the user flow on a clean account:
 
 ```bash
 brew tap michele-lombardi/qry
 brew install --cask qry
+brew upgrade --cask qry
 brew uninstall --cask qry
 ```
 
-I checksum reali vengono compilati soltanto dopo che la pipeline ha prodotto i
-due artefatti della prima Release.
+The tap is external to this repository and must be published before the README
+installation command is described as available.
 
-## Pubblicazione
+## Publication checklist
 
-La beta deve restare marcata come prerelease finché le checklist manuali non
-sono allegate senza log di input. La V1 stabile richiede Gate F chiuso,
-installazione Homebrew provata e nessun problema bloccante di privacy, perdita
-dati o consumo risorse.
+- the draft contains both architectures and matching checksums;
+- downloaded ZIPs pass `shasum -a 256 -c` and open through the documented
+  Gatekeeper flow;
+- versions, tag, changelog, bundle metadata, and cask agree;
+- installation, upgrade, and removal do not lose unexpected user data;
+- the privacy audit and all automated tests pass;
+- no critical privacy, data-loss, or resource-usage issue remains open;
+- prerelease/stable status and known limitations are accurate.
+
+Developer ID signing and Apple notarization can replace the manual Gatekeeper
+flow later without changing the open-source license or privacy architecture.

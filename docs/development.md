@@ -1,292 +1,176 @@
 # Development guide
 
-## Current milestone
+QRY is a Tauri 2 application with a Rust workspace and a small TypeScript
+frontend. macOS is required to run the complete desktop application and its
+platform adapter; most core and storage tests remain portable.
 
-The macOS milestone now includes the menu-bar shell, a separate live overlay,
-persisted visual preferences and the first Phase F screens. Live WPM warms up
-from real elapsed typing time instead of waiting for the full ten-second
-lookback. The Phase B TCC checklist and the real Phase E focus/click-through
-checks still require a real user grant.
+## Requirements
 
-## Toolchain
-
-The supported development environment for the first release is macOS.
-
-Required:
-
-- Rust stable;
-- `rustfmt` and Clippy components;
+- macOS with Xcode Command Line Tools or a compatible Apple SDK;
+- Rust stable with `rustfmt` and Clippy;
 - Node.js 24;
-- npm;
-- macOS SDK and command-line development tools.
+- npm.
 
-Recommended VS Code extensions are committed in `.vscode/extensions.json`.
-
-Check installed versions:
+Check the toolchain:
 
 ```bash
+xcode-select -p
 rustc --version
 cargo --version
 node --version
 npm --version
 ```
 
-## Install dependencies
+## Set up the repository
 
 ```bash
-cd QRY
-npm install
+git clone https://github.com/michele-lombardi/QRY.git
+cd QRY/QRY
+npm ci
 ```
 
-The command installs the frontend dependencies and the project-local Tauri CLI.
-Cargo downloads Rust dependencies on the first build. Application lockfiles are
-committed to keep builds reproducible.
+The Tauri CLI is installed as a project dependency; no global installation is
+required. Cargo downloads Rust dependencies during the first build.
 
-## Run QRY locally
+## Run the app
+
+From the application directory:
 
 ```bash
-cd QRY
 npm run tauri dev
 ```
 
-Tauri starts Vite on port 1420, compiles the Rust workspace and launches
-QRY as a macOS menu-bar application. No window is shown automatically.
-Left-click the QRY Pulse in the upper-right menu bar for the compact Today
-panel; right-click it for Today, Statistics, Settings, Start/Pause monitoring,
-Show WPM in menu bar and Quit. Disabling the menu-bar number does not disable
-the WPM shown in the panel or Pip.
+Tauri starts Vite on port 1420, builds the Rust workspace, and launches QRY.
+Development builds still need explicit Input Monitoring permission. Because an
+unsigned executable's identity may change after rebuilding, macOS can request
+permission again.
 
-Use Settings to check/request Input Monitoring and the separate optional
-Accessibility permission, change `Start automatically` and configure Pip. Use
-Statistics for Today/7 days/30 days/Year aggregate views. Accessibility lets
-Pip follow the display of the
-focused window; without it the primary-display fallback remains functional. The
-startup checkbox
-registers a macOS login item and starts monitoring whenever the app opens.
-Closing the window only hides it; choose Quit from the tray menu to terminate
-the background process cleanly.
+QRY is a menu-bar accessory after onboarding. Left-click the Pulse for Today;
+right-click it for Statistics, Settings, monitoring controls, menu-bar WPM, and
+Quit. Closing a window hides it without terminating the background process.
 
-The app cannot grant TCC permission itself. After changing Input Monitoring or
-Accessibility in System Settings, macOS may require a quit/restart. Ad-hoc debug
-and local release builds use a code-directory hash as their designated
-requirement, so rebuilding can make macOS treat the binary as a new identity.
-Remove a stale permission entry, add the exact app being tested, enable it and
-restart QRY when the UI reports `denied`. Follow the manual permission
-checklists; never edit the TCC database.
+## Quality checks
 
-## Useful commands
-
-Run these inside `QRY/` unless otherwise indicated:
+Run the complete gate from the repository root:
 
 ```bash
-npm run dev            # frontend in a browser-like development server
-npm run build          # TypeScript check and production frontend build
-npm run lint           # ESLint
-npm run format         # write frontend/config formatting
-npm run format:check   # verify formatting
-npm run tauri dev      # complete desktop development build
+./scripts/check.sh
+```
 
+It verifies frontend formatting, ESLint, TypeScript, the production Vite build,
+Rustfmt, Clippy, Rust tests, Tauri capabilities, SQLite schema boundaries, and
+privacy-sensitive DTOs.
+
+Individual commands, run from `QRY/` unless noted:
+
+```bash
+npm run format:check
+npm run lint
+npm run build
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace --all-targets
 cargo check --workspace --all-targets
 ```
 
-Run the complete local gate from the repository root:
+Use `npm run format` and `cargo fmt --all` to apply formatting, then review the
+diff before committing.
 
-```bash
-./scripts/check.sh
-```
-
-The gate now ends with the Phase G privacy audit. Release-only helpers are
-documented in `scripts/README.md` and `docs/release-process.md`; they create
-generated outputs under the ignored `release/` directory.
-
-## Workspace design
-
-### `typepulse-core`
-
-Owns portable domain logic. It may define activity timestamps, rolling WPM,
-smoothing, sessions, summaries and repository traits. It cannot import Tauri,
-SQLite or platform frameworks.
-
-`TypingEngine` accepts an injected `Clock`. Use `ManualClock` in deterministic
-tests and `SystemClock` in production. Do not add sleeps to core tests. Metric
-semantics and default parameters are in ADR 0005.
-
-### `typepulse-platform-macos`
-
-Owns Input Monitoring permission, global macOS event integration and the
-privacy-minimized focused-window geometry adapter. Its input boundary emits only
-`TypingActivity` with a monotonic instant. Raw key information is discarded
-inside the private adapter filter. OS auto-repeat is ignored; a private,
-ephemeral repetition guard allows a double letter and suppresses the third and
-later identical press until another counted key or a one-second pause. The
-separate Accessibility boundary exposes only a temporary global center point;
-it never exposes app, title or content.
-
-### `typepulse-storage-sqlite`
-
-Owns `rusqlite` queries, embedded migrations, pre-migration backup and local
-persistence. It depends on domain models, never on the macOS adapter. Its schema
-contains only completed-session aggregates, 60-second buckets and preferences.
-
-On macOS the database is stored under the Tauri application-data directory as
-`typepulse.sqlite3`. A sibling file named
-`typepulse.sqlite3.pre-migration-vN-TIMESTAMP.bak` may be created before a
-schema upgrade. Today is resolved from the local date on every query: midnight
-starts a new empty summary automatically and keeps older dates intact.
-
-### `src-tauri`
-
-Composition root for the desktop runtime. It owns window/tray lifecycle, command
-registration and routing between adapters and the frontend. Domain formulas do
-not belong here.
-
-`overlay.rs` creates a transparent, click-through webview window and controls
-its position/visibility from aggregate snapshots. On macOS it maps the focused
-window's temporary center to a display before presentation and during active
-typing. A transient Accessibility failure keeps the current display; a cold
-start falls back to the primary display. It never observes input
-identities or sends geometry to the frontend. Tauri's
-`macOSPrivateApi` flag is enabled solely for transparent-window support; the
-project does not target the Mac App Store.
-
-### `src`
-
-Vanilla TypeScript, HTML and CSS. The frontend receives prepared DTOs and emits
-user intentions. It never sees key codes and never queries SQLite directly.
-
-Brand SVG sources live under `assets/brand`; generated application/tray icons
-live under `src-tauri/icons`. Follow `docs/brand-implementation.md` before
-changing colors, the Pulse mark, Pip anatomy, thresholds, motion or product
-copy. The original identity reference is retained in the repository-level
-`brand identity/` directory.
-
-## Dependency direction
+## Repository layout
 
 ```text
-frontend
-   ↓ Tauri commands/events
-src-tauri ──→ platform-macos
-   │               │
-   ├──→ storage    │
-   └───────────────┴──→ core
+QRY/
+├── crates/
+│   ├── typepulse-core/
+│   ├── typepulse-platform-macos/
+│   └── typepulse-storage-sqlite/
+├── src/                    # TypeScript, HTML, and CSS presentation
+├── src-tauri/              # Tauri composition and desktop lifecycle
+├── tests/manual/           # real-macOS checks that CI cannot grant
+└── package.json
 ```
 
-The core is at the bottom of the dependency graph. A dependency in the reverse
-direction is an architectural regression.
+Read [architecture.md](architecture.md) before changing dependency boundaries
+and [decisions/README.md](decisions/README.md) before revisiting an accepted
+system choice.
 
-## Tauri capabilities
+## Engineering rules
 
-The app grants the trusted main and overlay windows only `core:default`. No
-opener, filesystem, shell, network or global-shortcut plugin permission is
-enabled. New permissions require a concrete feature, the narrowest available
-capability and documentation in the pull request.
+- `typepulse-core` stays independent of Tauri, SQLite, and operating-system APIs.
+- Platform adapters may emit only privacy-safe activity timestamps.
+- The storage adapter receives aggregate domain models, never keyboard events.
+- The frontend displays prepared DTOs and does not calculate authoritative WPM.
+- Core tests use an injected manual clock instead of real sleeps.
+- Event-tap callbacks must remain bounded, non-blocking, and free of I/O.
+- No log may contain keys, text, active applications, window titles, or URLs.
 
-## Tests
+The trusted application windows currently receive only `core:default` Tauri
+capabilities. New permissions require a concrete feature, the narrowest
+available scope, and a documented privacy review.
 
-Rust unit tests live next to the implementation. Cross-crate fixtures and manual
-macOS checklists live under `QRY/tests/`.
+## Tests requiring a real Mac
 
-Automated tests must not require Input Monitoring permission. Clock, event source
-and persistence boundaries will be injectable so CI remains deterministic.
+Automated checks cannot grant TCC consent or exercise logout/login reliably.
+Reproducible manual procedures live in [`QRY/tests/manual/`](../QRY/tests/manual/)
+and cover Input Monitoring, Secure Input, callback performance, menu-bar
+behavior, startup, overlay focus/click-through, multi-monitor placement, and
+release installation.
 
-Phase D storage and rollover checks are automated. Login-item behavior requires
-a real macOS login session; follow `tests/manual/phase-d-persistence-startup.md`.
-
-Manual Phase B checks live in `tests/manual/`. The release hot-path reference is:
+Never attach raw keyboard-event logs to a test result. The callback reference
+benchmark intentionally reports aggregate timing only:
 
 ```bash
 cargo test -p typepulse-platform-macos --release \
   typing_callback_hot_path_reference -- --ignored --nocapture
 ```
 
-The menu-bar lifecycle checklist is in
-`tests/manual/menu-bar-shell.md`. It verifies macOS UI behavior that unit tests
-cannot observe, including Dock and `Cmd + Tab` visibility, the fixed-width WPM
-slot and the persisted visibility option.
+## Data and generated files
 
-The responsive estimate and repetition checks are in
-`tests/manual/live-wpm.md`.
+Committed lockfiles, migrations, Tauri configuration, and capability files are
+part of reproducible builds. Generated dependencies, build outputs, local
+databases, exports, and release artifacts are ignored by Git.
 
-The overlay focus, click-through, visual state and multi-monitor checklist is in
-`tests/manual/phase-e-overlay.md`.
-
-The focused-display permission, two-display routing, revocation and privacy
-checklist is in `tests/manual/focused-display.md`.
-
-## Logging rules
-
-Allowed:
-
-- lifecycle transitions without input detail;
-- permission state;
-- aggregate counts in explicit diagnostic builds;
-- recoverable error categories.
-
-Forbidden:
-
-- characters or key codes;
-- event dumps;
-- active app and window information;
-- text, passwords or clipboard data;
-- per-key timestamps written to disk.
-
-## Generated and committed files
-
-Committed:
-
-- `package-lock.json`;
-- workspace `Cargo.lock`;
-- Tauri configuration and capabilities;
-- source, tests and migrations.
-
-Ignored:
-
-- `node_modules/`;
-- `dist/`;
-- Cargo `target/`;
-- generated Tauri capability schemas;
-- local environment and exported statistics.
+The development database is `typepulse.sqlite3` under the Tauri application-data
+directory. An older non-empty schema may produce a sibling
+`typepulse.sqlite3.pre-migration-vN-TIMESTAMP.bak` before migration.
 
 ## Troubleshooting
 
-### `npm run tauri dev` cannot find Rust
+### Rust is not found
 
-Confirm that `cargo` is in the shell `PATH` and restart VS Code after installing
-the toolchain.
+Confirm `cargo` is on `PATH` and restart the terminal or editor after installing
+Rust.
 
 ### Port 1420 is already in use
 
-Stop the older Vite/Tauri process. The port is fixed deliberately so the desktop
-runtime does not silently connect to another development server.
+Stop the older Vite or Tauri process. The fixed port prevents the desktop runtime
+from connecting silently to an unrelated server.
 
 ### macOS build tools are missing
 
-Install the macOS command-line development tools or the SDK required by the
-Tauri build. A Linux or Windows machine cannot produce and exercise the macOS
-platform adapter.
+Install Xcode Command Line Tools and confirm `xcode-select -p` returns an active
+developer directory.
 
-### Formatting differs in CI
+### macOS keeps asking for Input Monitoring
 
-Run `npm run format` and `cargo fmt --all`, review the resulting diff, then rerun
-`./scripts/check.sh`.
+Local unsigned rebuilds can acquire a new identity. Remove only the stale QRY
+entry in **System Settings → Privacy & Security → Input Monitoring**, launch the
+exact build being tested, grant access again, and let QRY perform its clean
+restart. Never edit the TCC database.
 
-### Today's values stay at zero while typing
+### Today's totals remain unchanged while typing
 
-The public daily summary contains completed sessions. Stop monitoring or wait
-for the 30-second session timeout to flush the current session. Live WPM remains
-visible while the session is active.
+Daily persisted totals include completed sessions. Stop monitoring or wait for
+the session timeout; live WPM and the current-session estimate remain visible.
 
-### Automatic startup is checked but monitoring does not start
+### Start at login is enabled but QRY does not open
 
-Confirm QRY is present in macOS Login Items and has Input Monitoring
-permission. The preference cannot grant TCC consent. Read the runtime error in
-the diagnostic window, then use the Phase D manual checklist.
+Confirm QRY is present in macOS Login Items and still has Input Monitoring.
+Startup cannot bypass consent; invalid permission causes QRY to remove its stale
+LaunchAgent and return to onboarding.
 
-## Open decisions and manual gates
+## Preparing a release
 
-- replace the provisional bundle identifier if the GitHub owner requires it;
-- complete the Phase B TCC, revocation and Secure Input checklists;
-- complete Gate F and the Phase G manual quality checklist before tagging V1.
+Release helpers and generated artifacts are documented in
+[release-process.md](release-process.md) and [`scripts/README.md`](../scripts/README.md).
+Outputs are written under the ignored `release/` directory.

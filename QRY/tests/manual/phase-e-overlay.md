@@ -13,9 +13,10 @@ notes and aggregate WPM values; never attach keyboard-event logs.
 
 ## Focus, lifecycle and click-through
 
-1. Type in the external editor and confirm the overlay appears without QRY becoming the
-   active application.
-2. Stop typing for two seconds: the card must fade and disappear.
+1. Press two accepted typing keys and confirm the overlay stays hidden. Press a third
+   key and confirm it appears without QRY becoming the active application.
+2. Set **Disappear after** to 5 seconds. Stop typing and confirm Pip changes to Breathe,
+   remains present for the configured interval, then fades and disappears.
 3. Type again before the 30-second session timeout: the same session resumes and the
    card reappears.
 4. Place the overlay above a safe clickable control in another app, then click the
@@ -34,6 +35,7 @@ While the monitor is running, exercise every option from QRY Settings:
 - four positions: top-left, top-right, bottom-left, bottom-right;
 - three sizes: small, medium, large;
 - content: WPM, animation, both;
+- disappearance delay: 2, 3, 5, 8, 10 and 15 seconds;
 - overlay disabled and enabled again.
 
 Expected: each change persists after Quit/reopen and applies without restarting the
@@ -51,9 +53,11 @@ menu bar or Dock.
 4. Start a faster session and exceed the stored peak.
 5. Confirm Pip jumps, turns green and cheers once, then does not loop while the value
    remains above the old record.
-6. Enable **Reduce motion** in macOS Accessibility settings and repeat. Values must
+6. Establish a complete 30-second and then 60-second baseline, start a faster session,
+   and confirm each sustained record uses the same one-shot Jump/Cheer celebration.
+7. Enable **Reduce motion** in macOS Accessibility settings and repeat. Values must
    remain readable without continuous motion.
-7. Tired activates only after 90 aggregate active-typing minutes in one session; use a
+8. Tired activates only after 90 aggregate active-typing minutes in one session; use a
    real long-session check rather than synthetic input before release.
 
 ## Multiple displays
@@ -79,6 +83,7 @@ display's useful area and never remains at stale coordinates.
 - Walk / Run brand behavior: PASS / FAIL
 - Tired long-session behavior: PASS / FAIL / NOT RUN
 - one-shot record celebration: PASS / FAIL
+- 30/60-second records: PASS / FAIL
 - reduced motion: PASS / FAIL
 - multi-monitor fallback: PASS / FAIL
 - notes (no typed content):

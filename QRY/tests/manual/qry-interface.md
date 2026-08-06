@@ -30,7 +30,8 @@ focused-display Pip behavior.
 
 - [ ] General, Appearance, Permissions and Privacy switch without opening new windows.
 - [ ] Start/Pause updates monitor state and survives repeated use.
-- [ ] Start automatically updates the macOS login item and starts monitoring.
+- [ ] Start automatically updates only the macOS login item and does not resume a
+      monitor manually paused during the current run.
 - [ ] Show live WPM immediately adds/removes the menu-bar number and keeps the native
       right-click check state synchronized.
 - [ ] Number changes do not move the Pulse icon because the slot stays fixed.

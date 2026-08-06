@@ -16,6 +16,18 @@ stale entries only through System Settings, never by editing the TCC database.
 
 ## Acceptance checks
 
+- [ ] With onboarding incomplete, QRY shows only the permission gate and no menu bar or
+      overlay.
+- [ ] **Exit QRY**, the red window button, and the timeout terminate the process without
+      leaving orphan helpers.
+- [ ] With required permission missing, a stale login item is removed and **Start QRY at
+      login** returns to disabled.
+- [ ] Granting Input Monitoring enables **Continue**; completing the optional
+      Accessibility step produces exactly one relaunch.
+- [ ] After relaunch, QRY creates one instance, starts the monitor, and does not repeat
+      onboarding.
+- [ ] Revoking permission stops the monitor and overlay and reopens the gate.
+- [ ] Skipping Accessibility keeps the primary-display fallback.
 - [ ] Status changes between `denied` and `granted` truthfully.
 - [ ] **Open Settings** opens Privacy & Security → Input Monitoring.
 - [ ] **Start** reaches `running` without freezing input.

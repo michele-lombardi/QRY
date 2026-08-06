@@ -76,5 +76,6 @@ docs: record macOS event tap decision
 ## Definition of done
 
 A contribution is complete when checks pass, acceptance criteria are verified,
-privacy constraints remain true and the relevant documentation is updated.
-The full definition is in [`docs/working-plan.md`](docs/working-plan.md).
+privacy constraints remain true, and the relevant public documentation is
+updated. Release-direction changes should also update [`ROADMAP.md`](ROADMAP.md)
+or `CHANGELOG.md` as appropriate.

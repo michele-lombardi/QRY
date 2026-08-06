@@ -1,128 +1,258 @@
-# QRY
+<p align="center">
+  <a href="https://qry.micro-y.com">
+    <img src="QRY/assets/brand/app-icon.svg" width="112" alt="QRY app icon" />
+  </a>
+</p>
 
-QRY è una piccola app macOS da menu bar che rende visibile il ritmo di
-scrittura senza registrare ciò che viene scritto.
+<h1 align="center">QRY</h1>
 
-> **See your typing rhythm. Not what you type.**
+<p align="center">
+  <strong>See your typing rhythm. Not what you type.</strong>
+</p>
 
-## Beta 0.1.0
+<p align="center">
+  A private, local-first typing rhythm companion for macOS.<br />
+  Live WPM, a responsive desktop companion, and useful statistics—without recording your words.
+</p>
 
-QRY `0.1.0` è la prima beta pubblica per macOS. Fondazioni, monitoraggio
-privacy-safe, metriche WPM/sessioni, persistenza locale, overlay, pannello
-giornaliero, Impostazioni e Statistiche sono implementati. Le verifiche
-automatiche sono complete; i test TCC, Gatekeeper, login e multi-monitor restano
-checklist manuali da eseguire sugli artefatti della beta.
+<p align="center">
+  <a href="https://qry.micro-y.com"><strong>Website</strong></a>
+  ·
+  <a href="https://github.com/michele-lombardi/QRY/releases">Downloads</a>
+  ·
+  <a href="docs/privacy.md">Privacy</a>
+  ·
+  <a href="docs/development.md">Development</a>
+</p>
 
-QRY è software libero distribuito con licenza GNU GPL versione 3 soltanto
-(`GPL-3.0-only`). Copyright © 2026 Michele Lombardi; i riferimenti completi sono
-in [`NOTICE.md`](NOTICE.md).
+<p align="center">
+  <a href="https://github.com/michele-lombardi/QRY/actions/workflows/ci.yml"><img src="https://github.com/michele-lombardi/QRY/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--only-30D158" alt="GPL-3.0-only license" /></a>
+  <img src="https://img.shields.io/badge/platform-macOS%2010.15%2B-111113" alt="macOS 10.15 or later" />
+  <img src="https://img.shields.io/badge/version-0.1.0%20beta-3CEFFF" alt="Version 0.1.0 beta" />
+</p>
 
-Decisioni attuali:
+---
 
-- progetto open source destinato alla pubblicazione su GitHub con GPLv3;
-- macOS è la prima piattaforma e la V1 di riferimento;
-- Linux verrà affrontato dopo una release macOS stabile;
-- Tauri 2 per l'app desktop;
-- Rust per dominio, metriche e integrazioni di sistema;
-- HTML, CSS e TypeScript per l'interfaccia;
-- VS Code come ambiente di lavoro principale;
-- GitHub Releases e tap Homebrew personale come primo canale di distribuzione.
+QRY lives quietly in the macOS menu bar and turns anonymous typing activity into
+live feedback. Pip reacts to your pace, the menu bar can show your current WPM,
+and private local statistics help you understand your rhythm over time.
 
-Il nome visibile, il bundle e la cartella del codice sono `QRY`, `QRY.app` e
-`QRY/`. L'identificatore tecnico `app.typepulse.desktop` e il database
-`typepulse.sqlite3` restano invariati per preservare preferenze, login item,
-statistiche locali e continuità dei permessi macOS degli utenti beta esistenti.
+QRY is intentionally not a keylogger, productivity judge, or cloud analytics
+service. It does not need to know which keys you press, what you write, or which
+application you use.
 
-## Obiettivo della V1
+## What QRY gives you
 
-La prima versione è completa quando:
+| Live rhythm                                                                 | Private statistics                                                           | A quiet desktop presence                                                       |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Responsive rolling WPM, animation bands, and a stable menu-bar reading.     | Today, 7-day, 30-day, and yearly views stored only on your Mac.              | A click-through Pip overlay that stays out of the Dock and never steals focus. |
+| Peak, 30-second, and 60-second personal records with one-shot celebrations. | Estimated words, average and peak WPM, active time, streaks, and CSV export. | Configurable corner, size, content, background, and disappearance delay.       |
 
-1. vive nella menu bar e non compare nel Dock;
-2. rileva attività di digitazione globale con il consenso dell'utente;
-3. mostra un piccolo overlay reattivo;
-4. calcola i WPM in tempo reale senza salvare i tasti;
-5. nasconde l'overlay dopo un breve periodo di inattività;
-6. mostra statistiche giornaliere essenziali;
-7. esporta un riepilogo giornaliero in CSV.
+### Designed to feel alive, not distracting
 
-Account, cloud, classifiche, AI, analisi per applicazione e distribuzione sul
-Mac App Store non fanno parte della V1. La compatibilità Linux è una fase
-successiva, non un requisito bloccante per la prima release macOS.
+- Pip appears only after three accepted typing activities.
+- Walk and Run respond to your current pace.
+- A new peak, 30-second, or 60-second record triggers a short Jump/Cheer moment.
+- When you stop typing, Pip breathes and disappears after your chosen delay.
+- With optional Accessibility permission, Pip follows the display containing
+  your focused window.
+- System Light/Dark appearance and reduced-motion preferences are respected.
 
-## Struttura
+## Privacy is part of the architecture
 
-Struttura implementata nella Fase A:
+QRY is built around a strict data boundary:
 
-```text
-.
-├── QRY/
-│   ├── src/                         # UI HTML/CSS/TypeScript
-│   ├── src-tauri/                   # Shell Tauri e configurazione desktop
-│   ├── crates/
-│   │   ├── typepulse-core/          # Confine del dominio portabile
-│   │   ├── typepulse-platform-macos/ # Monitoraggio e API specifiche macOS
-│   │   └── typepulse-storage-sqlite/ # Confine della persistenza locale
-│   └── tests/                       # Fixture e checklist manuali future
-├── .github/                         # CI e template di collaborazione
-├── docs/                            # Specifiche e decisioni di progetto
-└── scripts/                         # Build e release ripetibili
-```
+- individual keys, key codes, words, passwords, and written text are never
+  persisted or logged;
+- application names, window titles, visited websites, and clipboard contents are
+  not collected;
+- there are no accounts, telemetry, advertising identifiers, or cloud sync;
+- typing activity timestamps are processed transiently and reduced to aggregate
+  metrics;
+- SQLite stores only session summaries, fixed metric buckets, personal records,
+  and preferences;
+- optional Accessibility access reads only temporary focused-window geometry for
+  display placement—not its title, application, or content;
+- data leaves your Mac only when you explicitly export it.
 
-La responsabilità di ogni area è descritta in
-[`QRY/README.md`](QRY/README.md). Prima di implementare, consulta
-anche:
+The repository includes an automated privacy audit for runtime logging, Tauri
+capabilities, public DTOs, and the aggregate-only SQLite schema. Read the full
+[privacy model](docs/privacy.md) and [security policy](SECURITY.md).
 
-- [`docs/product-spec.md`](docs/product-spec.md)
-- [`docs/architecture.md`](docs/architecture.md)
-- [`docs/privacy.md`](docs/privacy.md)
-- [`docs/roadmap.md`](docs/roadmap.md)
-- [`docs/distribution.md`](docs/distribution.md)
-- [`docs/working-plan.md`](docs/working-plan.md)
-- [`docs/development.md`](docs/development.md)
-- [`docs/phase-a-report.md`](docs/phase-a-report.md)
-- [`docs/phase-b-report.md`](docs/phase-b-report.md)
-- [`docs/phase-c-report.md`](docs/phase-c-report.md)
-- [`docs/phase-e-report.md`](docs/phase-e-report.md)
-- [`docs/brand-implementation.md`](docs/brand-implementation.md)
-- [`docs/qry-interface.md`](docs/qry-interface.md)
+## First-run experience
 
-## Sviluppo locale
+1. QRY explains what it measures and what it never collects.
+2. macOS asks for **Input Monitoring**, which is required for global typing
+   activity. If access is not granted, QRY exits instead of pretending to work.
+3. **Accessibility** is offered separately and remains optional. Without it, Pip
+   uses the fallback display.
+4. You can explicitly choose whether QRY should start at login. The default is
+   off, and no login item is created before required permission is valid.
+5. QRY performs one clean restart, then runs as a menu-bar accessory.
+
+Permission revocation stops monitoring and hides the overlay immediately. QRY
+returns to the same guided permission gate without deleting aggregate history.
+
+## Permissions
+
+| Permission       | Required? | Used for                                                     |
+| ---------------- | --------- | ------------------------------------------------------------ |
+| Input Monitoring | Yes       | Counting privacy-safe global typing activities for live WPM. |
+| Accessibility    | No        | Locating the display that contains the focused window.       |
+| Launch at login  | No        | Opening QRY silently in the menu bar after sign-in.          |
+
+QRY cannot grant or bypass macOS permissions. Every choice remains under the
+user's control in System Settings.
+
+## Project status
+
+QRY `0.1.0` is the current macOS beta line. The portable metrics engine, macOS
+monitor, local persistence, permission onboarding, menu-bar shell, Pip overlay,
+settings, statistics, records, and release automation are implemented.
+
+Before the stable V1, the project is completing its real-device release matrix:
+TCC permission flows, logout/login, Gatekeeper, sleep/wake, multi-monitor behavior,
+and final Apple Silicon/Intel artifact checks. The initial beta artifacts use
+ad-hoc signing and are not Apple-notarized.
+
+See the public [roadmap](ROADMAP.md) and [changelog](CHANGELOG.md) for the current
+direction and release history.
+
+## Install the macOS beta
+
+QRY targets macOS 10.15 or later.
+
+### Homebrew
+
+The project cask is prepared for the public tap:
 
 ```bash
-cd QRY
-npm install
+brew tap michele-lombardi/qry
+brew install --cask qry
+```
+
+The external tap is not public yet, so these commands become available with the
+first published tap release. Until then, install the unsigned beta manually.
+
+### Manual unsigned installation
+
+1. Download the archive for your architecture and its `.sha256` file from
+   [GitHub Releases](https://github.com/michele-lombardi/QRY/releases).
+2. Verify the archive, for example:
+
+    ```bash
+    shasum -a 256 -c QRY-0.1.0-aarch64.app.zip.sha256
+    ```
+
+3. Extract `QRY.app`, move it to `/Applications`, and open it normally.
+4. If Gatekeeper blocks the first launch, open **System Settings → Privacy &
+   Security**, confirm the warning names QRY, and choose **Open Anyway**.
+5. Complete QRY's separate permission onboarding.
+
+Do not disable Gatekeeper globally or remove quarantine recursively from broad
+directories. Read the complete [installation guide](docs/installation.md) for
+architecture selection, updates, removal, and the unsigned-build trust model.
+
+## Build from source
+
+### Requirements
+
+- macOS with the Apple development SDK / Xcode Command Line Tools;
+- Rust stable with `rustfmt` and `clippy`;
+- Node.js 24 and npm.
+
+### Run QRY locally
+
+```bash
+git clone https://github.com/michele-lombardi/QRY.git
+cd QRY/QRY
+npm ci
 npm run tauri dev
 ```
 
-Controllo completo dalla root:
+Development builds still require explicit macOS Input Monitoring consent. A
+rebuilt unsigned executable may appear to TCC as a new identity.
+
+### Run the complete quality gate
+
+From the repository root:
 
 ```bash
 ./scripts/check.sh
 ```
 
-## Principi
+The gate checks frontend formatting, ESLint, TypeScript, the Vite build,
+Rustfmt, Clippy, all Rust tests, Tauri capability boundaries, the SQLite schema,
+and privacy-sensitive DTOs.
 
-- **Privacy strutturale:** elaborare eventi effimeri, salvare solo aggregati.
-- **Presenza discreta:** menu bar e overlay, nessuna finestra grande all'avvio.
-- **Core portabile:** il calcolo non dipende dalle API della piattaforma.
-- **Adapter sottili:** macOS e Linux implementano soltanto ciò che è specifico
-  del sistema operativo.
-- **Poche dipendenze:** usare API di sistema e librerie Rust mirate.
-- **Testabilità:** tempo, eventi di input e persistenza devono essere iniettabili.
-- **Scope ridotto:** una sola animazione con quattro livelli di intensità.
+## How it is built
 
-## Prima di pubblicare gli artefatti beta
+```text
+macOS event tap
+      │
+      ▼
+privacy filter ── discards key identity
+      │
+      ▼
+TypingActivity(timestamp only)
+      │
+      ▼
+portable Rust engine ── WPM, sessions, records, animation state
+      │
+      ├──► aggregate-only SQLite storage
+      └──► Tauri menu bar, Pip overlay, and statistics UI
+```
 
-1. Concedere Input Monitoring e completare le checklist manuali della Fase B.
-2. Verificare manualmente login item, riapertura e rollover della Fase D.
-3. Verificare manualmente il nuovo pannello QRY, le Impostazioni e le viste
-   Oggi/7 giorni/30 giorni/Anno delle Statistiche.
-4. Concedere separatamente Accessibilità e verificare focus, click-through,
-   display focalizzato e fallback multi-monitor della Fase E.
-5. Chiudere le prove manuali della Fase G sugli ZIP generati dalla pipeline.
-6. Completare onboarding, dialog di salvataggio CSV e audit accessibilità UI.
-7. Pubblicare inizialmente la GitHub Release come prerelease e mantenere la
-   firma ad-hoc chiaramente documentata.
+| Area                                                              | Responsibility                                                                  |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [`typepulse-core`](QRY/crates/typepulse-core)                     | Portable WPM, session, record, date, and persistence contracts.                 |
+| [`typepulse-platform-macos`](QRY/crates/typepulse-platform-macos) | macOS permissions, event tap, filtering, and focused-display geometry.          |
+| [`typepulse-storage-sqlite`](QRY/crates/typepulse-storage-sqlite) | Aggregate-only local SQLite adapter and migrations.                             |
+| [`src-tauri`](QRY/src-tauri)                                      | Desktop lifecycle, menu bar, windows, commands, permissions, and orchestration. |
+| [`src`](QRY/src)                                                  | Vanilla TypeScript, HTML, and CSS presentation layer.                           |
 
-Il piano aggiornato è in [`docs/working-plan.md`](docs/working-plan.md).
-Le note della prima beta sono in [`docs/beta-0.1.0.md`](docs/beta-0.1.0.md).
+Start with the [architecture guide](docs/architecture.md),
+[decision log](docs/decisions/README.md), and
+[development guide](docs/development.md) before changing system boundaries.
+
+## Documentation
+
+- [Product vision](docs/vision.md)
+- [Installation guide](docs/installation.md)
+- [Privacy model](docs/privacy.md)
+- [Architecture](docs/architecture.md)
+- [UI guidelines](docs/ui-guidelines.md)
+- [Development guide](docs/development.md)
+- [Public roadmap](ROADMAP.md)
+- [Release process](docs/release-process.md)
+- [Architecture decisions](docs/decisions/README.md)
+
+## Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[Code of Conduct](CODE_OF_CONDUCT.md), keep changes focused, add tests, and run
+`./scripts/check.sh` before opening a pull request.
+
+Changes involving global input, permissions, logs, storage, or frontend command
+boundaries must explain their privacy impact.
+
+## Security
+
+Please do not disclose sensitive vulnerabilities in public issues. Use
+[GitHub private vulnerability reporting](https://github.com/michele-lombardi/QRY/security/advisories/new)
+as described in [SECURITY.md](SECURITY.md).
+
+## License
+
+QRY is free software licensed under
+[GNU GPL version 3 only](LICENSE) (`GPL-3.0-only`).
+
+Copyright © 2026 Michele Lombardi. See [NOTICE.md](NOTICE.md) for attribution and
+project details.
+
+---
+
+<p align="center">
+  <a href="https://qry.micro-y.com"><strong>qry.micro-y.com</strong></a>
+</p>

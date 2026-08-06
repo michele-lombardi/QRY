@@ -53,7 +53,7 @@ for this test.
 
 - [ ] Both SHA-256 files verify their matching archives.
 - [ ] `codesign --verify --deep --strict QRY.app` passes.
-- [ ] A clean account/Mac follows `docs/gatekeeper.md` successfully.
+- [ ] A clean account/Mac follows `docs/installation.md` successfully.
 - [ ] Input Monitoring is requested separately and never bypassed.
 - [ ] Install, launch, upgrade and uninstall through the personal cask pass.
 

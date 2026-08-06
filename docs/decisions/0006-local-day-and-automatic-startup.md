@@ -1,6 +1,6 @@
 # ADR 0006: Local-day rollover and automatic startup
 
-- Status: Accepted and implemented
+- Status: Accepted; startup coupling superseded by ADR 0008
 - Date: 2026-08-05
 
 ## Context
@@ -31,6 +31,11 @@ Tauri autostart plugin with a macOS `LaunchAgent` login item:
 
 Failure to register a login item or obtain Input Monitoring permission is shown
 as a runtime error and does not prevent the application window from opening.
+
+The permission-gated lifecycle introduced by ADR 0008 supersedes the monitor
+coupling above: the login preference controls login registration, while every
+authorized normal launch starts monitoring. Missing permission now prevents the
+normal shell from opening.
 
 ## Consequences
 

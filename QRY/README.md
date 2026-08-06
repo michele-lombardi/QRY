@@ -35,11 +35,14 @@ click-through overlay renders a responsive live estimate and identity-aligned Pi
 behaviors with persisted visual options. With optional macOS Accessibility consent it
 follows the display containing the focused window while exposing only temporary
 geometry. Transient read failures preserve the current valid display; a cold start falls
-back to the primary display. Live WPM ramps during its first second, while statistics
-and personal records accept samples only after three seconds. The Pulse mark, app icon,
-dynamic tray glyph, palette and product voice follow the supplied brand identity. Phase
-F now includes Apple-style settings and daily, weekly, monthly and yearly aggregate
-statistics. Onboarding and the native save destination for CSV remain open tasks.
+back to the primary display. Pip appears from the third accepted activity and breathes
+for the configured quiet interval before disappearing. Live WPM ramps during its first
+second, while peak statistics accept samples only after three seconds; separate all-time
+records use complete 30-second and 60-second windows. The Pulse mark, app icon, dynamic
+tray glyph, palette and product voice follow the supplied brand identity. Phase F now
+includes Apple-style settings and daily, weekly, monthly and yearly aggregate
+statistics. Permission onboarding is implemented; the native save destination for CSV
+remains an open task.
 
 See [`../docs/development.md`](../docs/development.md) for the complete guide.
 

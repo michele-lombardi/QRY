@@ -28,17 +28,30 @@ but they are still personal activity data.
 
 ## Automatic startup
 
-- [ ] Enable **Start automatically**.
+- [ ] On a clean onboarding, leave **Start QRY at login** off and finish setup. Confirm
+      no QRY login item is created.
+- [ ] Repeat onboarding after a clean permission reset, explicitly enable **Start QRY at
+      login**, and confirm registration happens only after Input Monitoring is granted.
+- [ ] Enable **Start automatically** in Settings.
 - [ ] Confirm QRY appears in macOS System Settings → General → Login Items.
-- [ ] Stop monitoring, quit QRY, then open it normally; monitoring reaches `running`
-      without pressing **Start**.
+- [ ] Pause monitoring and toggle **Start automatically** off/on. The monitor must stay
+      paused during the current run; the preference controls login only.
+- [ ] Quit QRY, then open it normally; monitoring reaches `running` without pressing
+      **Start**, independently of the login preference.
 - [ ] Log out and back in, or restart the Mac; QRY opens and monitoring starts after
       macOS grants access.
+- [ ] Repeat a normal launch while QRY is already open and confirm there is still one
+      process, one menu-bar icon and one login item.
 - [ ] Disable **Start automatically** and confirm the login item is removed.
-- [ ] Quit and reopen QRY; monitoring remains stopped until **Start** is selected.
+- [ ] Log out and back in: QRY must not launch. Opening QRY manually must still start
+      monitoring after the valid permission gate.
+- [ ] Re-enable login startup, revoke Input Monitoring and relaunch. QRY must show only
+      the gate, remove the stale login item and clear the checkbox.
+- [ ] Upgrade over the previous beta and confirm the existing enabled/disabled choice is
+      preserved and reconciled without duplicate LaunchAgents.
 
-If TCC consent is missing, automatic launch may work while monitoring reports a
-permission error. That is expected: the preference never bypasses macOS consent.
+The login item must never remain registered while the required permission gate is
+invalid. The preference never grants or bypasses macOS consent.
 
 ## Local-day rollover
 
@@ -60,5 +73,7 @@ change is observed.
 - Date / macOS / architecture: `TODO`
 - Persistence after reopen: `TODO`
 - Login item after logout/login: `TODO`
+- Onboarding choice and stale-item cleanup: `TODO`
+- Upgrade without duplicate registration: `TODO`
 - Natural local-day rollover: `TODO`
 - Notes containing aggregates only: `TODO`
