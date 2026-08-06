@@ -55,23 +55,36 @@ pub fn run() {
             let preferences = state.load_preferences().map_err(std::io::Error::other)?;
 
             app.manage(state);
+            shell::configure(app, preferences)?;
+            overlay::configure(app, preferences)?;
             let permission_runtime =
                 permission_flow::configure(app, preferences.onboarding_completed);
             let normal_start = permission_runtime.permits_normal_start();
             if normal_start {
-                shell::configure(app, preferences)?;
-                overlay::configure(app, preferences)?;
                 let state = app.state::<DiagnosticState>();
-                state.start_automatically();
-                if let Err(error) = reconcile_auto_start(app.handle(), &state, true) {
-                    state.record_runtime_error(format!(
-                        "automatic login reconciliation failed: {error}"
-                    ));
+                match state.start() {
+                    Ok(()) => {
+                        if let Err(error) = reconcile_auto_start(app.handle(), &state, true) {
+                            state.record_runtime_error(format!(
+                                "automatic login reconciliation failed: {error}"
+                            ));
+                        }
+                        permission_flow::start_revocation_watchdog(
+                            app.handle().clone(),
+                            permission_runtime,
+                        );
+                    }
+                    Err(error) => {
+                        state.record_runtime_error(error);
+                        permission_runtime.mark_monitor_failed();
+                        if let Err(error) = reconcile_auto_start(app.handle(), &state, false) {
+                            state.record_runtime_error(format!(
+                                "automatic login cleanup after monitor failure failed: {error}"
+                            ));
+                        }
+                        permission_flow::show_gate(app.handle());
+                    }
                 }
-                permission_flow::start_revocation_watchdog(
-                    app.handle().clone(),
-                    permission_runtime,
-                );
             } else {
                 let state = app.state::<DiagnosticState>();
                 if let Err(error) = reconcile_auto_start(app.handle(), &state, false) {

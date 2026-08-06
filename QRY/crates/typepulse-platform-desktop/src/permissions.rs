@@ -1,16 +1,80 @@
-//! Input Monitoring permission checks and System Settings navigation.
+//! Desktop input capability checks and native privacy-settings navigation.
 
 use std::{fmt, io};
 
 /// Current ability to listen to input events.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PermissionStatus {
-    /// macOS reports that listen-event access is available.
+    /// Required native access is available.
     Granted,
-    /// macOS reports that listen-event access is not available.
+    /// Required native access was denied.
     Denied,
-    /// The current platform cannot evaluate macOS Input Monitoring access.
+    /// The current platform cannot evaluate the access state.
     Unknown,
+}
+
+/// Operating-system capabilities used to render one shared onboarding flow.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct PlatformCapabilities {
+    /// Stable platform name exposed to presentation DTOs.
+    pub platform: &'static str,
+    /// Whether global input requires an explicit operating-system permission.
+    pub input_permission_required: bool,
+    /// Whether QRY can open native settings for the input permission.
+    pub input_settings_available: bool,
+    /// Whether focused-display geometry requires an explicit permission.
+    pub accessibility_permission_required: bool,
+    /// Whether QRY can open native settings for focused-display access.
+    pub accessibility_settings_available: bool,
+    /// Whether completing permission setup requires one clean process restart.
+    pub restart_required: bool,
+}
+
+impl PlatformCapabilities {
+    const fn macos() -> Self {
+        Self {
+            platform: "macos",
+            input_permission_required: true,
+            input_settings_available: true,
+            accessibility_permission_required: true,
+            accessibility_settings_available: true,
+            restart_required: true,
+        }
+    }
+
+    const fn windows() -> Self {
+        Self {
+            platform: "windows",
+            input_permission_required: false,
+            input_settings_available: false,
+            accessibility_permission_required: false,
+            accessibility_settings_available: false,
+            restart_required: false,
+        }
+    }
+
+    const fn unsupported() -> Self {
+        Self {
+            platform: "unsupported",
+            input_permission_required: false,
+            input_settings_available: false,
+            accessibility_permission_required: false,
+            accessibility_settings_available: false,
+            restart_required: false,
+        }
+    }
+}
+
+/// Returns the onboarding and native-settings capabilities of this build.
+#[must_use]
+pub const fn platform_capabilities() -> PlatformCapabilities {
+    if cfg!(target_os = "macos") {
+        PlatformCapabilities::macos()
+    } else if cfg!(windows) {
+        PlatformCapabilities::windows()
+    } else {
+        PlatformCapabilities::unsupported()
+    }
 }
 
 impl PermissionStatus {
@@ -25,10 +89,10 @@ impl PermissionStatus {
     }
 }
 
-/// Error returned while opening the macOS privacy settings.
+/// Error returned while opening native privacy settings.
 #[derive(Debug)]
 pub enum PermissionError {
-    /// This operation is only available on macOS.
+    /// This operation is not available on the current platform.
     UnsupportedPlatform,
     /// Starting the System Settings helper failed.
     Launch(io::Error),
@@ -40,7 +104,7 @@ impl fmt::Display for PermissionError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::UnsupportedPlatform => {
-                write!(formatter, "macOS privacy settings are unavailable")
+                write!(formatter, "native privacy settings are unavailable")
             }
             Self::Launch(error) => write!(formatter, "failed to open System Settings: {error}"),
             Self::UnsuccessfulLaunch => {
@@ -189,7 +253,36 @@ mod platform {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(windows)]
+mod platform {
+    use super::{PermissionError, PermissionStatus};
+
+    pub(super) const fn input_permission_status() -> PermissionStatus {
+        PermissionStatus::Granted
+    }
+
+    pub(super) const fn request_input_permission() -> PermissionStatus {
+        PermissionStatus::Granted
+    }
+
+    pub(super) const fn open_input_monitoring_settings() -> Result<(), PermissionError> {
+        Err(PermissionError::UnsupportedPlatform)
+    }
+
+    pub(super) const fn accessibility_permission_status() -> PermissionStatus {
+        PermissionStatus::Granted
+    }
+
+    pub(super) const fn request_accessibility_permission() -> PermissionStatus {
+        PermissionStatus::Granted
+    }
+
+    pub(super) const fn open_accessibility_settings() -> Result<(), PermissionError> {
+        Err(PermissionError::UnsupportedPlatform)
+    }
+}
+
+#[cfg(not(any(target_os = "macos", windows)))]
 mod platform {
     use super::{PermissionError, PermissionStatus};
 
@@ -220,7 +313,10 @@ mod platform {
 
 #[cfg(test)]
 mod tests {
-    use super::{accessibility_settings_url, input_monitoring_settings_url, PermissionStatus};
+    use super::{
+        accessibility_settings_url, input_monitoring_settings_url, PermissionStatus,
+        PlatformCapabilities,
+    };
 
     #[test]
     fn permission_status_strings_are_stable() {
@@ -237,5 +333,20 @@ mod tests {
     #[test]
     fn settings_url_targets_accessibility() {
         assert!(accessibility_settings_url().ends_with("Privacy_Accessibility"));
+    }
+
+    #[test]
+    fn platform_capabilities_distinguish_real_permission_models() {
+        let macos = PlatformCapabilities::macos();
+        assert!(macos.input_permission_required);
+        assert!(macos.accessibility_permission_required);
+        assert!(macos.restart_required);
+
+        let windows = PlatformCapabilities::windows();
+        assert!(!windows.input_permission_required);
+        assert!(!windows.input_settings_available);
+        assert!(!windows.accessibility_permission_required);
+        assert!(!windows.accessibility_settings_available);
+        assert!(!windows.restart_required);
     }
 }

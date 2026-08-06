@@ -32,9 +32,37 @@ const setMessage = (value: string, isError = false): void => {
   message.classList.toggle("error", isError);
 };
 
-const renderPermission = (element: HTMLElement, { status }: PermissionStatus): void => {
+const renderPermission = (element: HTMLElement, permission: PermissionStatus): void => {
+  const { status } = permission;
   element.textContent = status;
   element.dataset.state = status;
+
+  const input = element === permissionValue;
+  const prefix = input ? "input" : "accessibility";
+  const windows = permission.platform === "windows";
+  byId<HTMLElement>("access-heading").textContent = windows
+    ? "Windows access"
+    : "macOS access";
+  byId<HTMLElement>(`${prefix}-access-name`).textContent = input
+    ? windows
+      ? "Global typing access"
+      : "Input Monitoring"
+    : windows
+      ? "Focused-display placement"
+      : "Accessibility";
+  byId<HTMLElement>(`${prefix}-access-detail`).textContent = input
+    ? windows
+      ? "Ready without a separate Windows permission. Key identity stays private."
+      : "Required to count rhythm globally. Characters never leave the private adapter."
+    : windows
+      ? "Available without extra access and based only on temporary geometry."
+      : "Optional. Lets Pip follow the focused display using temporary geometry only.";
+  byId<HTMLButtonElement>(
+    `request-${input ? "permission" : "accessibility"}`,
+  ).classList.toggle("hidden", !permission.permissionRequired);
+  byId<HTMLButtonElement>(
+    `open-${input ? "input" : "accessibility"}-settings`,
+  ).classList.toggle("hidden", !permission.settingsAvailable);
 };
 
 const renderMonitor = (status: MonitorStatus): void => {
@@ -125,7 +153,7 @@ byId<HTMLButtonElement>("check-permission").addEventListener(
     void permissionAction(
       "input_permission_status",
       permissionValue,
-      "Input Monitoring refreshed.",
+      "Global input access refreshed.",
     ),
 );
 byId<HTMLButtonElement>("request-permission").addEventListener(
@@ -134,17 +162,13 @@ byId<HTMLButtonElement>("request-permission").addEventListener(
     void permissionAction(
       "request_input_permission",
       permissionValue,
-      "Complete the macOS permission flow, then restart QRY if requested.",
+      "Input access request completed.",
     ),
 );
 byId<HTMLButtonElement>("open-input-settings").addEventListener(
   "click",
   () =>
-    void permissionAction(
-      "open_input_settings",
-      null,
-      "Opened Input Monitoring settings.",
-    ),
+    void permissionAction("open_input_settings", null, "Opened native input settings."),
 );
 byId<HTMLButtonElement>("check-accessibility").addEventListener(
   "click",
@@ -152,7 +176,7 @@ byId<HTMLButtonElement>("check-accessibility").addEventListener(
     void permissionAction(
       "accessibility_permission_status",
       accessibilityValue,
-      "Accessibility refreshed.",
+      "Focused-display access refreshed.",
     ),
 );
 byId<HTMLButtonElement>("request-accessibility").addEventListener(
@@ -161,7 +185,7 @@ byId<HTMLButtonElement>("request-accessibility").addEventListener(
     void permissionAction(
       "request_accessibility_permission",
       accessibilityValue,
-      "Complete the macOS permission flow, then restart QRY if requested.",
+      "Focused-display access request completed.",
     ),
 );
 byId<HTMLButtonElement>("open-accessibility-settings").addEventListener(
@@ -170,7 +194,7 @@ byId<HTMLButtonElement>("open-accessibility-settings").addEventListener(
     void permissionAction(
       "open_accessibility_permission_settings",
       null,
-      "Opened Accessibility settings.",
+      "Opened native focused-display settings.",
     ),
 );
 

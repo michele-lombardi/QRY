@@ -11,8 +11,8 @@ use std::{
 use serde::Serialize;
 use tauri::{App, AppHandle, Manager, State};
 use typepulse_platform_desktop::{
-    accessibility_permission_status, input_permission_status, request_input_permission,
-    MonitorRunState, PermissionStatus,
+    accessibility_permission_status, input_permission_status, platform_capabilities,
+    request_input_permission, MonitorRunState, PermissionStatus,
 };
 
 use crate::app_state::DiagnosticState;
@@ -117,6 +117,19 @@ impl PermissionFlowRuntime {
         self.shutdown.store(true, Ordering::Release);
     }
 
+    fn mark_running(&self) {
+        let mut inner = self.inner.lock().unwrap_or_else(|error| error.into_inner());
+        inner.state = LifecycleState::Running;
+        inner.wait_deadline = None;
+        inner.onboarding_completed = true;
+    }
+
+    pub(crate) fn mark_monitor_failed(&self) {
+        let mut inner = self.inner.lock().unwrap_or_else(|error| error.into_inner());
+        inner.state = LifecycleState::PermissionRequired;
+        inner.wait_deadline = None;
+    }
+
     fn mark_exiting(&self) {
         let mut inner = self.inner.lock().unwrap_or_else(|error| error.into_inner());
         inner.state = LifecycleState::Exiting;
@@ -200,8 +213,14 @@ impl LifecycleInner {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct PermissionFlowDto {
     state: &'static str,
+    platform: &'static str,
     input_status: &'static str,
     accessibility_status: &'static str,
+    input_permission_required: bool,
+    input_settings_available: bool,
+    accessibility_permission_required: bool,
+    accessibility_settings_available: bool,
+    restart_required: bool,
     seconds_remaining: Option<u64>,
     onboarding_completed: bool,
 }
@@ -212,10 +231,17 @@ impl PermissionFlowDto {
         permission: PermissionStatus,
         now: Instant,
     ) -> Self {
+        let capabilities = platform_capabilities();
         Self {
             state: runtime.state().as_str(),
+            platform: capabilities.platform,
             input_status: permission.as_str(),
             accessibility_status: accessibility_permission_status().as_str(),
+            input_permission_required: capabilities.input_permission_required,
+            input_settings_available: capabilities.input_settings_available,
+            accessibility_permission_required: capabilities.accessibility_permission_required,
+            accessibility_settings_available: capabilities.accessibility_settings_available,
+            restart_required: capabilities.restart_required,
             seconds_remaining: runtime.seconds_remaining(now),
             onboarding_completed: runtime.onboarding_completed(),
         }
@@ -265,7 +291,10 @@ pub(crate) fn start_revocation_watchdog(app: AppHandle, runtime: PermissionFlowR
                     continue;
                 }
                 let monitor_revoked = app.try_state::<DiagnosticState>().is_some_and(|state| {
-                    state.snapshot().run_state == MonitorRunState::PermissionRevoked
+                    matches!(
+                        state.snapshot().run_state,
+                        MonitorRunState::PermissionRevoked | MonitorRunState::Failed
+                    )
                 });
                 if (monitor_revoked || input_permission_status() != PermissionStatus::Granted)
                     && runtime.mark_revoked()
@@ -332,17 +361,41 @@ pub(crate) fn complete_permission_flow(
     let permission = input_permission_status();
     if permission != PermissionStatus::Granted {
         runtime.observe(permission, Instant::now());
-        return Err("Input Monitoring permission is still required".into());
+        return Err("required global input access is still unavailable".into());
     }
 
     crate::commands::preferences::complete_onboarding_auto_start(&app, &state, auto_start_enabled)?;
-    runtime.mark_restarting();
-    let dto = PermissionFlowDto::snapshot(&runtime, permission, Instant::now());
-    std::thread::spawn(move || {
-        std::thread::sleep(Duration::from_millis(150));
-        app.restart();
-    });
-    Ok(dto)
+    if platform_capabilities().restart_required {
+        runtime.mark_restarting();
+        let dto = PermissionFlowDto::snapshot(&runtime, permission, Instant::now());
+        std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(150));
+            app.restart();
+        });
+        return Ok(dto);
+    }
+
+    if let Err(error) = state.start() {
+        state.record_runtime_error(error.clone());
+        runtime.mark_monitor_failed();
+        let _ = crate::commands::preferences::reconcile_auto_start(&app, &state, false);
+        return Err(format!(
+            "QRY could not start global input monitoring: {error}"
+        ));
+    }
+
+    runtime.mark_running();
+    crate::shell::exit_permission_gate(&app);
+    crate::overlay::exit_permission_gate(&app);
+    if let Some(window) = app.get_webview_window(GATE_LABEL) {
+        let _ = window.hide();
+    }
+    start_revocation_watchdog(app.clone(), runtime.inner().clone());
+    Ok(PermissionFlowDto::snapshot(
+        &runtime,
+        permission,
+        Instant::now(),
+    ))
 }
 
 #[tauri::command]
@@ -431,6 +484,26 @@ mod tests {
     }
 
     #[test]
+    fn permission_free_completion_can_enter_running_without_restart() {
+        let runtime =
+            PermissionFlowRuntime::new_at(PermissionStatus::Granted, false, Instant::now());
+        assert_eq!(runtime.state(), LifecycleState::PermissionRequired);
+        runtime.begin_request(PermissionStatus::Granted, Instant::now());
+        assert_eq!(runtime.state(), LifecycleState::Ready);
+        runtime.mark_running();
+        assert_eq!(runtime.state(), LifecycleState::Running);
+        assert!(runtime.onboarding_completed());
+    }
+
+    #[test]
+    fn native_monitor_failure_returns_a_completed_boot_to_the_gate() {
+        let runtime =
+            PermissionFlowRuntime::new_at(PermissionStatus::Granted, true, Instant::now());
+        runtime.mark_monitor_failed();
+        assert_eq!(runtime.state(), LifecycleState::PermissionRequired);
+    }
+
+    #[test]
     fn gate_dto_exposes_only_permission_lifecycle_state() {
         let runtime =
             PermissionFlowRuntime::new_at(PermissionStatus::Denied, false, Instant::now());
@@ -443,11 +516,17 @@ mod tests {
         let Value::Object(object) = value else {
             panic!("permission flow must serialize as an object");
         };
-        assert_eq!(object.len(), 5);
+        assert_eq!(object.len(), 11);
         for key in [
             "state",
+            "platform",
             "inputStatus",
             "accessibilityStatus",
+            "inputPermissionRequired",
+            "inputSettingsAvailable",
+            "accessibilityPermissionRequired",
+            "accessibilitySettingsAvailable",
+            "restartRequired",
             "secondsRemaining",
             "onboardingCompleted",
         ] {

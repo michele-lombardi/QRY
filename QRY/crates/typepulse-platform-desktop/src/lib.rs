@@ -26,7 +26,8 @@ pub use monitor::{
 pub use permissions::{
     accessibility_permission_status, accessibility_settings_url, input_monitoring_settings_url,
     input_permission_status, open_accessibility_settings, open_input_monitoring_settings,
-    request_accessibility_permission, request_input_permission, PermissionError, PermissionStatus,
+    platform_capabilities, request_accessibility_permission, request_input_permission,
+    PermissionError, PermissionStatus, PlatformCapabilities,
 };
 
 /// Reports whether the adapter crate can see the portable core boundary.

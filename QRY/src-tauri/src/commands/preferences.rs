@@ -67,7 +67,7 @@ pub(crate) fn set_auto_start_enabled(
         && (!preferences.onboarding_completed
             || input_permission_status() != PermissionStatus::Granted)
     {
-        return Err("complete required permission setup before enabling launch at login".into());
+        return Err("complete required system setup before enabling launch at login".into());
     }
     persist_auto_start_choice(&app, &state, preferences, enabled, false)?;
     startup_preference(app, state)
@@ -80,16 +80,16 @@ pub(crate) fn complete_onboarding_auto_start(
     enabled: bool,
 ) -> Result<(), String> {
     if input_permission_status() != PermissionStatus::Granted {
-        return Err("Input Monitoring permission is still required".into());
+        return Err("required global input access is still unavailable".into());
     }
     let preferences = state.load_preferences()?;
     persist_auto_start_choice(app, state, preferences, enabled, true)
 }
 
-/// Reconciles the persisted preference with the real LaunchAgent state.
+/// Reconciles the persisted preference with the real operating-system state.
 ///
 /// An invalid permission gate always removes the registration and clears the
-/// preference so the database, checkbox and macOS state cannot drift apart.
+/// preference so the database, checkbox and native state cannot drift apart.
 pub(crate) fn reconcile_auto_start(
     app: &AppHandle,
     state: &DiagnosticState,

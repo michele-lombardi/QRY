@@ -5,7 +5,7 @@ use tauri::State;
 use typepulse_platform_desktop::{
     accessibility_permission_status as platform_accessibility_permission_status,
     input_permission_status as platform_permission_status, open_accessibility_settings,
-    open_input_monitoring_settings,
+    open_input_monitoring_settings, platform_capabilities,
     request_accessibility_permission as platform_request_accessibility_permission,
     request_input_permission as platform_request_permission, PermissionStatus,
 };
@@ -17,12 +17,29 @@ use crate::app_state::DiagnosticState;
 #[serde(rename_all = "camelCase")]
 pub(crate) struct PermissionStatusDto {
     status: &'static str,
+    platform: &'static str,
+    permission_required: bool,
+    settings_available: bool,
 }
 
-impl From<PermissionStatus> for PermissionStatusDto {
-    fn from(status: PermissionStatus) -> Self {
+impl PermissionStatusDto {
+    fn input(status: PermissionStatus) -> Self {
+        let capabilities = platform_capabilities();
         Self {
             status: status.as_str(),
+            platform: capabilities.platform,
+            permission_required: capabilities.input_permission_required,
+            settings_available: capabilities.input_settings_available,
+        }
+    }
+
+    fn accessibility(status: PermissionStatus) -> Self {
+        let capabilities = platform_capabilities();
+        Self {
+            status: status.as_str(),
+            platform: capabilities.platform,
+            permission_required: capabilities.accessibility_permission_required,
+            settings_available: capabilities.accessibility_settings_available,
         }
     }
 }
@@ -57,12 +74,12 @@ pub(crate) struct MonitorStatusDto {
 
 #[tauri::command]
 pub(crate) fn input_permission_status() -> PermissionStatusDto {
-    platform_permission_status().into()
+    PermissionStatusDto::input(platform_permission_status())
 }
 
 #[tauri::command]
 pub(crate) fn request_input_permission() -> PermissionStatusDto {
-    platform_request_permission().into()
+    PermissionStatusDto::input(platform_request_permission())
 }
 
 #[tauri::command]
@@ -72,12 +89,12 @@ pub(crate) fn open_input_settings() -> Result<(), String> {
 
 #[tauri::command]
 pub(crate) fn accessibility_permission_status() -> PermissionStatusDto {
-    platform_accessibility_permission_status().into()
+    PermissionStatusDto::accessibility(platform_accessibility_permission_status())
 }
 
 #[tauri::command]
 pub(crate) fn request_accessibility_permission() -> PermissionStatusDto {
-    platform_request_accessibility_permission().into()
+    PermissionStatusDto::accessibility(platform_request_accessibility_permission())
 }
 
 #[tauri::command]
@@ -137,8 +154,19 @@ mod tests {
     use super::PermissionStatusDto;
 
     #[test]
-    fn permission_dto_contains_only_the_status() {
-        let dto = PermissionStatusDto::from(PermissionStatus::Denied);
+    fn permission_dto_contains_only_status_and_platform_capabilities() {
+        let dto = PermissionStatusDto::input(PermissionStatus::Denied);
         assert_eq!(dto.status, "denied");
+        let value = serde_json::to_value(dto).unwrap();
+        let object = value.as_object().unwrap();
+        assert_eq!(object.len(), 4);
+        for key in [
+            "status",
+            "platform",
+            "permissionRequired",
+            "settingsAvailable",
+        ] {
+            assert!(object.contains_key(key));
+        }
     }
 }

@@ -1,4 +1,4 @@
-//! macOS menu-bar shell and background window lifecycle.
+//! Desktop tray shell and background window lifecycle.
 
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
@@ -185,6 +185,13 @@ pub(crate) fn enter_permission_gate<R: Runtime>(app: &AppHandle<R>) {
     }
     if let Some(tray) = app.tray_by_id(TRAY_ID) {
         let _ = tray.set_visible(false);
+    }
+}
+
+/// Restores the tray after onboarding completes without a process restart.
+pub(crate) fn exit_permission_gate<R: Runtime>(app: &AppHandle<R>) {
+    if let Some(tray) = app.tray_by_id(TRAY_ID) {
+        let _ = tray.set_visible(true);
     }
 }
 
