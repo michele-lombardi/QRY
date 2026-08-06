@@ -1,8 +1,8 @@
-//! Diagnostic commands for the Phase B macOS monitor spike.
+//! Diagnostic commands for the privacy-safe desktop monitor.
 
 use serde::Serialize;
 use tauri::State;
-use typepulse_platform_macos::{
+use typepulse_platform_desktop::{
     accessibility_permission_status as platform_accessibility_permission_status,
     input_permission_status as platform_permission_status, open_accessibility_settings,
     open_input_monitoring_settings,
@@ -132,7 +132,7 @@ pub(crate) fn stop_input_monitoring(
 
 #[cfg(test)]
 mod tests {
-    use typepulse_platform_macos::PermissionStatus;
+    use typepulse_platform_desktop::PermissionStatus;
 
     use super::PermissionStatusDto;
 

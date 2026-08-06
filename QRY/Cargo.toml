@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "crates/typepulse-core",
-    "crates/typepulse-platform-macos",
+    "crates/typepulse-platform-desktop",
     "crates/typepulse-storage-sqlite",
     "src-tauri",
 ]

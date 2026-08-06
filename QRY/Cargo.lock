@@ -4059,7 +4059,7 @@ dependencies = [
  "tauri-plugin-autostart",
  "tauri-plugin-single-instance",
  "typepulse-core",
- "typepulse-platform-macos",
+ "typepulse-platform-desktop",
  "typepulse-storage-sqlite",
 ]
 
@@ -4068,7 +4068,7 @@ name = "typepulse-core"
 version = "0.1.1"
 
 [[package]]
-name = "typepulse-platform-macos"
+name = "typepulse-platform-desktop"
 version = "0.1.1"
 dependencies = [
  "core-foundation",

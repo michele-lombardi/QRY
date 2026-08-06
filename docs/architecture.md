@@ -48,10 +48,13 @@ SQLite, or operating-system dependency.
 time; tests use a manual clock and do not sleep. Metric semantics are recorded
 in [ADR 0005](decisions/0005-core-metrics-and-sessions.md).
 
-### `typepulse-platform-macos`
+### `typepulse-platform-desktop`
 
-The macOS adapter owns Input Monitoring, the passive event tap, private key
-filtering, and optional focused-window geometry.
+The desktop boundary exposes one privacy-safe monitor and focused-display API.
+Its target-gated macOS adapter owns Input Monitoring, the passive event tap,
+private key filtering, and optional focused-window geometry. Windows native
+input is intentionally added behind the same API so the application and core
+never branch on raw operating-system events.
 
 The event tap is `ListenOnly`, runs on a dedicated thread, and sends bounded
 `TypingActivity` messages without blocking the callback. Auto-repeat and

@@ -16,7 +16,7 @@ use typepulse_core::{
     LocalDate, MetricBucketRecord, SessionPhase, SessionSummary, StatisticsRepository,
     TypingEngine, TypingRecords,
 };
-use typepulse_platform_macos::{
+use typepulse_platform_desktop::{
     ActivityReceiver, KeyboardMonitor, MonitorConfig, MonitorError, MonitorMetricsSnapshot,
     MonitorRunState,
 };

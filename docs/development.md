@@ -82,7 +82,7 @@ diff before committing.
 QRY/
 ├── crates/
 │   ├── typepulse-core/
-│   ├── typepulse-platform-macos/
+│   ├── typepulse-platform-desktop/
 │   └── typepulse-storage-sqlite/
 ├── src/                    # TypeScript, HTML, and CSS presentation
 ├── src-tauri/              # Tauri composition and desktop lifecycle
@@ -120,7 +120,7 @@ Never attach raw keyboard-event logs to a test result. The callback reference
 benchmark intentionally reports aggregate timing only:
 
 ```bash
-cargo test -p typepulse-platform-macos --release \
+cargo test -p typepulse-platform-desktop --release \
   typing_callback_hot_path_reference -- --ignored --nocapture
 ```
 

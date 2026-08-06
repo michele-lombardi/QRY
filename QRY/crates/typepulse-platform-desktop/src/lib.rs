@@ -1,9 +1,12 @@
-//! macOS permission and global-input adapter for QRY.
+//! Desktop permission, global-input, and focused-display boundary for QRY.
 //!
 //! The input boundary deliberately omits key codes, characters and active-app
 //! identity. Consumers receive only [`typepulse_core::TypingActivity`]. The
 //! separate placement boundary exposes one ephemeral window-center point and
 //! never exposes title, application identity or content.
+//!
+//! Native implementations stay behind target-gated private modules so the
+//! application composition layer consumes one stable API on every desktop OS.
 
 mod focused_window;
 mod monitor;
@@ -32,7 +35,7 @@ pub const fn is_ready() -> bool {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn macos_adapter_depends_on_the_core_boundary() {
+    fn desktop_adapter_depends_on_the_core_boundary() {
         assert!(super::is_ready());
     }
 }

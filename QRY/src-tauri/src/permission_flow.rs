@@ -10,7 +10,7 @@ use std::{
 
 use serde::Serialize;
 use tauri::{App, AppHandle, Manager, State};
-use typepulse_platform_macos::{
+use typepulse_platform_desktop::{
     accessibility_permission_status, input_permission_status, request_input_permission,
     MonitorRunState, PermissionStatus,
 };
@@ -382,7 +382,7 @@ fn schedule_exit(app: &AppHandle, runtime: &PermissionFlowRuntime) {
 mod tests {
     use std::time::{Duration, Instant};
 
-    use typepulse_platform_macos::PermissionStatus;
+    use typepulse_platform_desktop::PermissionStatus;
 
     use serde_json::Value;
 

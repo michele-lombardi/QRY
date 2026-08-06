@@ -239,7 +239,7 @@ portable Rust engine ── WPM, sessions, records, animation state
 | Area                                                              | Responsibility                                                                  |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | [`typepulse-core`](QRY/crates/typepulse-core)                     | Portable WPM, session, record, date, and persistence contracts.                 |
-| [`typepulse-platform-macos`](QRY/crates/typepulse-platform-macos) | macOS permissions, event tap, filtering, and focused-display geometry.          |
+| [`typepulse-platform-desktop`](QRY/crates/typepulse-platform-desktop) | Target-gated desktop permissions, input filtering, and focused-display geometry. |
 | [`typepulse-storage-sqlite`](QRY/crates/typepulse-storage-sqlite) | Aggregate-only local SQLite adapter and migrations.                             |
 | [`src-tauri`](QRY/src-tauri)                                      | Desktop lifecycle, menu bar, windows, commands, permissions, and orchestration. |
 | [`src`](QRY/src)                                                  | Vanilla TypeScript, HTML, and CSS presentation layer.                           |

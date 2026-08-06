@@ -4,7 +4,7 @@ use crate::app_state::DiagnosticState;
 use serde::Serialize;
 use tauri::{AppHandle, State};
 use tauri_plugin_autostart::ManagerExt;
-use typepulse_platform_macos::{input_permission_status, PermissionStatus};
+use typepulse_platform_desktop::{input_permission_status, PermissionStatus};
 
 /// Combined persisted preference and operating-system registration state.
 #[derive(Clone, Copy, Debug, Serialize)]

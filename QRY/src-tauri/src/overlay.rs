@@ -313,7 +313,7 @@ fn position_window<R: Runtime>(
     window: &WebviewWindow<R>,
     preferences: AppPreferences,
 ) -> tauri::Result<()> {
-    let focused_monitor = typepulse_platform_macos::focused_window_center()
+    let focused_monitor = typepulse_platform_desktop::focused_window_center()
         .and_then(|point| app.monitor_from_point(point.x, point.y).ok().flatten());
     let current_monitor = window.current_monitor()?;
     let monitor = select_monitor(
