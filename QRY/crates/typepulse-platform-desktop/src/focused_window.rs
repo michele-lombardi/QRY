@@ -1,4 +1,4 @@
-//! Privacy-minimized focused-window geometry for macOS display selection.
+//! Privacy-minimized focused-window geometry for desktop display selection.
 //!
 //! This adapter reads only the focused window's position and size. It never
 //! requests its title, role, value, owning application, or written content.
@@ -17,6 +17,20 @@ pub struct ScreenPoint {
 #[must_use]
 pub fn focused_window_center() -> Option<ScreenPoint> {
     platform::focused_window_center()
+}
+
+#[cfg(any(windows, test))]
+fn center_from_edges(left: i32, top: i32, right: i32, bottom: i32) -> Option<ScreenPoint> {
+    let width = i64::from(right) - i64::from(left);
+    let height = i64::from(bottom) - i64::from(top);
+    if width <= 0 || height <= 0 {
+        return None;
+    }
+
+    Some(ScreenPoint {
+        x: left as f64 + width as f64 / 2.0,
+        y: top as f64 + height as f64 / 2.0,
+    })
 }
 
 #[cfg(target_os = "macos")]
@@ -171,11 +185,77 @@ mod platform {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(windows)]
+mod platform {
+    use std::{ffi::c_void, mem::size_of};
+
+    use windows_sys::Win32::{
+        Foundation::RECT,
+        Graphics::Dwm::{DwmGetWindowAttribute, DWMWA_EXTENDED_FRAME_BOUNDS},
+        UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowRect},
+    };
+
+    use super::{center_from_edges, ScreenPoint};
+
+    pub(super) fn focused_window_center() -> Option<ScreenPoint> {
+        // SAFETY: `GetForegroundWindow` returns a borrowed handle. QRY uses it
+        // only for an immediate geometry query and never stores or closes it.
+        let window = unsafe { GetForegroundWindow() };
+        if window.is_null() {
+            return None;
+        }
+
+        let mut rect = RECT::default();
+        // Prefer the visible DWM bounds so invisible resize borders do not
+        // shift display selection. `GetWindowRect` is the compatibility path.
+        // Neither API reads a title, process identifier, or application name.
+        let dwm_result = unsafe {
+            DwmGetWindowAttribute(
+                window,
+                DWMWA_EXTENDED_FRAME_BOUNDS as u32,
+                (&raw mut rect).cast::<c_void>(),
+                size_of::<RECT>() as u32,
+            )
+        };
+        if dwm_result < 0 {
+            // SAFETY: `rect` is a valid writable RECT for this borrowed handle.
+            if unsafe { GetWindowRect(window, &raw mut rect) } == 0 {
+                return None;
+            }
+        }
+
+        center_from_edges(rect.left, rect.top, rect.right, rect.bottom)
+    }
+}
+
+#[cfg(not(any(target_os = "macos", windows)))]
 mod platform {
     use super::ScreenPoint;
 
     pub(super) const fn focused_window_center() -> Option<ScreenPoint> {
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{center_from_edges, ScreenPoint};
+
+    #[test]
+    fn center_supports_negative_virtual_desktop_coordinates() {
+        assert_eq!(
+            center_from_edges(-1_920, -200, -720, 600),
+            Some(ScreenPoint {
+                x: -1_320.0,
+                y: 200.0,
+            })
+        );
+    }
+
+    #[test]
+    fn center_rejects_empty_or_inverted_rectangles() {
+        assert_eq!(center_from_edges(10, 10, 10, 40), None);
+        assert_eq!(center_from_edges(50, 40, 10, 80), None);
+        assert_eq!(center_from_edges(10, 80, 50, 40), None);
     }
 }
