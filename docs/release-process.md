@@ -61,7 +61,14 @@ the downloaded artifacts before publication.
 
 ## Homebrew cask
 
-After the GitHub release is public, render the cask with its real checksums:
+The public [`homebrew-qry`](https://github.com/michele-lombardi/homebrew-qry)
+tap checks GitHub's latest stable release endpoint every hour. Once a release is
+public and is neither a draft nor a prerelease, its workflow validates the two
+architecture assets and checksum files, updates `Casks/qry.rb`, runs Homebrew
+style/audit/livecheck, and commits the change automatically.
+
+The repository template remains a manual fallback. Render it with the real
+checksums when diagnosing or recovering the tap automation:
 
 ```bash
 ./scripts/render-homebrew-cask.sh \
@@ -71,8 +78,8 @@ After the GitHub release is public, render the cask with its real checksums:
   X86_64_SHA256
 ```
 
-Copy the generated `release/qry.rb` to `Casks/qry.rb` in the separate
-`homebrew-qry` tap, then validate it:
+Copy the generated `release/qry.rb` to `Casks/qry.rb` in the tap, then validate
+it:
 
 ```bash
 ruby -c release/qry.rb
@@ -89,8 +96,8 @@ brew upgrade --cask qry
 brew uninstall --cask qry
 ```
 
-The tap is external to this repository and must be published before the README
-installation command is described as available.
+The tap intentionally ignores prereleases. A maintainer can run its
+`update-cask.yml` workflow manually to avoid waiting for the hourly schedule.
 
 ## Publication checklist
 

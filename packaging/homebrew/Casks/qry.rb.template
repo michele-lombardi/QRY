@@ -7,10 +7,15 @@ cask "qry" do
 
   url "https://github.com/__OWNER__/qry/releases/download/v#{version}/QRY-#{version}-#{arch}.app.zip"
   name "QRY"
-  desc "Privacy-first typing rhythm visualizer for the menu bar"
-  homepage "https://github.com/__OWNER__/qry"
+  desc "Private, local-first typing rhythm companion"
+  homepage "https://qry.micro-y.com/"
 
-  depends_on macos: ">= :catalina"
+  livecheck do
+    url "https://github.com/__OWNER__/QRY"
+    strategy :github_latest
+  end
+
+  depends_on macos: :catalina
 
   app "QRY.app"
 

@@ -5,6 +5,11 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
+### Added
+
+- official `michele-lombardi/qry` Homebrew tap with automatic tracking of the
+  latest public, non-prerelease GitHub Release.
+
 ## [0.1.1] - 2026-08-06
 
 ### Added

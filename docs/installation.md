@@ -6,19 +6,25 @@ approval in macOS.
 
 ## Homebrew
 
-The planned installation command for the project tap is:
+Install QRY and add the official tap in one command:
+
+```bash
+brew install --cask michele-lombardi/qry/qry
+```
+
+Or add the tap explicitly:
 
 ```bash
 brew tap michele-lombardi/qry
 brew install --cask qry
 ```
 
-The cask template is already maintained in this repository, but the external
-`homebrew-qry` tap is not public yet. Until the first release and tap are
-published, use the manual installation below. This note will be removed as soon
-as the command is available.
+The [`homebrew-qry`](https://github.com/michele-lombardi/homebrew-qry) tap checks
+the latest public, non-prerelease GitHub Release every hour and automatically
+updates the version and architecture-specific checksums. Drafts and prereleases
+are intentionally ignored.
 
-Once installed through Homebrew:
+Once installed:
 
 ```bash
 brew upgrade --cask qry
