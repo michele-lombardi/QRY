@@ -64,3 +64,72 @@ jobs:
 
       - name: Check Rust workspace
         run: cargo check --workspace --all-targets
+
+  validate-portable-windows:
+    name: Validate portable Windows foundation
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: QRY
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: QRY/package-lock.json
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: portable-windows
+          workspaces: QRY -> target
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Check frontend formatting
+        run: npm run format:check
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Check Rust formatting
+        run: cargo fmt --all --check
+
+      - name: Lint portable Rust crates
+        run: >-
+          cargo clippy
+          -p typepulse-core
+          -p typepulse-platform-desktop
+          -p typepulse-storage-sqlite
+          --all-targets
+          -- -D warnings
+
+      - name: Test portable Rust crates
+        run: >-
+          cargo test
+          -p typepulse-core
+          -p typepulse-platform-desktop
+          -p typepulse-storage-sqlite
+          --all-targets
+
+      - name: Check portable Rust crates
+        run: >-
+          cargo check
+          -p typepulse-core
+          -p typepulse-platform-desktop
+          -p typepulse-storage-sqlite
+          --all-targets
