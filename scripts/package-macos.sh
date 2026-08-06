@@ -59,6 +59,7 @@ if [[ " $binary_archs " != *" $binary_arch "* ]]; then
 fi
 
 codesign --verify --deep --strict --verbose=2 "$bundle_path"
+node "$script_dir/audit-release-content.mjs" "$bundle_path"
 ditto -c -k --sequesterRsrc --keepParent "$bundle_path" "$archive_path"
 shasum -a 256 "$archive_path" \
   | awk -v name="$(basename "$archive_path")" '{ print $1 "  " name }' \

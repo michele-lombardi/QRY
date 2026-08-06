@@ -42,4 +42,18 @@ if grep -Eqr 'TODO_OWNER|TODO_[A-Z0-9_]+' "$project_root/.github/workflows"; the
   exit 1
 fi
 
+node - "$app_root/src-tauri/tauri.windows.conf.json" <<'NODE'
+const fs = require("node:fs");
+const config = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+const targets = config.bundle?.targets;
+const webview = config.bundle?.windows?.webviewInstallMode?.type;
+const installMode = config.bundle?.windows?.nsis?.installMode;
+if (JSON.stringify(targets) !== JSON.stringify(["nsis", "msi"])) {
+  throw new Error(`unexpected Windows bundle targets: ${targets}`);
+}
+if (webview !== "downloadBootstrapper" || installMode !== "currentUser") {
+  throw new Error(`unsafe Windows installer defaults: webview=${webview} installMode=${installMode}`);
+}
+NODE
+
 printf 'Release metadata is coherent for %s.\n' "$release_tag"

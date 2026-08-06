@@ -47,9 +47,9 @@ Development builds still need explicit Input Monitoring permission. Because an
 unsigned executable's identity may change after rebuilding, macOS can request
 permission again.
 
-QRY is a menu-bar accessory after onboarding. Left-click the Pulse for Today;
-right-click it for Statistics, Settings, monitoring controls, menu-bar WPM, and
-Quit. Closing a window hides it without terminating the background process.
+QRY is a tray or menu-bar accessory after onboarding. Left-click the Pulse for
+Today; use its menu for Statistics, Settings, monitoring controls, shell WPM,
+and Quit. Closing a window hides it without terminating the background process.
 
 ## Quality checks
 

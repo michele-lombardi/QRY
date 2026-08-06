@@ -6,19 +6,19 @@ the project learns from real-world use.
 
 ## Public beta
 
-The current macOS beta focuses on the complete local-first experience:
+The current beta focuses on the complete local-first desktop experience:
 
 - privacy-safe global typing activity monitoring;
 - live WPM and the click-through Pip companion;
 - local daily, weekly, monthly, and yearly statistics;
 - peak, 30-second, and 60-second personal records;
-- guided Input Monitoring and optional Accessibility onboarding;
+- guided macOS permissions and permission-free Windows capability onboarding;
 - user-controlled launch at login;
-- reproducible Apple Silicon and Intel release artifacts.
+- reproducible Apple Silicon, Intel, Windows NSIS and Windows MSI artifacts.
 
 ## Toward V1
 
-The stable macOS release requires:
+The stable desktop release requires:
 
 - validation of permissions, relaunch, logout/login, sleep/wake, and revocation
   flows on clean macOS accounts;
@@ -27,6 +27,8 @@ The stable macOS release requires:
   project Homebrew tap;
 - a native destination picker for CSV exports;
 - release-candidate testing on both Apple Silicon and Intel;
+- signed-off native input, tray, autostart, sleep/wake, install and uninstall
+  checks on a clean Windows 11 x64 VM;
 - no open critical privacy, data-loss, or resource-usage defects.
 
 ## After V1
@@ -34,6 +36,7 @@ The stable macOS release requires:
 Potential follow-up work includes:
 
 - Apple Developer ID signing and notarization;
+- Windows Authenticode signing when an approved identity is available;
 - explicit Light and Dark appearance overrides;
 - coordinated reset of an active session;
 - improved export and backup workflows;
