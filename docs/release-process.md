@@ -90,8 +90,7 @@ brew audit --cask --strict michele-lombardi/qry/qry
 Test the user flow on a clean account:
 
 ```bash
-brew tap michele-lombardi/qry
-brew install --cask qry
+brew install --cask michele-lombardi/qry/qry
 brew upgrade --cask qry
 brew uninstall --cask qry
 ```

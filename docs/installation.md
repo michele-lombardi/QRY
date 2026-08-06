@@ -6,17 +6,10 @@ approval in macOS.
 
 ## Homebrew
 
-Install QRY and add the official tap in one command:
+Install QRY with its official Homebrew cask:
 
 ```bash
 brew install --cask michele-lombardi/qry/qry
-```
-
-Or add the tap explicitly:
-
-```bash
-brew tap michele-lombardi/qry
-brew install --cask qry
 ```
 
 The [`homebrew-qry`](https://github.com/michele-lombardi/homebrew-qry) tap checks

@@ -125,17 +125,10 @@ QRY targets macOS 10.15 or later.
 
 ### Homebrew
 
-Install QRY and add its official tap in one command:
+Install QRY with its official Homebrew cask:
 
 ```bash
 brew install --cask michele-lombardi/qry/qry
-```
-
-Alternatively, add the tap explicitly:
-
-```bash
-brew tap michele-lombardi/qry
-brew install --cask qry
 ```
 
 The tap follows the latest public, non-prerelease GitHub Release and refreshes
