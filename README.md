@@ -32,6 +32,10 @@
   <img src="https://img.shields.io/badge/version-0.1.1%20beta-3CEFFF" alt="Version 0.1.1 beta" />
 </p>
 
+<p align="center">
+  <img src="img/qry-pip-demo.gif" width="172" alt="Animated QRY Pip reacting to live typing speed" />
+</p>
+
 ---
 
 QRY lives quietly in the macOS menu bar and turns anonymous typing activity into
@@ -58,6 +62,35 @@ application you use.
 - With optional Accessibility permission, Pip follows the display containing
   your focused window.
 - System Light/Dark appearance and reduced-motion preferences are respected.
+
+## QRY in action
+
+<p align="center">
+  <a href="img/qry-pip.png">
+    <img src="img/qry-pip.png" width="587" alt="QRY Pip showing a live reading of 73 WPM beside the active editor" />
+  </a>
+  <br />
+  <sub>Pip stays close to your work, reacts to pace, and never takes focus.</sub>
+</p>
+
+<table>
+  <tr>
+    <td width="50%">
+      <a href="img/qry-statistics-overview.png">
+        <img src="img/qry-statistics-overview.png" alt="QRY Statistics overview with words, average pace, peak pace, sustained records, and active time" />
+      </a>
+    </td>
+    <td width="50%">
+      <a href="img/qry-statistics-charts.png">
+        <img src="img/qry-statistics-charts.png" alt="QRY Statistics speed and estimated-word charts over time" />
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Private daily records and aggregate totals</sub></td>
+    <td align="center"><sub>Speed and volume shown as separate timelines</sub></td>
+  </tr>
+</table>
 
 ## Privacy is part of the architecture
 
