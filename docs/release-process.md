@@ -19,7 +19,7 @@ Before tagging, update the same version in:
 Validate the metadata:
 
 ```bash
-./scripts/release-audit.sh v0.1.0
+./scripts/release-audit.sh v0.1.1
 ```
 
 ## Pre-release gate
@@ -66,7 +66,7 @@ After the GitHub release is public, render the cask with its real checksums:
 ```bash
 ./scripts/render-homebrew-cask.sh \
   michele-lombardi \
-  0.1.0 \
+  0.1.1 \
   ARM64_SHA256 \
   X86_64_SHA256
 ```

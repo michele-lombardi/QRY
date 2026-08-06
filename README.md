@@ -29,7 +29,7 @@
   <a href="https://github.com/michele-lombardi/QRY/actions/workflows/ci.yml"><img src="https://github.com/michele-lombardi/QRY/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--only-30D158" alt="GPL-3.0-only license" /></a>
   <img src="https://img.shields.io/badge/platform-macOS%2010.15%2B-111113" alt="macOS 10.15 or later" />
-  <img src="https://img.shields.io/badge/version-0.1.0%20beta-3CEFFF" alt="Version 0.1.0 beta" />
+  <img src="https://img.shields.io/badge/version-0.1.1%20beta-3CEFFF" alt="Version 0.1.1 beta" />
 </p>
 
 ---
@@ -107,7 +107,7 @@ user's control in System Settings.
 
 ## Project status
 
-QRY `0.1.0` is the current macOS beta line. The portable metrics engine, macOS
+QRY `0.1.1` is the current macOS beta line. The portable metrics engine, macOS
 monitor, local persistence, permission onboarding, menu-bar shell, Pip overlay,
 settings, statistics, records, and release automation are implemented.
 
@@ -142,7 +142,7 @@ first published tap release. Until then, install the unsigned beta manually.
 2. Verify the archive, for example:
 
     ```bash
-    shasum -a 256 -c QRY-0.1.0-aarch64.app.zip.sha256
+    shasum -a 256 -c QRY-0.1.1-aarch64.app.zip.sha256
     ```
 
 3. Extract `QRY.app`, move it to `/Applications`, and open it normally.

@@ -37,7 +37,7 @@ choices always remain in macOS System Settings.
 3. In Terminal, change to that directory and verify the archive. For example:
 
     ```bash
-    shasum -a 256 -c QRY-0.1.0-aarch64.app.zip.sha256
+    shasum -a 256 -c QRY-0.1.1-aarch64.app.zip.sha256
     ```
 
     Continue only if the command reports `OK`.

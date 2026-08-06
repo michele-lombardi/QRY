@@ -5,7 +5,34 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
-No unreleased changes.
+## [0.1.1] - 2026-08-06
+
+### Added
+
+- three-step privacy and permission onboarding with required Input Monitoring
+  and optional Accessibility;
+- permission-gated bootstrap, bounded System Settings wait and clean relaunch;
+- runtime permission-revocation gate and single-instance protection;
+- persisted onboarding completion with a backward-compatible SQLite migration;
+- private all-time WPM records over complete 30-second and 60-second windows,
+  shown in Today and Statistics with the existing Pip record celebration;
+- configurable 1–15 second Pip disappearance delay;
+- explicit launch-at-login choice in onboarding with idempotent LaunchAgent
+  reconciliation at startup and automatic cleanup when required access is
+  unavailable.
+
+### Changed
+
+- monitoring starts after every successful permission check; launch at login is
+  now an independent startup preference;
+- Pip waits for the third accepted typing activity before appearing, then
+  breathes during the configured quiet interval before fading out;
+- launch at login no longer changes a manually paused monitor during the current
+  run;
+- public documentation is now English-first and organized around installation,
+  vision, architecture, privacy, UI, development, release, and decision records;
+- detailed internal plans and phase reports are no longer part of the public
+  repository.
 
 ## [0.1.0] - 2026-08-05
 
@@ -48,5 +75,6 @@ First public macOS beta.
   remain planned before the stable V1;
 - Linux packaging is planned after the macOS beta and is not included here.
 
-[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/michele-lombardi/QRY/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/michele-lombardi/QRY/releases/tag/v0.1.0
