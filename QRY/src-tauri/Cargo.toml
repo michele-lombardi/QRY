@@ -20,6 +20,9 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 chrono = "0.4.45"
+# Tauri's build-time config validator requires this feature in the primary
+# dependency when the merged macOS config opts into the private API. The
+# corresponding runtime setting lives only in tauri.macos.conf.json.
 tauri = { version = "2", features = ["image-png", "macos-private-api", "tray-icon"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

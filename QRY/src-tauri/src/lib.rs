@@ -29,8 +29,18 @@ use shell::{
     hide_dashboard_window, open_settings_window, open_statistics_window, open_today_window,
 };
 use tauri::Manager;
-use tauri_plugin_autostart::MacosLauncher;
 use typepulse_storage_sqlite::SqliteStatisticsRepository;
+
+fn autostart_plugin<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
+    let builder = tauri_plugin_autostart::Builder::new();
+    #[cfg(target_os = "macos")]
+    let builder = builder.macos_launcher(tauri_plugin_autostart::MacosLauncher::LaunchAgent);
+    builder.build()
+}
+
+fn local_database_path(app_data_directory: &std::path::Path) -> std::path::PathBuf {
+    app_data_directory.join("typepulse.sqlite3")
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 /// Starts the Tauri desktop runtime.
@@ -39,16 +49,10 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             permission_flow::focus_primary_surface(app);
         }))
-        .plugin(tauri_plugin_autostart::init(
-            MacosLauncher::LaunchAgent,
-            None,
-        ))
+        .plugin(autostart_plugin())
         .setup(|app| {
-            let database_path = app
-                .path()
-                .app_data_dir()
-                .map_err(std::io::Error::other)?
-                .join("typepulse.sqlite3");
+            let app_data_directory = app.path().app_data_dir().map_err(std::io::Error::other)?;
+            let database_path = local_database_path(&app_data_directory);
             let repository =
                 SqliteStatisticsRepository::open(database_path).map_err(std::io::Error::other)?;
             let state = DiagnosticState::new(repository);
@@ -144,4 +148,20 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use super::local_database_path;
+
+    #[test]
+    fn database_is_created_only_in_the_resolved_platform_app_data_directory() {
+        let app_data = Path::new("C:/Users/test/AppData/Roaming/app.typepulse.desktop");
+        assert_eq!(
+            local_database_path(app_data),
+            app_data.join("typepulse.sqlite3")
+        );
+    }
 }

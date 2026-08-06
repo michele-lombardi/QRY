@@ -36,6 +36,13 @@ const fn registration_action(desired: bool, registered: bool) -> RegistrationAct
     }
 }
 
+const fn rollback_action(
+    previously_registered: bool,
+    currently_registered: bool,
+) -> RegistrationAction {
+    registration_action(previously_registered, currently_registered)
+}
+
 const fn desired_registration(permission_gate_valid: bool, preference_enabled: bool) -> bool {
     permission_gate_valid && preference_enabled
 }
@@ -149,7 +156,15 @@ fn apply_registration(app: &AppHandle, desired: bool, registered: bool) -> Resul
 
 fn restore_registration(app: &AppHandle, registered: bool) {
     let current = registration_state(app).unwrap_or(!registered);
-    let _ = apply_registration(app, registered, current);
+    match rollback_action(registered, current) {
+        RegistrationAction::None => {}
+        RegistrationAction::Enable => {
+            let _ = app.autolaunch().enable();
+        }
+        RegistrationAction::Disable => {
+            let _ = app.autolaunch().disable();
+        }
+    }
 }
 
 #[tauri::command]
@@ -175,7 +190,8 @@ pub(crate) fn set_menu_bar_wpm_enabled(
 #[cfg(test)]
 mod tests {
     use super::{
-        desired_registration, registration_action, MenuBarPreferenceDto, RegistrationAction,
+        desired_registration, registration_action, rollback_action, MenuBarPreferenceDto,
+        RegistrationAction,
     };
 
     #[test]
@@ -197,5 +213,13 @@ mod tests {
         assert!(!desired_registration(true, false));
         assert!(!desired_registration(false, true));
         assert!(!desired_registration(false, false));
+    }
+
+    #[test]
+    fn failed_preference_persistence_restores_the_previous_native_state() {
+        assert_eq!(rollback_action(false, true), RegistrationAction::Disable);
+        assert_eq!(rollback_action(true, false), RegistrationAction::Enable);
+        assert_eq!(rollback_action(true, true), RegistrationAction::None);
+        assert_eq!(rollback_action(false, false), RegistrationAction::None);
     }
 }

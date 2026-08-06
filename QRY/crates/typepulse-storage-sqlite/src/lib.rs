@@ -596,8 +596,9 @@ mod tests {
 
     use tempfile::tempdir;
     use typepulse_core::{
-        AppPreferences, CompletedSessionRecord, LocalDate, MetricBucketRecord, OverlayContent,
-        OverlayPosition, OverlaySize, StatisticsRepository, TypingRecords,
+        export_daily_csv, AppPreferences, CompletedSessionRecord, DailySummary, LocalDate,
+        MetricBucketRecord, OverlayContent, OverlayPosition, OverlaySize, StatisticsRepository,
+        TypingRecords,
     };
 
     use super::{SqliteStatisticsRepository, LATEST_SCHEMA_VERSION};
@@ -619,6 +620,40 @@ mod tests {
     fn new_database_migrates_to_latest_schema() {
         let repository = SqliteStatisticsRepository::open_in_memory().unwrap();
         assert_eq!(repository.schema_version().unwrap(), LATEST_SCHEMA_VERSION);
+    }
+
+    #[test]
+    fn fresh_on_disk_database_contains_no_statistics_or_seed_records() {
+        let directory = tempdir().unwrap();
+        let path = directory.path().join("typepulse.sqlite3");
+        assert!(!path.exists());
+
+        let date = LocalDate::new(2026, 8, 7).unwrap();
+        let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
+        assert_eq!(repository.database_path(), Some(path.as_path()));
+        assert_eq!(repository.schema_version().unwrap(), LATEST_SCHEMA_VERSION);
+        assert_eq!(
+            repository.load_preferences().unwrap(),
+            AppPreferences::default()
+        );
+        assert_eq!(
+            repository.typing_records().unwrap(),
+            TypingRecords::default()
+        );
+        assert_eq!(
+            repository.daily_summary(date).unwrap(),
+            DailySummary::empty(date)
+        );
+        assert!(repository.metric_buckets(date).unwrap().is_empty());
+        assert_eq!(
+            repository
+                .connection()
+                .query_row("SELECT COUNT(*) FROM completed_sessions", [], |row| {
+                    row.get::<_, i64>(0)
+                })
+                .unwrap(),
+            0
+        );
     }
 
     #[test]
@@ -874,6 +909,9 @@ mod tests {
             repository.daily_summary(second_day).unwrap().session_count,
             1
         );
+        let exported = export_daily_csv(&repository.recent_daily_summaries(second_day, 2).unwrap());
+        assert!(exported.contains("2026-08-05,0.00,0.0,0.0,0.00"));
+        assert!(exported.contains("2026-08-06,2.00,48.0,72.0,0.08"));
     }
 
     #[test]
