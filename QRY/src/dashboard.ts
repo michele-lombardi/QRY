@@ -5,6 +5,8 @@ import { byId, formatClock, formatNumber, pulsePath } from "./ui";
 const wpm = byId<HTMLElement>("dashboard-wpm");
 const words = byId<HTMLElement>("dashboard-words");
 const best = byId<HTMLElement>("dashboard-best");
+const best30 = byId<HTMLElement>("dashboard-best-30");
+const best60 = byId<HTMLElement>("dashboard-best-60");
 const streak = byId<HTMLElement>("dashboard-streak");
 const quiet = byId<HTMLElement>("dashboard-quiet");
 const state = byId<HTMLElement>("dashboard-state");
@@ -36,6 +38,8 @@ const refresh = async (): Promise<void> => {
   best.textContent = Math.round(
     Math.max(historicalBest, monitor.personalBestWpm),
   ).toString();
+  best30.textContent = Math.round(monitor.sustained30BestWpm).toString();
+  best60.textContent = Math.round(monitor.sustained60BestWpm).toString();
   streak.textContent = countStreak(days, liveWords > 0).toString();
   quiet.textContent = formatClock(monitor.lastActivityUnixMs);
   state.textContent = monitor.state;

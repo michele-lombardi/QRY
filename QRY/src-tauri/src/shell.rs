@@ -176,6 +176,18 @@ pub(crate) fn hide_main_window<R: Runtime>(window: &tauri::Window<R>) {
     }
 }
 
+/// Hides every normal application surface while the required-permission gate is active.
+pub(crate) fn enter_permission_gate<R: Runtime>(app: &AppHandle<R>) {
+    for label in [DASHBOARD_LABEL, SETTINGS_LABEL, STATISTICS_LABEL] {
+        if let Some(window) = app.get_webview_window(label) {
+            let _ = window.hide();
+        }
+    }
+    if let Some(tray) = app.tray_by_id(TRAY_ID) {
+        let _ = tray.set_visible(false);
+    }
+}
+
 fn show_window<R: Runtime>(app: &AppHandle<R>, label: &str) {
     if let Some(dashboard) = app.get_webview_window(DASHBOARD_LABEL) {
         if label != DASHBOARD_LABEL {

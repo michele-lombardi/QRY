@@ -13,6 +13,7 @@ export default defineConfig(async () => ({
     rollupOptions: {
       input: {
         main: new URL("./index.html", import.meta.url).pathname,
+        onboarding: new URL("./onboarding.html", import.meta.url).pathname,
         dashboard: new URL("./dashboard.html", import.meta.url).pathname,
         overlay: new URL("./overlay.html", import.meta.url).pathname,
         statistics: new URL("./statistics.html", import.meta.url).pathname,

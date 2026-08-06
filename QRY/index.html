@@ -65,7 +65,7 @@
             <label class="setting-row interactive">
               <div>
                 <strong>Start automatically</strong
-                ><small>Launch at login and begin monitoring when QRY opens.</small>
+                ><small>Launch at login after the required permission check.</small>
               </div>
               <input id="auto-start" class="switch" type="checkbox" />
             </label>
@@ -149,6 +149,20 @@
                 <option value="wpm">WPM only</option>
                 <option value="animation">Pip only</option>
                 <option value="both">WPM and Pip</option>
+              </select></label
+            >
+            <label class="setting-row"
+              ><div>
+                <strong>Disappear after</strong
+                ><small>Pip breathes for this long after you stop typing.</small>
+              </div>
+              <select id="overlay-hide-delay">
+                <option value="2">2 seconds</option>
+                <option value="3">3 seconds</option>
+                <option value="5">5 seconds</option>
+                <option value="8">8 seconds</option>
+                <option value="10">10 seconds</option>
+                <option value="15">15 seconds</option>
               </select></label
             >
           </div>

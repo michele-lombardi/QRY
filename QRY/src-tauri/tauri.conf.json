@@ -13,6 +13,23 @@
     "macOSPrivateApi": true,
     "windows": [
       {
+        "label": "onboarding",
+        "title": "Set up QRY",
+        "url": "onboarding.html",
+        "visible": false,
+        "skipTaskbar": false,
+        "width": 620,
+        "height": 650,
+        "minWidth": 620,
+        "minHeight": 650,
+        "maxWidth": 620,
+        "maxHeight": 650,
+        "resizable": false,
+        "maximizable": false,
+        "minimizable": true,
+        "center": true
+      },
+      {
         "label": "main",
         "title": "QRY Settings",
         "visible": false,

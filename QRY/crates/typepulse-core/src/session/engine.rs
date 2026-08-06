@@ -6,10 +6,14 @@ use std::{
 };
 
 use crate::{
-    metrics::{ExponentialSmoother, RollingWpm},
+    metrics::{ExponentialSmoother, RollingWpm, SustainedWpm},
     ActiveSessionMetrics, Clock, ConfigError, CoreConfig, EngineSnapshot, EngineUpdate, NewRecord,
-    SessionPhase, SessionSummary, SystemClock, TypingActivity,
+    RecordKind, SessionPhase, SessionSummary, SystemClock, TypingActivity, TypingRecords,
 };
+
+const SUSTAINED_30_WINDOW: Duration = Duration::from_secs(30);
+const SUSTAINED_60_WINDOW: Duration = Duration::from_secs(60);
+const MINIMUM_OVERLAY_ACTIVITIES: u64 = 3;
 
 /// Portable typing engine parameterized by its monotonic clock.
 #[derive(Clone, Debug)]
@@ -17,27 +21,33 @@ pub struct TypingEngine<C: Clock = SystemClock> {
     config: CoreConfig,
     clock: C,
     rolling_wpm: RollingWpm,
+    sustained_wpm: SustainedWpm,
     smoother: ExponentialSmoother,
     active_session: Option<ActiveSession>,
-    personal_best_wpm: Option<f64>,
+    records: TypingRecords,
 }
 
 impl TypingEngine<SystemClock> {
     /// Creates a production engine using the system monotonic clock.
     pub fn new(config: CoreConfig) -> Result<Self, EngineError> {
-        Self::with_clock_and_record(config, SystemClock, None)
+        Self::with_clock_and_records(config, SystemClock, TypingRecords::default())
     }
 
     /// Creates a production engine with an existing personal record.
     pub fn with_record(config: CoreConfig, personal_best_wpm: f64) -> Result<Self, EngineError> {
         Self::with_clock_and_record(config, SystemClock, Some(personal_best_wpm))
     }
+
+    /// Creates a production engine with all persisted personal records.
+    pub fn with_records(config: CoreConfig, records: TypingRecords) -> Result<Self, EngineError> {
+        Self::with_clock_and_records(config, SystemClock, records)
+    }
 }
 
 impl<C: Clock> TypingEngine<C> {
     /// Creates an engine with an injected clock and no historical record.
     pub fn with_clock(config: CoreConfig, clock: C) -> Result<Self, EngineError> {
-        Self::with_clock_and_record(config, clock, None)
+        Self::with_clock_and_records(config, clock, TypingRecords::default())
     }
 
     /// Creates an engine with an injected clock and optional historical record.
@@ -46,8 +56,24 @@ impl<C: Clock> TypingEngine<C> {
         clock: C,
         personal_best_wpm: Option<f64>,
     ) -> Result<Self, EngineError> {
+        Self::with_clock_and_records(
+            config,
+            clock,
+            TypingRecords {
+                peak_wpm: personal_best_wpm,
+                ..TypingRecords::default()
+            },
+        )
+    }
+
+    /// Creates an engine with an injected clock and all historical records.
+    pub fn with_clock_and_records(
+        config: CoreConfig,
+        clock: C,
+        records: TypingRecords,
+    ) -> Result<Self, EngineError> {
         let config = config.validate().map_err(EngineError::InvalidConfig)?;
-        if personal_best_wpm.is_some_and(|value| !value.is_finite() || value < 0.0) {
+        if !records.is_valid() {
             return Err(EngineError::InvalidPersonalBest);
         }
 
@@ -55,9 +81,10 @@ impl<C: Clock> TypingEngine<C> {
             config,
             clock,
             rolling_wpm: RollingWpm::new(config.rolling_window),
+            sustained_wpm: SustainedWpm::new(SUSTAINED_60_WINDOW),
             smoother: ExponentialSmoother::new(config.smoothing_factor),
             active_session: None,
-            personal_best_wpm,
+            records,
         })
     }
 
@@ -77,11 +104,13 @@ impl<C: Clock> TypingEngine<C> {
         let completed_session = self.complete_if_timed_out(occurred_at);
         if self.active_session.is_none() {
             self.rolling_wpm.reset();
+            self.sustained_wpm.reset();
             self.smoother.reset();
-            self.active_session = Some(ActiveSession::new(occurred_at, self.personal_best_wpm));
+            self.active_session = Some(ActiveSession::new(occurred_at, self.records));
         }
 
         let raw_wpm = self.rolling_wpm.record(occurred_at);
+        self.sustained_wpm.record(occurred_at);
         let displayed_wpm = if self.rolling_wpm.is_ready() {
             self.smoother.update(raw_wpm)
         } else {
@@ -97,20 +126,47 @@ impl<C: Clock> TypingEngine<C> {
             record_ready,
         );
 
-        let new_record = record_ready
-            .then(|| active_session.take_record(displayed_wpm))
+        let previous_records = self.records;
+        let peak_record = record_ready
+            .then(|| active_session.take_record(RecordKind::Peak, displayed_wpm))
             .flatten();
         if record_ready {
-            self.personal_best_wpm = Some(
-                self.personal_best_wpm
+            self.records.peak_wpm = Some(
+                self.records
+                    .peak_wpm
                     .map_or(displayed_wpm, |best| best.max(displayed_wpm)),
+            );
+        }
+        let sustained_30_wpm =
+            self.sustained_wpm
+                .at(occurred_at, active_session.started_at, SUSTAINED_30_WINDOW);
+        let sustained_30_record = sustained_30_wpm
+            .and_then(|value| active_session.take_record(RecordKind::Sustained30Seconds, value));
+        if let Some(value) = sustained_30_wpm {
+            self.records.sustained_30_wpm = Some(
+                self.records
+                    .sustained_30_wpm
+                    .map_or(value, |best| best.max(value)),
+            );
+        }
+        let sustained_60_wpm =
+            self.sustained_wpm
+                .at(occurred_at, active_session.started_at, SUSTAINED_60_WINDOW);
+        let sustained_60_record = sustained_60_wpm
+            .and_then(|value| active_session.take_record(RecordKind::Sustained60Seconds, value));
+        if let Some(value) = sustained_60_wpm {
+            self.records.sustained_60_wpm = Some(
+                self.records
+                    .sustained_60_wpm
+                    .map_or(value, |best| best.max(value)),
             );
         }
 
         Ok(EngineUpdate {
             snapshot: self.snapshot_at(occurred_at),
             completed_session,
-            new_record,
+            new_record: sustained_60_record.or(sustained_30_record).or(peak_record),
+            records_updated: self.records != previous_records,
         })
     }
 
@@ -127,6 +183,7 @@ impl<C: Clock> TypingEngine<C> {
             snapshot: self.snapshot_at(now),
             completed_session,
             new_record: None,
+            records_updated: false,
         })
     }
 
@@ -143,6 +200,7 @@ impl<C: Clock> TypingEngine<C> {
     pub fn finish_active_session(&mut self) -> Option<SessionSummary> {
         let summary = self.active_session.take().map(ActiveSession::summary);
         self.rolling_wpm.reset();
+        self.sustained_wpm.reset();
         self.smoother.reset();
         summary
     }
@@ -169,6 +227,7 @@ impl<C: Clock> TypingEngine<C> {
 
         let summary = self.active_session.take().map(ActiveSession::summary);
         self.rolling_wpm.reset();
+        self.sustained_wpm.reset();
         self.smoother.reset();
         summary
     }
@@ -184,7 +243,10 @@ impl<C: Clock> TypingEngine<C> {
             .active_session
             .as_ref()
             .map_or(SessionPhase::Idle, |session| {
-                if elapsed_since(now, session.last_activity_at) >= self.config.overlay_hide_after {
+                if session.estimated_character_count < MINIMUM_OVERLAY_ACTIVITIES
+                    || elapsed_since(now, session.last_activity_at)
+                        >= self.config.overlay_hide_after
+                {
                     SessionPhase::ActiveHidden
                 } else {
                     SessionPhase::ActiveVisible
@@ -198,7 +260,9 @@ impl<C: Clock> TypingEngine<C> {
             displayed_wpm,
             animation_band: self.config.animation_thresholds.band_for(displayed_wpm),
             active_session: self.active_session.as_ref().map(ActiveSession::metrics),
-            personal_best_wpm: self.personal_best_wpm,
+            personal_best_wpm: self.records.peak_wpm,
+            sustained_30_best_wpm: self.records.sustained_30_wpm,
+            sustained_60_best_wpm: self.records.sustained_60_wpm,
         }
     }
 }
@@ -212,12 +276,14 @@ struct ActiveSession {
     displayed_wpm_samples: u64,
     peak_wpm: f64,
     active_typing_duration: Duration,
-    record_to_beat: Option<f64>,
-    record_emitted: bool,
+    records_to_beat: TypingRecords,
+    peak_record_emitted: bool,
+    sustained_30_record_emitted: bool,
+    sustained_60_record_emitted: bool,
 }
 
 impl ActiveSession {
-    fn new(started_at: Instant, record_to_beat: Option<f64>) -> Self {
+    fn new(started_at: Instant, records_to_beat: TypingRecords) -> Self {
         Self {
             started_at,
             last_activity_at: started_at,
@@ -226,8 +292,10 @@ impl ActiveSession {
             displayed_wpm_samples: 0,
             peak_wpm: 0.0,
             active_typing_duration: Duration::ZERO,
-            record_to_beat,
-            record_emitted: false,
+            records_to_beat,
+            peak_record_emitted: false,
+            sustained_30_record_emitted: false,
+            sustained_60_record_emitted: false,
         }
     }
 
@@ -253,18 +321,30 @@ impl ActiveSession {
         }
     }
 
-    fn take_record(&mut self, displayed_wpm: f64) -> Option<NewRecord> {
-        if self.record_emitted {
+    fn take_record(&mut self, kind: RecordKind, value: f64) -> Option<NewRecord> {
+        let (record_to_beat, emitted) = match kind {
+            RecordKind::Peak => (self.records_to_beat.peak_wpm, &mut self.peak_record_emitted),
+            RecordKind::Sustained30Seconds => (
+                self.records_to_beat.sustained_30_wpm,
+                &mut self.sustained_30_record_emitted,
+            ),
+            RecordKind::Sustained60Seconds => (
+                self.records_to_beat.sustained_60_wpm,
+                &mut self.sustained_60_record_emitted,
+            ),
+        };
+        if *emitted {
             return None;
         }
-        let previous_wpm = self.record_to_beat?;
-        if displayed_wpm <= previous_wpm {
+        let previous_wpm = record_to_beat?;
+        if value <= previous_wpm {
             return None;
         }
-        self.record_emitted = true;
+        *emitted = true;
         Some(NewRecord {
+            kind,
             previous_wpm,
-            new_wpm: displayed_wpm,
+            new_wpm: value,
         })
     }
 
@@ -347,8 +427,8 @@ mod tests {
     use std::time::{Duration, Instant};
 
     use crate::{
-        AnimationBand, Clock, CoreConfig, EngineError, ManualClock, SessionPhase, TypingActivity,
-        TypingEngine,
+        AnimationBand, Clock, CoreConfig, EngineError, ManualClock, RecordKind, SessionPhase,
+        TypingActivity, TypingEngine, TypingRecords,
     };
 
     fn engine() -> (ManualClock, TypingEngine<ManualClock>) {
@@ -363,7 +443,15 @@ mod tests {
         assert_eq!(engine.tick().unwrap().snapshot.phase, SessionPhase::Idle);
 
         let first = engine.record_now().unwrap();
-        assert_eq!(first.snapshot.phase, SessionPhase::ActiveVisible);
+        assert_eq!(first.snapshot.phase, SessionPhase::ActiveHidden);
+        assert_eq!(
+            engine.record_now().unwrap().snapshot.phase,
+            SessionPhase::ActiveHidden
+        );
+        assert_eq!(
+            engine.record_now().unwrap().snapshot.phase,
+            SessionPhase::ActiveVisible
+        );
         clock.advance(Duration::from_secs(2)).unwrap();
         assert_eq!(
             engine.tick().unwrap().snapshot.phase,
@@ -374,7 +462,7 @@ mod tests {
         assert_eq!(ended.snapshot.phase, SessionPhase::Idle);
         assert_eq!(
             ended.completed_session.unwrap().estimated_character_count,
-            1
+            3
         );
         assert!(engine.tick().unwrap().completed_session.is_none());
     }
@@ -485,6 +573,46 @@ mod tests {
             assert!(engine.record_now().unwrap().new_record.is_none());
             clock.advance(Duration::from_millis(10)).unwrap();
         }
+    }
+
+    #[test]
+    fn complete_30_and_60_second_windows_emit_the_shared_record_event_once() {
+        let origin = Instant::now();
+        let clock = ManualClock::new(origin);
+        let mut engine = TypingEngine::with_clock_and_records(
+            CoreConfig::default(),
+            clock.clone(),
+            TypingRecords {
+                peak_wpm: Some(1_000.0),
+                sustained_30_wpm: Some(10.0),
+                sustained_60_wpm: Some(10.0),
+            },
+        )
+        .unwrap();
+
+        let mut update = engine.record_now().unwrap();
+        for _ in 1..=30 {
+            clock.advance(Duration::from_secs(1)).unwrap();
+            update = engine.record_now().unwrap();
+        }
+        assert_eq!(
+            update.new_record.unwrap().kind,
+            RecordKind::Sustained30Seconds
+        );
+        assert_eq!(update.snapshot.sustained_30_best_wpm, Some(12.0));
+
+        for _ in 31..=60 {
+            clock.advance(Duration::from_secs(1)).unwrap();
+            update = engine.record_now().unwrap();
+        }
+        assert_eq!(
+            update.new_record.unwrap().kind,
+            RecordKind::Sustained60Seconds
+        );
+        assert_eq!(update.snapshot.sustained_60_best_wpm, Some(12.0));
+
+        clock.advance(Duration::from_secs(1)).unwrap();
+        assert!(engine.record_now().unwrap().new_record.is_none());
     }
 
     #[test]

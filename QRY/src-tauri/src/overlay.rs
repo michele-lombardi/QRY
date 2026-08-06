@@ -23,6 +23,8 @@ const DISPLAY_REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 const FOCUSED_DISPLAY_REFRESH_INTERVAL: Duration = Duration::from_millis(250);
 const UPDATE_INTERVAL: Duration = Duration::from_millis(50);
 const FADE_OUT_DURATION: Duration = Duration::from_millis(180);
+const QUIET_BEFORE_BREATHING: Duration = Duration::from_millis(350);
+const MINIMUM_PRESENTATION_ACTIVITIES: u64 = 3;
 const SCREEN_MARGIN_LOGICAL: f64 = 20.0;
 
 /// Preferences exposed to the settings UI without any input information.
@@ -34,6 +36,7 @@ pub(crate) struct OverlayPreferenceDto {
     size: &'static str,
     content: &'static str,
     background_enabled: bool,
+    hide_delay_seconds: u32,
 }
 
 impl From<AppPreferences> for OverlayPreferenceDto {
@@ -44,6 +47,7 @@ impl From<AppPreferences> for OverlayPreferenceDto {
             size: preferences.overlay_size.as_str(),
             content: preferences.overlay_content.as_str(),
             background_enabled: preferences.overlay_background_enabled,
+            hide_delay_seconds: preferences.overlay_hide_delay_seconds,
         }
     }
 }
@@ -57,6 +61,7 @@ pub(crate) struct OverlayPreferenceInput {
     size: String,
     content: String,
     background_enabled: bool,
+    hide_delay_seconds: u32,
 }
 
 /// Complete frontend presentation state emitted by the controller.
@@ -140,6 +145,16 @@ pub(crate) fn configure(app: &mut App, preferences: AppPreferences) -> tauri::Re
     Ok(())
 }
 
+/// Stops and hides the overlay immediately when required access is unavailable.
+pub(crate) fn enter_permission_gate<R: Runtime>(app: &AppHandle<R>) {
+    if let Some(runtime) = app.try_state::<OverlayRuntime>() {
+        runtime.stop();
+    }
+    if let Some(window) = app.get_webview_window(OVERLAY_LABEL) {
+        let _ = window.hide();
+    }
+}
+
 #[tauri::command]
 pub(crate) fn overlay_preference(
     state: State<'_, DiagnosticState>,
@@ -165,6 +180,10 @@ pub(crate) fn set_overlay_preference(
     preferences.overlay_size = size;
     preferences.overlay_content = content;
     preferences.overlay_background_enabled = preference.background_enabled;
+    if !(1..=15).contains(&preference.hide_delay_seconds) {
+        return Err("overlay hide delay must be between 1 and 15 seconds".into());
+    }
+    preferences.overlay_hide_delay_seconds = preference.hide_delay_seconds;
     state.save_preferences(preferences)?;
     runtime.update(preferences);
     Ok(preferences.into())
@@ -178,7 +197,8 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
     let mut last_preferences = runtime.preferences();
     let mut next_display_refresh = Instant::now();
     let mut next_focused_display_refresh = Instant::now();
-    let mut positioned_activity_count = 0;
+    let mut observed_activity_count = 0;
+    let mut last_typing_at: Option<Instant> = None;
 
     while !runtime.stopped.load(Ordering::Acquire) {
         let Some(window) = app.get_webview_window(OVERLAY_LABEL) else {
@@ -186,17 +206,29 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
         };
         let preferences = runtime.preferences();
         let snapshot = app.state::<DiagnosticState>().snapshot();
-        let should_present =
-            preferences.overlay_enabled && snapshot.live_metrics.phase.overlay_visible();
         let now = Instant::now();
+        let activity_arrived = snapshot.total_activities != observed_activity_count;
+        if activity_arrived {
+            observed_activity_count = snapshot.total_activities;
+            last_typing_at = Some(now);
+        }
+        let session_qualified =
+            snapshot.live_metrics.current_session_characters >= MINIMUM_PRESENTATION_ACTIVITIES;
+        let quiet_for = last_typing_at.map_or(Duration::MAX, |last| now.duration_since(last));
+        let should_present = should_present_overlay(
+            preferences.overlay_enabled,
+            session_qualified,
+            quiet_for,
+            preferences.overlay_hide_delay_seconds,
+        );
+        let is_breathing = should_present && quiet_for >= QUIET_BEFORE_BREATHING;
 
         let preferences_changed = preferences.overlay_size != last_preferences.overlay_size
             || preferences.overlay_position != last_preferences.overlay_position
             || preferences.overlay_enabled != last_preferences.overlay_enabled;
         let first_presentation = should_present && !presented;
-        let typing_moved_on = should_present
-            && snapshot.total_activities != positioned_activity_count
-            && now >= next_focused_display_refresh;
+        let typing_moved_on =
+            should_present && activity_arrived && now >= next_focused_display_refresh;
         if preferences_changed
             || first_presentation
             || typing_moved_on
@@ -209,7 +241,6 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
             last_preferences = preferences;
             next_display_refresh = now + DISPLAY_REFRESH_INTERVAL;
             if first_presentation || typing_moved_on {
-                positioned_activity_count = snapshot.total_activities;
                 next_focused_display_refresh = now + FOCUSED_DISPLAY_REFRESH_INTERVAL;
             }
         }
@@ -232,17 +263,21 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
             visible: should_present,
             displayed_wpm: (snapshot.live_metrics.displayed_wpm * 10.0).round() / 10.0,
             animation_band: snapshot.live_metrics.animation_band.as_str(),
-            behavior: pip_behavior(
-                snapshot.live_metrics.displayed_wpm,
-                snapshot.live_metrics.active_typing_seconds,
-            ),
+            behavior: if is_breathing {
+                "breathe"
+            } else {
+                pip_behavior(
+                    snapshot.live_metrics.displayed_wpm,
+                    snapshot.live_metrics.active_typing_seconds,
+                )
+            },
             content: preferences.overlay_content.as_str(),
             size: preferences.overlay_size.as_str(),
             background_enabled: preferences.overlay_background_enabled,
             celebration_sequence: snapshot.live_metrics.celebration_sequence,
         };
         let tray_status = (
-            snapshot.live_metrics.phase.overlay_visible(),
+            should_present,
             snapshot.live_metrics.displayed_wpm.round().max(0.0) as u64,
         );
         if last_tray_status != Some(tray_status) {
@@ -353,6 +388,15 @@ fn pip_behavior(displayed_wpm: f64, active_typing_seconds: f64) -> &'static str 
     }
 }
 
+fn should_present_overlay(
+    enabled: bool,
+    session_qualified: bool,
+    quiet_for: Duration,
+    hide_delay_seconds: u32,
+) -> bool {
+    enabled && session_qualified && quiet_for < Duration::from_secs(u64::from(hide_delay_seconds))
+}
+
 #[allow(clippy::too_many_arguments)]
 fn corner_position(
     work_x: i32,
@@ -391,12 +435,14 @@ fn axis_position(start: i32, span: u32, item: u32, margin: u32, trailing: bool) 
 
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
     use serde_json::Value;
     use typepulse_core::{AppPreferences, OverlayContent, OverlayPosition, OverlaySize};
 
     use super::{
-        corner_position, dimensions, pip_behavior, select_monitor, target_logical_position,
-        OverlayEventDto, OverlayPreferenceDto,
+        corner_position, dimensions, pip_behavior, select_monitor, should_present_overlay,
+        target_logical_position, OverlayEventDto, OverlayPreferenceDto,
     };
 
     #[test]
@@ -504,8 +550,27 @@ mod tests {
     }
 
     #[test]
+    fn presentation_requires_three_activities_and_ends_at_the_configured_delay() {
+        assert!(!should_present_overlay(true, false, Duration::ZERO, 5));
+        assert!(should_present_overlay(
+            true,
+            true,
+            Duration::from_millis(4_999),
+            5
+        ));
+        assert!(!should_present_overlay(
+            true,
+            true,
+            Duration::from_secs(5),
+            5
+        ));
+        assert!(!should_present_overlay(false, true, Duration::ZERO, 5));
+    }
+
+    #[test]
     fn preference_dto_contains_only_visual_configuration() {
         let value = serde_json::to_value(OverlayPreferenceDto::from(AppPreferences {
+            onboarding_completed: true,
             auto_start_enabled: true,
             menu_bar_wpm_enabled: false,
             overlay_enabled: true,
@@ -513,17 +578,19 @@ mod tests {
             overlay_size: OverlaySize::Large,
             overlay_content: OverlayContent::Both,
             overlay_background_enabled: false,
+            overlay_hide_delay_seconds: 5,
         }))
         .unwrap();
         let Value::Object(object) = value else {
             panic!("overlay preference must serialize as an object");
         };
-        assert_eq!(object.len(), 5);
+        assert_eq!(object.len(), 6);
         assert!(object.contains_key("enabled"));
         assert!(object.contains_key("position"));
         assert!(object.contains_key("size"));
         assert!(object.contains_key("content"));
         assert!(object.contains_key("backgroundEnabled"));
+        assert!(object.contains_key("hideDelaySeconds"));
     }
 
     #[test]

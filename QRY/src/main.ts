@@ -23,6 +23,7 @@ const overlayBackgroundEnabled = byId<HTMLInputElement>("overlay-background-enab
 const overlayPosition = byId<HTMLSelectElement>("overlay-position");
 const overlaySize = byId<HTMLSelectElement>("overlay-size");
 const overlayContent = byId<HTMLSelectElement>("overlay-content");
+const overlayHideDelay = byId<HTMLSelectElement>("overlay-hide-delay");
 const overlayPreview = byId<HTMLElement>("overlay-preview");
 byId<SVGPathElement>("settings-wave").setAttribute("d", pulsePath);
 
@@ -63,6 +64,7 @@ const renderOverlay = (preference: OverlayPreference): void => {
   overlaySize.value = preference.size;
   overlayContent.value = preference.content;
   overlayBackgroundEnabled.checked = preference.backgroundEnabled;
+  overlayHideDelay.value = preference.hideDelaySeconds.toString();
   overlayPreview.classList.toggle("is-transparent", !preference.backgroundEnabled);
 };
 
@@ -236,6 +238,7 @@ const saveOverlay = async (): Promise<void> => {
     overlayPosition,
     overlaySize,
     overlayContent,
+    overlayHideDelay,
   ];
   controls.forEach((control) => (control.disabled = true));
   try {
@@ -247,6 +250,7 @@ const saveOverlay = async (): Promise<void> => {
           size: overlaySize.value,
           content: overlayContent.value,
           backgroundEnabled: overlayBackgroundEnabled.checked,
+          hideDelaySeconds: Number(overlayHideDelay.value),
         },
       }),
     );
@@ -265,6 +269,7 @@ const saveOverlay = async (): Promise<void> => {
   overlayPosition,
   overlaySize,
   overlayContent,
+  overlayHideDelay,
 ].forEach((control) => control.addEventListener("change", () => void saveOverlay()));
 byId<HTMLButtonElement>("open-full-statistics").addEventListener(
   "click",

@@ -20,6 +20,8 @@ export type MonitorStatus = {
   currentSessionAverageWpm: number;
   currentSessionPeakWpm: number;
   personalBestWpm: number;
+  sustained30BestWpm: number;
+  sustained60BestWpm: number;
   lastError: string | null;
 };
 
@@ -38,6 +40,7 @@ export type OverlayPreference = {
   size: "small" | "medium" | "large";
   content: "wpm" | "animation" | "both";
   backgroundEnabled: boolean;
+  hideDelaySeconds: number;
 };
 
 export type DailySummary = {

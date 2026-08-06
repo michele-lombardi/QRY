@@ -348,6 +348,13 @@ const renderSummary = (summary: ReturnType<typeof aggregate>): void => {
   }
 };
 
+const renderRecords = (monitor: MonitorStatus): void => {
+  byId<HTMLElement>("summary-record-30").textContent =
+    monitor.sustained30BestWpm.toFixed(1);
+  byId<HTMLElement>("summary-record-60").textContent =
+    monitor.sustained60BestWpm.toFixed(1);
+};
+
 const refresh = async (): Promise<void> => {
   if (refreshing) return;
   refreshing = true;
@@ -361,6 +368,7 @@ const refresh = async (): Promise<void> => {
       ]);
       points = bucketPoints(buckets);
       renderSummary(currentDaySummary(today, monitor));
+      renderRecords(monitor);
       byId<HTMLElement>("speed-chart-title").textContent = "Today's WPM";
       byId<HTMLElement>("words-chart-title").textContent = "Today's words";
       byId<HTMLElement>("period-caption").textContent = new Intl.DateTimeFormat(
@@ -374,6 +382,7 @@ const refresh = async (): Promise<void> => {
       ]);
       points = mergeCurrentSession(dailyPoints(days), monitor);
       renderSummary(aggregate(points));
+      renderRecords(monitor);
       byId<HTMLElement>("speed-chart-title").textContent =
         selectedDays === 366 ? "Yearly WPM" : `${selectedDays}-day WPM`;
       byId<HTMLElement>("words-chart-title").textContent =

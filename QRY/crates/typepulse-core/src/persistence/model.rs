@@ -189,7 +189,9 @@ impl OverlayContent {
 /// Locally persisted application preferences.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct AppPreferences {
-    /// Launch at OS login and automatically start monitoring when the app opens.
+    /// Whether the required first-run privacy and permission flow was completed.
+    pub onboarding_completed: bool,
+    /// Launch at OS login after required permission onboarding is complete.
     pub auto_start_enabled: bool,
     /// Whether the menu-bar item reserves and displays its live WPM slot.
     pub menu_bar_wpm_enabled: bool,
@@ -203,11 +205,14 @@ pub struct AppPreferences {
     pub overlay_content: OverlayContent,
     /// Whether the overlay renders its material card behind Pip and WPM.
     pub overlay_background_enabled: bool,
+    /// Seconds Pip breathes after typing stops before disappearing.
+    pub overlay_hide_delay_seconds: u32,
 }
 
 impl Default for AppPreferences {
     fn default() -> Self {
         Self {
+            onboarding_completed: false,
             auto_start_enabled: false,
             menu_bar_wpm_enabled: true,
             overlay_enabled: true,
@@ -215,6 +220,7 @@ impl Default for AppPreferences {
             overlay_size: OverlaySize::Medium,
             overlay_content: OverlayContent::Both,
             overlay_background_enabled: true,
+            overlay_hide_delay_seconds: 5,
         }
     }
 }
@@ -226,12 +232,14 @@ mod tests {
     #[test]
     fn overlay_defaults_and_storage_values_are_stable() {
         let defaults = AppPreferences::default();
+        assert!(!defaults.onboarding_completed);
         assert!(defaults.menu_bar_wpm_enabled);
         assert!(defaults.overlay_enabled);
         assert_eq!(defaults.overlay_position, OverlayPosition::TopRight);
         assert_eq!(defaults.overlay_size, OverlaySize::Medium);
         assert_eq!(defaults.overlay_content, OverlayContent::Both);
         assert!(defaults.overlay_background_enabled);
+        assert_eq!(defaults.overlay_hide_delay_seconds, 5);
 
         for value in [
             OverlayPosition::TopLeft,

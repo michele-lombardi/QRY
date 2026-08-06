@@ -14,7 +14,7 @@ use chrono::{DateTime, Datelike, Local, TimeZone};
 use typepulse_core::{
     AnimationBand, AppPreferences, CompletedSessionRecord, CoreConfig, DailySummary, EngineUpdate,
     LocalDate, MetricBucketRecord, SessionPhase, SessionSummary, StatisticsRepository,
-    TypingEngine,
+    TypingEngine, TypingRecords,
 };
 use typepulse_platform_macos::{
     ActivityReceiver, KeyboardMonitor, MonitorConfig, MonitorError, MonitorMetricsSnapshot,
@@ -220,6 +220,8 @@ pub(crate) struct LiveMetrics {
     pub(crate) current_session_average_wpm: f64,
     pub(crate) current_session_peak_wpm: f64,
     pub(crate) personal_best_wpm: f64,
+    pub(crate) sustained_30_best_wpm: f64,
+    pub(crate) sustained_60_best_wpm: f64,
     pub(crate) celebration_sequence: u64,
 }
 
@@ -235,6 +237,8 @@ impl Default for LiveMetrics {
             current_session_average_wpm: 0.0,
             current_session_peak_wpm: 0.0,
             personal_best_wpm: 0.0,
+            sustained_30_best_wpm: 0.0,
+            sustained_60_best_wpm: 0.0,
             celebration_sequence: 0,
         }
     }
@@ -263,17 +267,13 @@ fn relay_activity(
     live_metrics: Arc<Mutex<LiveMetrics>>,
     last_error: Arc<Mutex<Option<String>>>,
 ) {
-    let personal_best = repository
+    let records = repository
         .lock()
         .ok()
-        .and_then(|repository| repository.personal_best_wpm().ok())
-        .flatten()
-        .filter(|peak| *peak > 0.0);
-    let mut engine = match personal_best {
-        Some(personal_best) => TypingEngine::with_record(CoreConfig::default(), personal_best),
-        None => TypingEngine::new(CoreConfig::default()),
-    }
-    .expect("default core config and stored non-negative record are valid");
+        .and_then(|repository| repository.typing_records().ok())
+        .unwrap_or_default();
+    let mut engine = TypingEngine::with_records(CoreConfig::default(), records)
+        .expect("default core config and stored non-negative records are valid");
     let mut session_context: Option<SessionWallContext> = None;
     let mut bucket: Option<BucketAccumulator> = None;
 
@@ -291,6 +291,7 @@ fn relay_activity(
 
                 match engine.record_activity(activity) {
                     Ok(update) => {
+                        persist_records_if_updated(&repository, update, &last_error);
                         if let Some(summary) = update.completed_session {
                             persist_summary(
                                 &repository,
@@ -384,6 +385,32 @@ fn persist_summary(
     }
 }
 
+fn persist_records_if_updated(
+    repository: &Arc<Mutex<SqliteStatisticsRepository>>,
+    update: EngineUpdate,
+    last_error: &Arc<Mutex<Option<String>>>,
+) {
+    if !update.records_updated {
+        return;
+    }
+    let records = TypingRecords {
+        peak_wpm: update.snapshot.personal_best_wpm,
+        sustained_30_wpm: update.snapshot.sustained_30_best_wpm,
+        sustained_60_wpm: update.snapshot.sustained_60_best_wpm,
+    };
+    let result = repository
+        .lock()
+        .map_err(lock_error)
+        .and_then(|mut repository| {
+            repository
+                .save_typing_records(records)
+                .map_err(|error| error.to_string())
+        });
+    if let Err(error) = result {
+        set_shared_error(last_error, error);
+    }
+}
+
 fn rotate_bucket_if_needed(
     repository: &Arc<Mutex<SqliteStatisticsRepository>>,
     bucket: &mut Option<BucketAccumulator>,
@@ -446,6 +473,8 @@ fn set_live_metrics(target: &Arc<Mutex<LiveMetrics>>, update: EngineUpdate) {
         .active_session
         .map_or(0.0, |session| session.peak_wpm);
     metrics.personal_best_wpm = update.snapshot.personal_best_wpm.unwrap_or(0.0);
+    metrics.sustained_30_best_wpm = update.snapshot.sustained_30_best_wpm.unwrap_or(0.0);
+    metrics.sustained_60_best_wpm = update.snapshot.sustained_60_best_wpm.unwrap_or(0.0);
 }
 
 fn set_shared_error(target: &Arc<Mutex<Option<String>>>, error: String) {

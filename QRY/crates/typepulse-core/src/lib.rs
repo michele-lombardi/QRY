@@ -19,8 +19,8 @@ pub use persistence::{
     RepositoryError, RepositoryErrorKind, StatisticsRepository,
 };
 pub use session::{
-    ActiveSessionMetrics, EngineError, EngineSnapshot, EngineUpdate, NewRecord, SessionPhase,
-    SessionSummary, TypingEngine,
+    ActiveSessionMetrics, EngineError, EngineSnapshot, EngineUpdate, NewRecord, RecordKind,
+    SessionPhase, SessionSummary, TypingEngine, TypingRecords,
 };
 
 /// Reports whether the core crate is available to the application workspace.

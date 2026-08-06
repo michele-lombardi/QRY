@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Set up QRY's privacy-safe Input Monitoring permission."
+    />
+    <title>Set up QRY</title>
+    <link rel="stylesheet" href="/src/onboarding.css" />
+    <script type="module" src="/src/onboarding.ts" defer></script>
+  </head>
+  <body>
+    <main class="gate-shell">
+      <header class="gate-header">
+        <div class="brand-lockup" aria-label="QRY">
+          <span class="brand-mark"
+            ><img src="/assets/brand/qry-mark.svg" alt=""
+          /></span>
+          <span>QRY</span>
+        </div>
+        <div class="step-dots" aria-label="Setup progress">
+          <span data-dot="1" class="active"></span>
+          <span data-dot="2"></span>
+          <span data-dot="3"></span>
+        </div>
+      </header>
+
+      <section class="gate-step active" data-step="1">
+        <div class="hero-orbit" aria-hidden="true">
+          <div class="hero-pulse">⌁</div>
+        </div>
+        <p class="eyebrow">Welcome to QRY</p>
+        <h1>See your typing rhythm.<br />Not what you type.</h1>
+        <p class="lead">
+          QRY turns anonymous typing activity into live WPM and local statistics. Your
+          words never enter the app's data model.
+        </p>
+        <div class="privacy-grid">
+          <article>
+            <span class="privacy-icon safe" aria-hidden="true">✓</span>
+            <div>
+              <strong>Counts rhythm</strong
+              ><small>Ephemeral activity timestamps only</small>
+            </div>
+          </article>
+          <article>
+            <span class="privacy-icon blocked" aria-hidden="true">×</span>
+            <div>
+              <strong>Never reads content</strong
+              ><small>No keys, text, apps or window titles</small>
+            </div>
+          </article>
+          <article>
+            <span class="privacy-icon local" aria-hidden="true">⌂</span>
+            <div>
+              <strong>Stays on your Mac</strong
+              ><small>Only aggregate statistics are stored</small>
+            </div>
+          </article>
+        </div>
+        <footer class="gate-actions split">
+          <button class="text-button exit-button" type="button">Exit QRY</button>
+          <button id="privacy-continue" class="primary" type="button">Continue</button>
+        </footer>
+      </section>
+
+      <section class="gate-step" data-step="2">
+        <div class="permission-symbol required" aria-hidden="true">⌨</div>
+        <p class="eyebrow">Required permission</p>
+        <h1>Allow Input Monitoring</h1>
+        <p class="lead compact">
+          macOS requires this permission before QRY can observe global typing activity.
+          QRY immediately discards key identity and keeps only anonymous rhythm.
+        </p>
+
+        <div class="permission-card">
+          <div>
+            <strong>Input Monitoring</strong>
+            <small>Required for live WPM</small>
+          </div>
+          <span id="input-status" class="status-pill" data-status="checking"
+            >Checking</span
+          >
+        </div>
+        <p id="input-message" class="gate-message" role="status" aria-live="polite">
+          Checking macOS permission…
+        </p>
+        <div class="permission-actions">
+          <button id="open-input-settings" class="secondary" type="button">
+            Open System Settings
+          </button>
+          <button id="request-input" class="primary" type="button">Allow access</button>
+          <button id="input-continue" class="primary hidden" type="button">
+            Continue
+          </button>
+        </div>
+        <footer class="gate-actions">
+          <button class="text-button exit-button" type="button">
+            Not now — exit QRY
+          </button>
+        </footer>
+      </section>
+
+      <section class="gate-step" data-step="3">
+        <div class="permission-symbol optional" aria-hidden="true">◎</div>
+        <p class="eyebrow">Optional permission</p>
+        <h1>Follow your focused display</h1>
+        <p class="lead compact">
+          Accessibility lets Pip appear on the display containing your focused window.
+          QRY never reads the app name, window title or content. Without it, Pip uses
+          your main display.
+        </p>
+
+        <div class="permission-card">
+          <div>
+            <strong>Accessibility</strong>
+            <small>Optional focused-display placement</small>
+          </div>
+          <span id="accessibility-status" class="status-pill" data-status="checking"
+            >Checking</span
+          >
+        </div>
+        <p
+          id="accessibility-message"
+          class="gate-message"
+          role="status"
+          aria-live="polite"
+        >
+          You can skip this and change it later in QRY Settings.
+        </p>
+        <label class="startup-choice">
+          <div>
+            <strong>Start QRY at login</strong>
+            <small>Optional. Opens silently in the menu bar after you sign in.</small>
+          </div>
+          <input id="onboarding-auto-start" type="checkbox" />
+        </label>
+        <div class="permission-actions stacked">
+          <div>
+            <button id="open-accessibility-settings" class="secondary" type="button">
+              Open System Settings
+            </button>
+            <button id="request-accessibility" class="secondary" type="button">
+              Allow optional access
+            </button>
+          </div>
+          <button id="finish-setup" class="primary wide" type="button">
+            Finish and restart QRY
+          </button>
+        </div>
+        <footer class="gate-actions">
+          <span class="restart-note"
+            >QRY restarts once to activate the new permission.</span
+          >
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>

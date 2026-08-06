@@ -76,10 +76,45 @@ pub struct SessionSummary {
 /// One-time notification that an existing personal best was exceeded.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct NewRecord {
+    /// Record category that was exceeded.
+    pub kind: RecordKind,
     /// Best value in effect when the session started.
     pub previous_wpm: f64,
     /// First displayed value in this session that exceeded the best.
     pub new_wpm: f64,
+}
+
+/// Personal record category used by the shared celebration event.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum RecordKind {
+    /// Highest qualified short rolling peak.
+    Peak,
+    /// Best pace sustained across a complete 30 second window.
+    Sustained30Seconds,
+    /// Best pace sustained across a complete 60 second window.
+    Sustained60Seconds,
+}
+
+/// Aggregate all-time WPM records persisted locally.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct TypingRecords {
+    /// Highest qualified short rolling peak.
+    pub peak_wpm: Option<f64>,
+    /// Best fixed 30 second window.
+    pub sustained_30_wpm: Option<f64>,
+    /// Best fixed 60 second window.
+    pub sustained_60_wpm: Option<f64>,
+}
+
+impl TypingRecords {
+    /// Whether every stored value is finite and non-negative.
+    #[must_use]
+    pub fn is_valid(self) -> bool {
+        [self.peak_wpm, self.sustained_30_wpm, self.sustained_60_wpm]
+            .into_iter()
+            .flatten()
+            .all(|value| value.is_finite() && value >= 0.0)
+    }
 }
 
 /// Complete state needed by a future tray or overlay adapter.
@@ -99,6 +134,10 @@ pub struct EngineSnapshot {
     pub active_session: Option<ActiveSessionMetrics>,
     /// Best WPM observed by this engine, when established.
     pub personal_best_wpm: Option<f64>,
+    /// Best pace sustained for 30 seconds.
+    pub sustained_30_best_wpm: Option<f64>,
+    /// Best pace sustained for 60 seconds.
+    pub sustained_60_best_wpm: Option<f64>,
 }
 
 /// Output from processing an activity or advancing the engine clock.
@@ -110,4 +149,6 @@ pub struct EngineUpdate {
     pub completed_session: Option<SessionSummary>,
     /// Record celebration emitted at most once in a session.
     pub new_record: Option<NewRecord>,
+    /// Whether one or more persisted record values changed.
+    pub records_updated: bool,
 }

@@ -5,5 +5,6 @@ mod model;
 
 pub use engine::{EngineError, TypingEngine};
 pub use model::{
-    ActiveSessionMetrics, EngineSnapshot, EngineUpdate, NewRecord, SessionPhase, SessionSummary,
+    ActiveSessionMetrics, EngineSnapshot, EngineUpdate, NewRecord, RecordKind, SessionPhase,
+    SessionSummary, TypingRecords,
 };

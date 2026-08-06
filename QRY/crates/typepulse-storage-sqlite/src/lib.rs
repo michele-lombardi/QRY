@@ -14,15 +14,19 @@ use rusqlite_migration::{Migrations, M};
 use typepulse_core::{
     AppPreferences, CompletedSessionRecord, DailySummary, LocalDate, MetricBucketRecord,
     OverlayContent, OverlayPosition, OverlaySize, RepositoryError, RepositoryErrorKind,
-    StatisticsRepository,
+    StatisticsRepository, TypingRecords,
 };
 
-const LATEST_SCHEMA_VERSION: usize = 4;
+const LATEST_SCHEMA_VERSION: usize = 6;
 const MIGRATION_LIST: &[M<'_>] = &[
     M::up(include_str!("../migrations/0001_initial.sql")),
     M::up(include_str!("../migrations/0002_overlay_preferences.sql")),
     M::up(include_str!("../migrations/0003_menu_bar_wpm.sql")),
     M::up(include_str!("../migrations/0004_overlay_background.sql")),
+    M::up(include_str!("../migrations/0005_onboarding.sql")),
+    M::up(include_str!(
+        "../migrations/0006_sustained_records_and_overlay_delay.sql"
+    )),
 ];
 const MIGRATIONS: Migrations<'_> = Migrations::from_slice(MIGRATION_LIST);
 
@@ -120,13 +124,51 @@ impl SqliteStatisticsRepository {
 
     /// Highest completed-session WPM stored locally, if any.
     pub fn personal_best_wpm(&self) -> Result<Option<f64>, RepositoryError> {
-        let value = self
+        Ok(self.typing_records()?.peak_wpm)
+    }
+
+    /// Loads all aggregate WPM records without any individual input history.
+    pub fn typing_records(&self) -> Result<TypingRecords, RepositoryError> {
+        let records = self
             .connection
-            .query_row("SELECT MAX(peak_wpm) FROM completed_sessions", [], |row| {
-                row.get::<_, Option<f64>>(0)
-            })
+            .query_row(
+                "SELECT peak_wpm, sustained_30_wpm, sustained_60_wpm
+                 FROM typing_records WHERE singleton_id = 1",
+                [],
+                |row| {
+                    Ok(TypingRecords {
+                        peak_wpm: row.get(0)?,
+                        sustained_30_wpm: row.get(1)?,
+                        sustained_60_wpm: row.get(2)?,
+                    })
+                },
+            )
             .map_err(query_error)?;
-        value.map(valid_metric).transpose()
+        if records.is_valid() {
+            Ok(records)
+        } else {
+            Err(invalid_data("invalid typing records"))
+        }
+    }
+
+    /// Persists the latest aggregate record values atomically.
+    pub fn save_typing_records(&mut self, records: TypingRecords) -> Result<(), RepositoryError> {
+        if !records.is_valid() {
+            return Err(invalid_data("invalid typing records"));
+        }
+        self.connection
+            .execute(
+                "UPDATE typing_records SET peak_wpm = ?1,
+                    sustained_30_wpm = ?2, sustained_60_wpm = ?3
+                 WHERE singleton_id = 1",
+                params![
+                    records.peak_wpm,
+                    records.sustained_30_wpm,
+                    records.sustained_60_wpm
+                ],
+            )
+            .map_err(query_error)?;
+        Ok(())
     }
 }
 
@@ -150,6 +192,14 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                     session.peak_wpm,
                     duration_to_i64_ms(session.active_typing_duration)?,
                 ],
+            )
+            .map_err(query_error)?;
+        self.connection
+            .execute(
+                "UPDATE typing_records SET peak_wpm = CASE
+                    WHEN peak_wpm IS NULL THEN ?1 ELSE MAX(peak_wpm, ?1) END
+                 WHERE singleton_id = 1",
+                [session.peak_wpm],
             )
             .map_err(query_error)?;
         Ok(())
@@ -308,9 +358,10 @@ impl StatisticsRepository for SqliteStatisticsRepository {
         let stored = self
             .connection
             .query_row(
-                "SELECT auto_start_enabled, menu_bar_wpm_enabled, overlay_enabled,
+                "SELECT onboarding_completed, auto_start_enabled,
+                        menu_bar_wpm_enabled, overlay_enabled,
                         overlay_position, overlay_size, overlay_content,
-                        overlay_background_enabled
+                        overlay_background_enabled, overlay_hide_delay_seconds
                  FROM app_preferences WHERE singleton_id = 1",
                 [],
                 |row| {
@@ -318,16 +369,19 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                         row.get::<_, i64>(0)?,
                         row.get::<_, i64>(1)?,
                         row.get::<_, i64>(2)?,
-                        row.get::<_, String>(3)?,
+                        row.get::<_, i64>(3)?,
                         row.get::<_, String>(4)?,
                         row.get::<_, String>(5)?,
-                        row.get::<_, i64>(6)?,
+                        row.get::<_, String>(6)?,
+                        row.get::<_, i64>(7)?,
+                        row.get::<_, i64>(8)?,
                     ))
                 },
             )
             .optional()
             .map_err(query_error)?;
         let Some((
+            onboarding_completed,
             auto_start,
             menu_bar_wpm,
             overlay_enabled,
@@ -335,11 +389,13 @@ impl StatisticsRepository for SqliteStatisticsRepository {
             size,
             content,
             background_enabled,
+            hide_delay_seconds,
         )) = stored
         else {
             return Ok(AppPreferences::default());
         };
         Ok(AppPreferences {
+            onboarding_completed: stored_bool(onboarding_completed, "onboarding completed")?,
             auto_start_enabled: stored_bool(auto_start, "auto-start")?,
             menu_bar_wpm_enabled: stored_bool(menu_bar_wpm, "menu-bar WPM")?,
             overlay_enabled: stored_bool(overlay_enabled, "overlay enabled")?,
@@ -353,6 +409,10 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                 background_enabled,
                 "overlay background enabled",
             )?,
+            overlay_hide_delay_seconds: u32::try_from(hide_delay_seconds)
+                .ok()
+                .filter(|value| (1..=15).contains(value))
+                .ok_or_else(|| invalid_data("invalid overlay hide delay preference"))?,
         })
     }
 
@@ -360,19 +420,23 @@ impl StatisticsRepository for SqliteStatisticsRepository {
         self.connection
             .execute(
                 "INSERT INTO app_preferences(
-                    singleton_id, auto_start_enabled, menu_bar_wpm_enabled,
+                    singleton_id, onboarding_completed, auto_start_enabled,
+                    menu_bar_wpm_enabled,
                     overlay_enabled, overlay_position, overlay_size, overlay_content,
-                    overlay_background_enabled
-                 ) VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7)
+                    overlay_background_enabled, overlay_hide_delay_seconds
+                 ) VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
                  ON CONFLICT(singleton_id) DO UPDATE SET
+                    onboarding_completed = excluded.onboarding_completed,
                     auto_start_enabled = excluded.auto_start_enabled,
                     menu_bar_wpm_enabled = excluded.menu_bar_wpm_enabled,
                     overlay_enabled = excluded.overlay_enabled,
                     overlay_position = excluded.overlay_position,
                     overlay_size = excluded.overlay_size,
                     overlay_content = excluded.overlay_content,
-                    overlay_background_enabled = excluded.overlay_background_enabled",
+                    overlay_background_enabled = excluded.overlay_background_enabled,
+                    overlay_hide_delay_seconds = excluded.overlay_hide_delay_seconds",
                 params![
+                    i64::from(preferences.onboarding_completed),
                     i64::from(preferences.auto_start_enabled),
                     i64::from(preferences.menu_bar_wpm_enabled),
                     i64::from(preferences.overlay_enabled),
@@ -380,6 +444,7 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                     preferences.overlay_size.as_str(),
                     preferences.overlay_content.as_str(),
                     i64::from(preferences.overlay_background_enabled),
+                    i64::from(preferences.overlay_hide_delay_seconds),
                 ],
             )
             .map_err(query_error)?;
@@ -532,7 +597,7 @@ mod tests {
     use tempfile::tempdir;
     use typepulse_core::{
         AppPreferences, CompletedSessionRecord, LocalDate, MetricBucketRecord, OverlayContent,
-        OverlayPosition, OverlaySize, StatisticsRepository,
+        OverlayPosition, OverlaySize, StatisticsRepository, TypingRecords,
     };
 
     use super::{SqliteStatisticsRepository, LATEST_SCHEMA_VERSION};
@@ -576,6 +641,7 @@ mod tests {
                 .unwrap();
             repository
                 .save_preferences(AppPreferences {
+                    onboarding_completed: true,
                     auto_start_enabled: true,
                     menu_bar_wpm_enabled: false,
                     overlay_enabled: false,
@@ -583,6 +649,14 @@ mod tests {
                     overlay_size: OverlaySize::Large,
                     overlay_content: OverlayContent::Animation,
                     overlay_background_enabled: false,
+                    overlay_hide_delay_seconds: 10,
+                })
+                .unwrap();
+            repository
+                .save_typing_records(TypingRecords {
+                    peak_wpm: Some(90.0),
+                    sustained_30_wpm: Some(74.0),
+                    sustained_60_wpm: Some(68.0),
                 })
                 .unwrap();
         }
@@ -595,6 +669,7 @@ mod tests {
         assert_eq!(
             reopened.load_preferences().unwrap(),
             AppPreferences {
+                onboarding_completed: true,
                 auto_start_enabled: true,
                 menu_bar_wpm_enabled: false,
                 overlay_enabled: false,
@@ -602,9 +677,18 @@ mod tests {
                 overlay_size: OverlaySize::Large,
                 overlay_content: OverlayContent::Animation,
                 overlay_background_enabled: false,
+                overlay_hide_delay_seconds: 10,
             }
         );
-        assert_eq!(reopened.personal_best_wpm().unwrap(), Some(72.0));
+        assert_eq!(reopened.personal_best_wpm().unwrap(), Some(90.0));
+        assert_eq!(
+            reopened.typing_records().unwrap(),
+            TypingRecords {
+                peak_wpm: Some(90.0),
+                sustained_30_wpm: Some(74.0),
+                sustained_60_wpm: Some(68.0),
+            }
+        );
     }
 
     #[test]
@@ -621,7 +705,7 @@ mod tests {
                 .unwrap();
         }
         let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
-        assert_eq!(repository.schema_version().unwrap(), 4);
+        assert_eq!(repository.schema_version().unwrap(), LATEST_SCHEMA_VERSION);
         assert_eq!(
             repository.load_preferences().unwrap(),
             AppPreferences::default()
@@ -647,7 +731,7 @@ mod tests {
         }
         let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
         let preferences = repository.load_preferences().unwrap();
-        assert_eq!(repository.schema_version().unwrap(), 4);
+        assert_eq!(repository.schema_version().unwrap(), LATEST_SCHEMA_VERSION);
         assert!(preferences.menu_bar_wpm_enabled);
         assert!(!preferences.overlay_enabled);
         assert_eq!(preferences.overlay_size, OverlaySize::Large);
@@ -675,10 +759,81 @@ mod tests {
         }
         let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
         let preferences = repository.load_preferences().unwrap();
-        assert_eq!(repository.schema_version().unwrap(), 4);
+        assert_eq!(repository.schema_version().unwrap(), LATEST_SCHEMA_VERSION);
         assert!(!preferences.menu_bar_wpm_enabled);
         assert_eq!(preferences.overlay_content, OverlayContent::Both);
         assert!(preferences.overlay_background_enabled);
+        assert!(repository.last_backup_path().is_some());
+    }
+
+    #[test]
+    fn version_four_database_requires_the_new_onboarding_once() {
+        let directory = tempdir().unwrap();
+        let path = directory.path().join("typepulse.sqlite3");
+        {
+            let connection = rusqlite::Connection::open(&path).unwrap();
+            connection
+                .execute_batch(concat!(
+                    include_str!("../migrations/0001_initial.sql"),
+                    "\n",
+                    include_str!("../migrations/0002_overlay_preferences.sql"),
+                    "\n",
+                    include_str!("../migrations/0003_menu_bar_wpm.sql"),
+                    "\n",
+                    include_str!("../migrations/0004_overlay_background.sql"),
+                    "\nPRAGMA user_version = 4;"
+                ))
+                .unwrap();
+        }
+        let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
+        let preferences = repository.load_preferences().unwrap();
+        assert_eq!(repository.schema_version().unwrap(), LATEST_SCHEMA_VERSION);
+        assert!(!preferences.onboarding_completed);
+        assert_eq!(preferences.overlay_hide_delay_seconds, 5);
+        assert!(repository.last_backup_path().is_some());
+    }
+
+    #[test]
+    fn version_five_database_seeds_peak_and_adds_the_overlay_delay() {
+        let directory = tempdir().unwrap();
+        let path = directory.path().join("typepulse.sqlite3");
+        let date = LocalDate::new(2026, 8, 6).unwrap();
+        {
+            let connection = rusqlite::Connection::open(&path).unwrap();
+            connection
+                .execute_batch(concat!(
+                    include_str!("../migrations/0001_initial.sql"),
+                    "\n",
+                    include_str!("../migrations/0002_overlay_preferences.sql"),
+                    "\n",
+                    include_str!("../migrations/0003_menu_bar_wpm.sql"),
+                    "\n",
+                    include_str!("../migrations/0004_overlay_background.sql"),
+                    "\n",
+                    include_str!("../migrations/0005_onboarding.sql"),
+                    "\nUPDATE app_preferences SET onboarding_completed = 1, auto_start_enabled = 1;",
+                    "\nPRAGMA user_version = 5;"
+                ))
+                .unwrap();
+            connection
+                .execute(
+                    "INSERT INTO completed_sessions (
+                        local_date, started_at_unix_ms, ended_at_unix_ms,
+                        estimated_character_count, estimated_word_count,
+                        average_wpm, peak_wpm, active_typing_ms
+                    ) VALUES (?1, 1000, 6000, 25, 5.0, 64.0, 88.0, 5000)",
+                    [date.to_string()],
+                )
+                .unwrap();
+        }
+
+        let mut repository = SqliteStatisticsRepository::open(&path).unwrap();
+        let preferences = repository.load_preferences().unwrap();
+        assert_eq!(repository.schema_version().unwrap(), LATEST_SCHEMA_VERSION);
+        assert!(preferences.onboarding_completed);
+        assert!(preferences.auto_start_enabled);
+        assert_eq!(preferences.overlay_hide_delay_seconds, 5);
+        assert_eq!(repository.typing_records().unwrap().peak_wpm, Some(88.0));
         assert!(repository.last_backup_path().is_some());
     }
 

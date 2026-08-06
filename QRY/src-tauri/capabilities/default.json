@@ -2,6 +2,6 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Minimal foundation capability for QRY trusted application windows",
-  "windows": ["main", "dashboard", "statistics", "overlay"],
+  "windows": ["onboarding", "main", "dashboard", "statistics", "overlay"],
   "permissions": ["core:default"]
 }

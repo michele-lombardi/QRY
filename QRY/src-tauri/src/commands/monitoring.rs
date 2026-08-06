@@ -50,6 +50,8 @@ pub(crate) struct MonitorStatusDto {
     current_session_average_wpm: f64,
     current_session_peak_wpm: f64,
     personal_best_wpm: f64,
+    sustained_30_best_wpm: f64,
+    sustained_60_best_wpm: f64,
     last_error: Option<String>,
 }
 
@@ -106,6 +108,8 @@ pub(crate) fn monitor_status(state: State<'_, DiagnosticState>) -> MonitorStatus
         current_session_average_wpm: snapshot.live_metrics.current_session_average_wpm,
         current_session_peak_wpm: snapshot.live_metrics.current_session_peak_wpm,
         personal_best_wpm: snapshot.live_metrics.personal_best_wpm,
+        sustained_30_best_wpm: snapshot.live_metrics.sustained_30_best_wpm,
+        sustained_60_best_wpm: snapshot.live_metrics.sustained_60_best_wpm,
         last_error: snapshot.last_error,
     }
 }
