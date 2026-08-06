@@ -15,6 +15,9 @@ mod permissions;
 #[cfg(target_os = "macos")]
 mod event_filter;
 
+#[cfg(any(windows, test))]
+mod event_filter_windows;
+
 pub use focused_window::{focused_window_center, ScreenPoint};
 pub use monitor::{
     ActivityReceiver, KeyboardMonitor, MonitorConfig, MonitorError, MonitorMetricsSnapshot,

@@ -4075,6 +4075,7 @@ dependencies = [
  "core-graphics",
  "objc2-core-graphics",
  "typepulse-core",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
