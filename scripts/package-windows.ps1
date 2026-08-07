@@ -23,7 +23,7 @@ if (-not $CargoVersionMatch.Success) {
 
 $Version = [string]$Package.version
 $MetadataVersions = @($Version, [string]$TauriConfig.version, $CargoVersionMatch.Groups["version"].Value)
-if (($MetadataVersions | Select-Object -Unique).Count -ne 1) {
+if (@($MetadataVersions | Select-Object -Unique).Count -ne 1) {
     throw "Version mismatch across package.json, tauri.conf.json and Cargo.toml: $($MetadataVersions -join ', ')"
 }
 if ([string]$TauriConfig.productName -ne "QRY") {

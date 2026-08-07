@@ -5,7 +5,7 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
-## [0.1.2-1] - 2026-08-07
+## [0.1.2-2] - 2026-08-07
 
 ### Added
 
@@ -93,7 +93,7 @@ First public macOS beta.
   remain planned before the stable V1;
 - Linux packaging is planned after the macOS beta and is not included here.
 
-[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.1.2-1...HEAD
-[0.1.2-1]: https://github.com/michele-lombardi/QRY/compare/v0.1.1...v0.1.2-1
+[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.1.2-2...HEAD
+[0.1.2-2]: https://github.com/michele-lombardi/QRY/compare/v0.1.1...v0.1.2-2
 [0.1.1]: https://github.com/michele-lombardi/QRY/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/michele-lombardi/QRY/releases/tag/v0.1.0
