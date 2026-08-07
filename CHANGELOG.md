@@ -5,6 +5,8 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
+## [0.1.2-beta.1] - 2026-08-07
+
 ### Added
 
 - official `michele-lombardi/qry` Homebrew tap with automatic tracking of the
@@ -91,6 +93,7 @@ First public macOS beta.
   remain planned before the stable V1;
 - Linux packaging is planned after the macOS beta and is not included here.
 
-[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.1.2-beta.1...HEAD
+[0.1.2-beta.1]: https://github.com/michele-lombardi/QRY/compare/v0.1.1...v0.1.2-beta.1
 [0.1.1]: https://github.com/michele-lombardi/QRY/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/michele-lombardi/QRY/releases/tag/v0.1.0

@@ -4049,7 +4049,7 @@ checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
 
 [[package]]
 name = "typepulse-app"
-version = "0.1.1"
+version = "0.1.2-beta.1"
 dependencies = [
  "chrono",
  "serde",
@@ -4065,11 +4065,11 @@ dependencies = [
 
 [[package]]
 name = "typepulse-core"
-version = "0.1.1"
+version = "0.1.2-beta.1"
 
 [[package]]
 name = "typepulse-platform-desktop"
-version = "0.1.1"
+version = "0.1.2-beta.1"
 dependencies = [
  "core-foundation",
  "core-graphics",
@@ -4080,7 +4080,7 @@ dependencies = [
 
 [[package]]
 name = "typepulse-storage-sqlite"
-version = "0.1.1"
+version = "0.1.2-beta.1"
 dependencies = [
  "rusqlite",
  "rusqlite_migration",
