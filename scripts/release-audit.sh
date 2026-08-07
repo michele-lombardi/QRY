@@ -13,6 +13,18 @@ if [[ ! "$release_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
 fi
 release_version="${release_tag#v}"
 
+# WiX maps a SemVer prerelease to the fourth MSI version field. Tauri requires
+# that value to be a single integer in the Windows Installer range.
+if [[ "$release_version" == *-* ]]; then
+  prerelease_version="${release_version#*-}"
+  if [[ ! "$prerelease_version" =~ ^(0|[1-9][0-9]*)$ ]] ||
+    [[ ${#prerelease_version} -gt 5 ]] ||
+    { [[ ${#prerelease_version} -eq 5 ]] && [[ "$prerelease_version" > "65535" ]]; }; then
+    printf 'Windows MSI prerelease identifier must be one integer from 0 to 65535: %s\n' "$prerelease_version" >&2
+    exit 1
+  fi
+fi
+
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(cd "$script_dir/.." && pwd)"
 app_root="$project_root/QRY"

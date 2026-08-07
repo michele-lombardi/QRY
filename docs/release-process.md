@@ -6,8 +6,10 @@ real-device release checklist.
 
 ## Versioning
 
-QRY follows Semantic Versioning. Tags use `vMAJOR.MINOR.PATCH` or a SemVer
-prerelease suffix such as `v1.0.0-rc.1`.
+QRY follows Semantic Versioning. Tags use `vMAJOR.MINOR.PATCH`. Because the
+Windows MSI version field accepts only one numeric prerelease identifier, beta
+and release-candidate tags use a number such as `v1.0.0-1`. Use the GitHub
+Release title and notes to identify the build as Beta 1 or RC 1.
 
 Before tagging, update the same version in:
 
