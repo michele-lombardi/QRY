@@ -13,8 +13,14 @@ interface PermissionFlowStatus {
     | "restarting"
     | "running"
     | "exiting";
+  platform: "macos" | "windows" | "unsupported";
   inputStatus: PermissionValue;
   accessibilityStatus: PermissionValue;
+  inputPermissionRequired: boolean;
+  inputSettingsAvailable: boolean;
+  accessibilityPermissionRequired: boolean;
+  accessibilitySettingsAvailable: boolean;
+  restartRequired: boolean;
   secondsRemaining: number | null;
   onboardingCompleted: boolean;
 }
@@ -28,7 +34,12 @@ const accessibilityStatus = byId<HTMLElement>("accessibility-status");
 const inputMessage = byId<HTMLElement>("input-message");
 const accessibilityMessage = byId<HTMLElement>("accessibility-message");
 const requestInput = byId<HTMLButtonElement>("request-input");
+const openInputSettings = byId<HTMLButtonElement>("open-input-settings");
 const inputContinue = byId<HTMLButtonElement>("input-continue");
+const requestAccessibility = byId<HTMLButtonElement>("request-accessibility");
+const openAccessibilitySettings = byId<HTMLButtonElement>(
+  "open-accessibility-settings",
+);
 const finishSetup = byId<HTMLButtonElement>("finish-setup");
 const onboardingAutoStart = byId<HTMLInputElement>("onboarding-auto-start");
 
@@ -48,11 +59,17 @@ const setStep = (step: number): void => {
   });
 };
 
-const renderPermission = (target: HTMLElement, value: PermissionValue): void => {
+const renderPermission = (
+  target: HTMLElement,
+  value: PermissionValue,
+  permissionRequired = true,
+): void => {
   target.dataset.status = value;
   target.textContent =
     value === "granted"
-      ? "Allowed"
+      ? permissionRequired
+        ? "Allowed"
+        : "Ready"
       : value === "denied"
         ? "Not allowed"
         : "Unavailable";
@@ -60,12 +77,58 @@ const renderPermission = (target: HTMLElement, value: PermissionValue): void => 
 
 const render = (status: PermissionFlowStatus): void => {
   latestStatus = status;
-  renderPermission(inputStatus, status.inputStatus);
-  renderPermission(accessibilityStatus, status.accessibilityStatus);
+  const windows = status.platform === "windows";
+  document.documentElement.dataset.platform = status.platform;
+  renderPermission(inputStatus, status.inputStatus, status.inputPermissionRequired);
+  renderPermission(
+    accessibilityStatus,
+    status.accessibilityStatus,
+    status.accessibilityPermissionRequired,
+  );
+
+  byId<HTMLElement>("local-storage-title").textContent = windows
+    ? "Stays on your PC"
+    : "Stays on your Mac";
+  byId<HTMLElement>("input-eyebrow").textContent = status.inputPermissionRequired
+    ? "Required permission"
+    : "System check";
+  byId<HTMLElement>("input-title").textContent = status.inputPermissionRequired
+    ? "Allow Input Monitoring"
+    : "Global typing access is ready";
+  byId<HTMLElement>("input-description").textContent = status.inputPermissionRequired
+    ? "macOS requires this permission before QRY can observe global typing activity. QRY immediately discards key identity and keeps only anonymous rhythm."
+    : "Windows does not require a separate input permission. QRY uses a passive native listener and immediately discards key identity.";
+  byId<HTMLElement>("input-name").textContent = status.inputPermissionRequired
+    ? "Input Monitoring"
+    : "Global typing access";
+  byId<HTMLElement>("input-detail").textContent = status.inputPermissionRequired
+    ? "Required for live WPM"
+    : "No Windows permission prompt required";
+
+  byId<HTMLElement>("accessibility-eyebrow").textContent =
+    status.accessibilityPermissionRequired
+      ? "Optional permission"
+      : "Display placement";
+  byId<HTMLElement>("accessibility-description").textContent =
+    status.accessibilityPermissionRequired
+      ? "Accessibility lets Pip appear on the display containing your focused window. QRY never reads the app name, window title or content. Without it, Pip uses your main display."
+      : "Windows allows QRY to place Pip on the display containing your foreground window without an extra permission. QRY never reads the app name, window title or content.";
+  byId<HTMLElement>("accessibility-name").textContent =
+    status.accessibilityPermissionRequired
+      ? "Accessibility"
+      : "Focused-display placement";
+  byId<HTMLElement>("accessibility-detail").textContent =
+    status.accessibilityPermissionRequired
+      ? "Optional focused-display placement"
+      : "Available without additional access";
 
   const inputGranted = status.inputStatus === "granted";
   const terminal = status.state === "restarting" || status.state === "exiting";
-  requestInput.classList.toggle("hidden", inputGranted);
+  requestInput.classList.toggle(
+    "hidden",
+    inputGranted || !status.inputPermissionRequired,
+  );
+  openInputSettings.classList.toggle("hidden", !status.inputSettingsAvailable);
   inputContinue.classList.toggle("hidden", !inputGranted);
   inputContinue.disabled = !inputGranted || terminal;
   finishSetup.disabled = !inputGranted || terminal;
@@ -79,7 +142,10 @@ const render = (status: PermissionFlowStatus): void => {
     setStep(2);
   }
 
-  if (status.state === "waiting") {
+  if (!status.inputPermissionRequired && inputGranted) {
+    inputMessage.textContent =
+      "Windows is ready. Continue to focused-display placement and startup options.";
+  } else if (status.state === "waiting") {
     const remaining = status.secondsRemaining ?? 0;
     inputMessage.textContent = `Allow QRY in System Settings. This window closes in ${remaining}s if access is not granted.`;
   } else if (inputGranted) {
@@ -91,10 +157,25 @@ const render = (status: PermissionFlowStatus): void => {
     inputMessage.textContent = "QRY cannot run until Input Monitoring is allowed.";
   }
 
-  accessibilityMessage.textContent =
-    status.accessibilityStatus === "granted"
+  requestAccessibility.classList.toggle(
+    "hidden",
+    !status.accessibilityPermissionRequired,
+  );
+  openAccessibilitySettings.classList.toggle(
+    "hidden",
+    !status.accessibilitySettingsAvailable,
+  );
+  accessibilityMessage.textContent = !status.accessibilityPermissionRequired
+    ? "Focused-display placement is ready without a Windows permission prompt."
+    : status.accessibilityStatus === "granted"
       ? "Accessibility is allowed. Pip can follow the focused display."
       : "Optional — Pip will use your main display if you skip this.";
+  finishSetup.textContent = status.restartRequired
+    ? "Finish and restart QRY"
+    : "Finish setup";
+  byId<HTMLElement>("restart-note").textContent = status.restartRequired
+    ? "QRY restarts once to activate the new permission."
+    : "QRY starts monitoring immediately after setup.";
 };
 
 const refresh = async (): Promise<void> => {
@@ -137,7 +218,7 @@ requestInput.addEventListener("click", () => {
   });
 });
 
-byId<HTMLButtonElement>("open-input-settings").addEventListener("click", () => {
+openInputSettings.addEventListener("click", () => {
   void runBusy(async () => {
     render(await invoke<PermissionFlowStatus>("wait_for_input_permission"));
     await invoke("open_input_settings");
@@ -147,7 +228,7 @@ byId<HTMLButtonElement>("open-input-settings").addEventListener("click", () => {
 
 inputContinue.addEventListener("click", () => setStep(3));
 
-byId<HTMLButtonElement>("request-accessibility").addEventListener("click", () => {
+requestAccessibility.addEventListener("click", () => {
   void runBusy(async () => {
     const status = await invoke<PermissionStatus>("request_accessibility_permission");
     renderPermission(accessibilityStatus, status.status);
@@ -155,7 +236,7 @@ byId<HTMLButtonElement>("request-accessibility").addEventListener("click", () =>
   });
 });
 
-byId<HTMLButtonElement>("open-accessibility-settings").addEventListener("click", () => {
+openAccessibilitySettings.addEventListener("click", () => {
   void runBusy(async () => {
     await invoke("open_accessibility_permission_settings");
     await refresh();
@@ -164,7 +245,9 @@ byId<HTMLButtonElement>("open-accessibility-settings").addEventListener("click",
 
 finishSetup.addEventListener("click", () => {
   void runBusy(async () => {
-    accessibilityMessage.textContent = "Restarting QRY…";
+    accessibilityMessage.textContent = latestStatus?.restartRequired
+      ? "Restarting QRY…"
+      : "Starting QRY…";
     render(
       await invoke<PermissionFlowStatus>("complete_permission_flow", {
         autoStartEnabled: onboardingAutoStart.checked,

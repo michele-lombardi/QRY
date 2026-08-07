@@ -1,4 +1,46 @@
-# Installing QRY on macOS
+# Installing QRY
+
+Download only from the official
+[GitHub Releases](https://github.com/michele-lombardi/QRY/releases) page and
+verify the matching SHA-256 file before running an unsigned build.
+
+## Windows 10/11 x64
+
+QRY provides two Windows artifacts:
+
+- `QRY_<version>_x64-setup.exe`: recommended current-user NSIS installer;
+- `QRY_<version>_x64_en-US.msi`: alternative Windows Installer package.
+
+Download one installer and its matching `.sha256` file. In PowerShell, from the
+download directory, verify it before launch:
+
+```powershell
+$asset = "QRY_0.1.1_x64-setup.exe"
+$expected = (Get-Content "$asset.sha256").Split()[0].ToLowerInvariant()
+$actual = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw "QRY checksum mismatch" }
+```
+
+Run the verified installer. NSIS installs for the current user and should not
+request administrator access. It uses the small WebView2 download bootstrapper
+only if the required runtime is missing.
+
+Current development installers may be unsigned. If Microsoft Defender
+SmartScreen warns, first confirm the official URL, exact filename and checksum;
+then use the warning's scoped **More info → Run anyway** action. Do not disable
+SmartScreen or other Windows security controls globally.
+
+Windows does not show fake Input Monitoring or Accessibility prompts. QRY
+explains its local privacy model, lets you choose launch at login, starts its
+native monitor in the same process and shows the tray. A failed monitor returns
+to the setup gate instead of silently displaying incorrect statistics.
+
+Uninstall QRY through **Settings → Apps → Installed apps**. Aggregate user data
+may remain in the QRY application-data directory so an uninstall does not
+silently destroy statistics; remove that directory separately only when you
+explicitly want to erase local history.
+
+## macOS 10.15 or later
 
 QRY supports macOS 10.15 Catalina or later. Current beta bundles are ad-hoc
 signed and not Apple-notarized, so the first launch may require explicit

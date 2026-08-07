@@ -21,7 +21,7 @@ From the repository root:
 ## Crates
 
 - `typepulse-core`: portable domain boundary;
-- `typepulse-platform-macos`: permissions and input adapter boundary;
+- `typepulse-platform-desktop`: target-gated permissions and input adapter boundary;
 - `typepulse-storage-sqlite`: local persistence boundary;
 - `src-tauri`: desktop composition root.
 

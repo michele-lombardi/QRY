@@ -1,4 +1,9 @@
-export type PermissionStatus = { status: "granted" | "denied" | "unknown" };
+export type PermissionStatus = {
+  status: "granted" | "denied" | "unknown";
+  platform: "macos" | "windows" | "unsupported";
+  permissionRequired: boolean;
+  settingsAvailable: boolean;
+};
 
 export type MonitorStatus = {
   state: string;

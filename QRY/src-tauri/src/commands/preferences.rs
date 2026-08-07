@@ -4,7 +4,7 @@ use crate::app_state::DiagnosticState;
 use serde::Serialize;
 use tauri::{AppHandle, State};
 use tauri_plugin_autostart::ManagerExt;
-use typepulse_platform_macos::{input_permission_status, PermissionStatus};
+use typepulse_platform_desktop::{input_permission_status, PermissionStatus};
 
 /// Combined persisted preference and operating-system registration state.
 #[derive(Clone, Copy, Debug, Serialize)]
@@ -34,6 +34,13 @@ const fn registration_action(desired: bool, registered: bool) -> RegistrationAct
         (false, true) => RegistrationAction::Disable,
         _ => RegistrationAction::None,
     }
+}
+
+const fn rollback_action(
+    previously_registered: bool,
+    currently_registered: bool,
+) -> RegistrationAction {
+    registration_action(previously_registered, currently_registered)
 }
 
 const fn desired_registration(permission_gate_valid: bool, preference_enabled: bool) -> bool {
@@ -67,7 +74,7 @@ pub(crate) fn set_auto_start_enabled(
         && (!preferences.onboarding_completed
             || input_permission_status() != PermissionStatus::Granted)
     {
-        return Err("complete required permission setup before enabling launch at login".into());
+        return Err("complete required system setup before enabling launch at login".into());
     }
     persist_auto_start_choice(&app, &state, preferences, enabled, false)?;
     startup_preference(app, state)
@@ -80,16 +87,16 @@ pub(crate) fn complete_onboarding_auto_start(
     enabled: bool,
 ) -> Result<(), String> {
     if input_permission_status() != PermissionStatus::Granted {
-        return Err("Input Monitoring permission is still required".into());
+        return Err("required global input access is still unavailable".into());
     }
     let preferences = state.load_preferences()?;
     persist_auto_start_choice(app, state, preferences, enabled, true)
 }
 
-/// Reconciles the persisted preference with the real LaunchAgent state.
+/// Reconciles the persisted preference with the real operating-system state.
 ///
 /// An invalid permission gate always removes the registration and clears the
-/// preference so the database, checkbox and macOS state cannot drift apart.
+/// preference so the database, checkbox and native state cannot drift apart.
 pub(crate) fn reconcile_auto_start(
     app: &AppHandle,
     state: &DiagnosticState,
@@ -149,7 +156,15 @@ fn apply_registration(app: &AppHandle, desired: bool, registered: bool) -> Resul
 
 fn restore_registration(app: &AppHandle, registered: bool) {
     let current = registration_state(app).unwrap_or(!registered);
-    let _ = apply_registration(app, registered, current);
+    match rollback_action(registered, current) {
+        RegistrationAction::None => {}
+        RegistrationAction::Enable => {
+            let _ = app.autolaunch().enable();
+        }
+        RegistrationAction::Disable => {
+            let _ = app.autolaunch().disable();
+        }
+    }
 }
 
 #[tauri::command]
@@ -175,7 +190,8 @@ pub(crate) fn set_menu_bar_wpm_enabled(
 #[cfg(test)]
 mod tests {
     use super::{
-        desired_registration, registration_action, MenuBarPreferenceDto, RegistrationAction,
+        desired_registration, registration_action, rollback_action, MenuBarPreferenceDto,
+        RegistrationAction,
     };
 
     #[test]
@@ -197,5 +213,13 @@ mod tests {
         assert!(!desired_registration(true, false));
         assert!(!desired_registration(false, true));
         assert!(!desired_registration(false, false));
+    }
+
+    #[test]
+    fn failed_preference_persistence_restores_the_previous_native_state() {
+        assert_eq!(rollback_action(false, true), RegistrationAction::Disable);
+        assert_eq!(rollback_action(true, false), RegistrationAction::Enable);
+        assert_eq!(rollback_action(true, true), RegistrationAction::None);
+        assert_eq!(rollback_action(false, false), RegistrationAction::None);
     }
 }

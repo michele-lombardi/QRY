@@ -82,6 +82,7 @@ struct OverlayEventDto {
 #[derive(Clone)]
 pub(crate) struct OverlayRuntime {
     preferences: Arc<Mutex<AppPreferences>>,
+    paused: Arc<AtomicBool>,
     stopped: Arc<AtomicBool>,
 }
 
@@ -89,6 +90,7 @@ impl OverlayRuntime {
     fn new(preferences: AppPreferences) -> Self {
         Self {
             preferences: Arc::new(Mutex::new(preferences)),
+            paused: Arc::new(AtomicBool::new(false)),
             stopped: Arc::new(AtomicBool::new(false)),
         }
     }
@@ -109,6 +111,14 @@ impl OverlayRuntime {
 
     pub(crate) fn stop(&self) {
         self.stopped.store(true, Ordering::Release);
+    }
+
+    fn pause(&self) {
+        self.paused.store(true, Ordering::Release);
+    }
+
+    fn resume(&self) {
+        self.paused.store(false, Ordering::Release);
     }
 }
 
@@ -148,10 +158,17 @@ pub(crate) fn configure(app: &mut App, preferences: AppPreferences) -> tauri::Re
 /// Stops and hides the overlay immediately when required access is unavailable.
 pub(crate) fn enter_permission_gate<R: Runtime>(app: &AppHandle<R>) {
     if let Some(runtime) = app.try_state::<OverlayRuntime>() {
-        runtime.stop();
+        runtime.pause();
     }
     if let Some(window) = app.get_webview_window(OVERLAY_LABEL) {
         let _ = window.hide();
+    }
+}
+
+/// Resumes presentation after a permission-free platform completes onboarding.
+pub(crate) fn exit_permission_gate<R: Runtime>(app: &AppHandle<R>) {
+    if let Some(runtime) = app.try_state::<OverlayRuntime>() {
+        runtime.resume();
     }
 }
 
@@ -204,6 +221,17 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
         let Some(window) = app.get_webview_window(OVERLAY_LABEL) else {
             return;
         };
+        if runtime.paused.load(Ordering::Acquire) {
+            if presented {
+                let _ = window.hide();
+                presented = false;
+            }
+            hide_after = None;
+            last_payload = None;
+            last_tray_status = None;
+            std::thread::sleep(UPDATE_INTERVAL);
+            continue;
+        }
         let preferences = runtime.preferences();
         let snapshot = app.state::<DiagnosticState>().snapshot();
         let now = Instant::now();
@@ -313,7 +341,7 @@ fn position_window<R: Runtime>(
     window: &WebviewWindow<R>,
     preferences: AppPreferences,
 ) -> tauri::Result<()> {
-    let focused_monitor = typepulse_platform_macos::focused_window_center()
+    let focused_monitor = typepulse_platform_desktop::focused_window_center()
         .and_then(|point| app.monitor_from_point(point.x, point.y).ok().flatten());
     let current_monitor = window.current_monitor()?;
     let monitor = select_monitor(

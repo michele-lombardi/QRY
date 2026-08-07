@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  A private, local-first typing rhythm companion for macOS.<br />
+  A private, local-first typing rhythm companion for macOS and Windows.<br />
   Live WPM, a responsive desktop companion, and useful statistics—without recording your words.
 </p>
 
@@ -28,7 +28,7 @@
 <p align="center">
   <a href="https://github.com/michele-lombardi/QRY/actions/workflows/ci.yml"><img src="https://github.com/michele-lombardi/QRY/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--only-30D158" alt="GPL-3.0-only license" /></a>
-  <img src="https://img.shields.io/badge/platform-macOS%2010.15%2B-111113" alt="macOS 10.15 or later" />
+  <img src="https://img.shields.io/badge/platform-macOS%2010.15%2B%20%7C%20Windows%2010%2F11-111113" alt="macOS 10.15 or later and Windows 10 or 11" />
   <img src="https://img.shields.io/badge/version-0.1.1%20beta-3CEFFF" alt="Version 0.1.1 beta" />
 </p>
 
@@ -38,9 +38,10 @@
 
 ---
 
-QRY lives quietly in the macOS menu bar and turns anonymous typing activity into
-live feedback. Pip reacts to your pace, the menu bar can show your current WPM,
-and private local statistics help you understand your rhythm over time.
+QRY lives quietly in the macOS menu bar or Windows tray and turns anonymous
+typing activity into live feedback. Pip reacts to your pace, the shell can show
+your current WPM, and private local statistics help you understand your rhythm
+over time.
 
 QRY is intentionally not a keylogger, productivity judge, or cloud analytics
 service. It does not need to know which keys you press, what you write, or which
@@ -48,10 +49,10 @@ application you use.
 
 ## What QRY gives you
 
-| Live rhythm                                                                 | Private statistics                                                           | A quiet desktop presence                                                       |
-| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Responsive rolling WPM, animation bands, and a stable menu-bar reading.     | Today, 7-day, 30-day, and yearly views stored only on your Mac.              | A click-through Pip overlay that stays out of the Dock and never steals focus. |
-| Peak, 30-second, and 60-second personal records with one-shot celebrations. | Estimated words, average and peak WPM, active time, streaks, and CSV export. | Configurable corner, size, content, background, and disappearance delay.       |
+| Live rhythm                                                                  | Private statistics                                                           | A quiet desktop presence                                                                |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Responsive rolling WPM, animation bands, and a stable tray/menu-bar reading. | Today, 7-day, 30-day, and yearly views stored only on your computer.         | A click-through Pip overlay that stays out of the task switcher and never steals focus. |
+| Peak, 30-second, and 60-second personal records with one-shot celebrations.  | Estimated words, average and peak WPM, active time, streaks, and CSV export. | Configurable corner, size, content, background, and disappearance delay.                |
 
 ### Designed to feel alive, not distracting
 
@@ -107,7 +108,7 @@ QRY is built around a strict data boundary:
   and preferences;
 - optional Accessibility access reads only temporary focused-window geometry for
   display placement—not its title, application, or content;
-- data leaves your Mac only when you explicitly export it.
+- data leaves your computer only when you explicitly export it.
 
 The repository includes an automated privacy audit for runtime logging, Tauri
 capabilities, public DTOs, and the aggregate-only SQLite schema. Read the full
@@ -116,43 +117,68 @@ capabilities, public DTOs, and the aggregate-only SQLite schema. Read the full
 ## First-run experience
 
 1. QRY explains what it measures and what it never collects.
-2. macOS asks for **Input Monitoring**, which is required for global typing
-   activity. If access is not granted, QRY exits instead of pretending to work.
-3. **Accessibility** is offered separately and remains optional. Without it, Pip
-   uses the fallback display.
-4. You can explicitly choose whether QRY should start at login. The default is
-   off, and no login item is created before required permission is valid.
-5. QRY performs one clean restart, then runs as a menu-bar accessory.
+2. On macOS, QRY requests required **Input Monitoring** and optional
+   **Accessibility**. If required access is not granted, QRY exits instead of
+   pretending to work.
+3. Windows needs no equivalent consent, so QRY probes the native monitor without
+   displaying a fake permission prompt.
+4. You explicitly choose whether QRY should start at login. The default is off.
+5. macOS performs the required clean permission restart; Windows starts in the
+   same process and moves directly to the tray.
 
 Permission revocation stops monitoring and hides the overlay immediately. QRY
 returns to the same guided permission gate without deleting aggregate history.
 
-## Permissions
+## Platform capabilities
 
-| Permission       | Required? | Used for                                                     |
-| ---------------- | --------- | ------------------------------------------------------------ |
-| Input Monitoring | Yes       | Counting privacy-safe global typing activities for live WPM. |
-| Accessibility    | No        | Locating the display that contains the focused window.       |
-| Launch at login  | No        | Opening QRY silently in the menu bar after sign-in.          |
+| Capability      | macOS                     | Windows              | Used for                                                    |
+| --------------- | ------------------------- | -------------------- | ----------------------------------------------------------- |
+| Global input    | Input Monitoring required | No permission prompt | Counting privacy-safe typing activities for live WPM.       |
+| Focused display | Accessibility optional    | No permission prompt | Locating only the display that contains the focused window. |
+| Launch at login | Optional                  | Optional             | Opening QRY silently in the tray/menu bar after sign-in.    |
 
-QRY cannot grant or bypass macOS permissions. Every choice remains under the
-user's control in System Settings.
+QRY cannot grant or bypass system permissions. Windows does not simulate macOS
+consent controls; both platforms keep launch-at-login under the user's control.
 
 ## Project status
 
-QRY `0.1.1` is the current macOS beta line. The portable metrics engine, macOS
-monitor, local persistence, permission onboarding, menu-bar shell, Pip overlay,
-settings, statistics, records, and release automation are implemented.
+QRY `0.1.1` is the current public macOS beta line. Windows support implements
+the native monitor, permission-free onboarding, tray, focused-display placement,
+autostart, local persistence, CI, NSIS/MSI packaging and unified draft-release
+automation without forking the product logic.
 
 Before the stable V1, the project is completing its real-device release matrix:
-TCC permission flows, logout/login, Gatekeeper, sleep/wake, multi-monitor behavior,
-and final Apple Silicon/Intel artifact checks. The initial beta artifacts use
-ad-hoc signing and are not Apple-notarized.
+TCC permission flows, logout/login, Gatekeeper/SmartScreen, sleep/wake,
+multi-monitor behavior, Windows install/uninstall and final architecture checks.
+Release candidates stay draft until those checks are signed off. Initial macOS
+artifacts use ad-hoc signing and are not Apple-notarized; initial Windows
+artifacts may be unsigned until an Authenticode identity is available.
 
 See the public [roadmap](ROADMAP.md) and [changelog](CHANGELOG.md) for the current
 direction and release history.
 
-## Install the macOS beta
+## Install QRY
+
+### Windows 10/11 x64
+
+Download either `QRY_0.1.1_x64-setup.exe` or
+`QRY_0.1.1_x64_en-US.msi` and its matching `.sha256` file from the draft or
+published [GitHub Release](https://github.com/michele-lombardi/QRY/releases).
+Verify it in PowerShell before running:
+
+```powershell
+$asset = "QRY_0.1.1_x64-setup.exe"
+$expected = (Get-Content "$asset.sha256").Split()[0].ToLowerInvariant()
+$actual = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw "QRY checksum mismatch" }
+```
+
+The setup executable installs for the current user without requiring admin.
+Unsigned development builds can trigger SmartScreen; verify the official URL,
+filename and checksum before using **More info → Run anyway**. Never disable
+SmartScreen globally.
+
+### macOS beta
 
 QRY targets macOS 10.15 or later.
 
@@ -190,7 +216,8 @@ architecture selection, updates, removal, and the unsigned-build trust model.
 
 ### Requirements
 
-- macOS with the Apple development SDK / Xcode Command Line Tools;
+- macOS with the Apple development SDK / Xcode Command Line Tools, or Windows
+  with the MSVC build tools and Windows SDK;
 - Rust stable with `rustfmt` and `clippy`;
 - Node.js 24 and npm.
 
@@ -203,8 +230,8 @@ npm ci
 npm run tauri dev
 ```
 
-Development builds still require explicit macOS Input Monitoring consent. A
-rebuilt unsigned executable may appear to TCC as a new identity.
+macOS development builds still require explicit Input Monitoring consent. On
+Windows the native monitor starts without a simulated permission prompt.
 
 ### Run the complete quality gate
 
@@ -221,7 +248,7 @@ and privacy-sensitive DTOs.
 ## How it is built
 
 ```text
-macOS event tap
+macOS event tap / Windows Raw Input
       │
       ▼
 privacy filter ── discards key identity
@@ -236,13 +263,13 @@ portable Rust engine ── WPM, sessions, records, animation state
       └──► Tauri menu bar, Pip overlay, and statistics UI
 ```
 
-| Area                                                              | Responsibility                                                                  |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [`typepulse-core`](QRY/crates/typepulse-core)                     | Portable WPM, session, record, date, and persistence contracts.                 |
-| [`typepulse-platform-macos`](QRY/crates/typepulse-platform-macos) | macOS permissions, event tap, filtering, and focused-display geometry.          |
-| [`typepulse-storage-sqlite`](QRY/crates/typepulse-storage-sqlite) | Aggregate-only local SQLite adapter and migrations.                             |
-| [`src-tauri`](QRY/src-tauri)                                      | Desktop lifecycle, menu bar, windows, commands, permissions, and orchestration. |
-| [`src`](QRY/src)                                                  | Vanilla TypeScript, HTML, and CSS presentation layer.                           |
+| Area                                                                  | Responsibility                                                                       |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [`typepulse-core`](QRY/crates/typepulse-core)                         | Portable WPM, session, record, date, and persistence contracts.                      |
+| [`typepulse-platform-desktop`](QRY/crates/typepulse-platform-desktop) | Target-gated desktop permissions, input filtering, and focused-display geometry.     |
+| [`typepulse-storage-sqlite`](QRY/crates/typepulse-storage-sqlite)     | Aggregate-only local SQLite adapter and migrations.                                  |
+| [`src-tauri`](QRY/src-tauri)                                          | Desktop lifecycle, tray/menu bar, windows, commands, permissions, and orchestration. |
+| [`src`](QRY/src)                                                      | Vanilla TypeScript, HTML, and CSS presentation layer.                                |
 
 Start with the [architecture guide](docs/architecture.md),
 [decision log](docs/decisions/README.md), and

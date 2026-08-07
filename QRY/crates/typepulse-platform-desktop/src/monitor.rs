@@ -1,4 +1,4 @@
-//! Lifecycle and diagnostics for the passive macOS keyboard event tap.
+//! Lifecycle and aggregate diagnostics for the passive desktop input monitor.
 
 use std::{
     fmt,
@@ -100,13 +100,19 @@ pub enum MonitorError {
     TapCreationFailed,
     /// Core Foundation refused to create the run-loop source.
     RunLoopSourceFailed,
+    /// The operating system refused to create the private input window.
+    NativeWindowFailed,
+    /// The operating system refused the passive input registration.
+    NativeRegistrationFailed,
+    /// The native input message loop failed unexpectedly.
+    MessageLoopFailed,
     /// The worker did not finish startup within the configured timeout.
     StartupTimedOut,
     /// The operating-system thread could not be created.
     ThreadSpawn(String),
     /// The worker thread panicked during shutdown.
     ThreadPanicked,
-    /// This crate was built for a platform other than macOS.
+    /// This crate was built for a platform without a desktop adapter.
     UnsupportedPlatform,
 }
 
@@ -118,10 +124,17 @@ impl fmt::Display for MonitorError {
             Self::RunLoopSourceFailed => {
                 write!(formatter, "failed to create the event-tap run-loop source")
             }
+            Self::NativeWindowFailed => {
+                write!(formatter, "failed to create the native input window")
+            }
+            Self::NativeRegistrationFailed => {
+                write!(formatter, "failed to register passive keyboard input")
+            }
+            Self::MessageLoopFailed => write!(formatter, "native input message loop failed"),
             Self::StartupTimedOut => write!(formatter, "input monitor startup timed out"),
             Self::ThreadSpawn(error) => write!(formatter, "failed to start input worker: {error}"),
             Self::ThreadPanicked => write!(formatter, "input worker panicked"),
-            Self::UnsupportedPlatform => write!(formatter, "input monitoring is macOS-only"),
+            Self::UnsupportedPlatform => write!(formatter, "input monitoring is unsupported"),
         }
     }
 }
@@ -159,6 +172,8 @@ impl MonitorMetrics {
 struct SharedMonitor {
     state: AtomicU8,
     stop_requested: AtomicBool,
+    #[cfg(windows)]
+    worker_thread_id: std::sync::atomic::AtomicU32,
     metrics: MonitorMetrics,
 }
 
@@ -167,6 +182,8 @@ impl SharedMonitor {
         Self {
             state: AtomicU8::new(state_to_u8(MonitorRunState::Starting)),
             stop_requested: AtomicBool::new(false),
+            #[cfg(windows)]
+            worker_thread_id: std::sync::atomic::AtomicU32::new(0),
             metrics: MonitorMetrics::default(),
         }
     }
@@ -229,6 +246,7 @@ impl KeyboardMonitor {
     /// Requests shutdown and joins the worker thread.
     pub fn stop(&mut self) -> Result<(), MonitorError> {
         self.shared.stop_requested.store(true, Ordering::Release);
+        platform::request_stop(&self.shared);
         if let Some(worker) = self.worker.take() {
             worker.join().map_err(|_| MonitorError::ThreadPanicked)?;
         }
@@ -314,11 +332,14 @@ mod platform {
             }
             Err(_) => {
                 shared.stop_requested.store(true, Ordering::Release);
+                request_stop(&shared);
                 let _ = worker.join();
                 Err(MonitorError::StartupTimedOut)
             }
         }
     }
+
+    pub(super) const fn request_stop(_shared: &SharedMonitor) {}
 
     fn run_worker(
         config: MonitorConfig,
@@ -551,7 +572,339 @@ mod platform {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(windows)]
+mod platform {
+    use std::{
+        mem::{size_of, MaybeUninit},
+        ptr,
+        sync::{
+            atomic::Ordering,
+            mpsc::{self, TrySendError},
+            Arc,
+        },
+        thread,
+        time::{Duration, Instant},
+    };
+
+    use typepulse_core::TypingActivity;
+    use windows_sys::Win32::{
+        Foundation::{GetLastError, ERROR_CLASS_ALREADY_EXISTS, HWND, LPARAM, LRESULT, WPARAM},
+        System::{LibraryLoader::GetModuleHandleW, Threading::GetCurrentThreadId},
+        UI::{
+            Input::{
+                GetRawInputData, RegisterRawInputDevices, HRAWINPUT, RAWINPUT, RAWINPUTDEVICE,
+                RAWINPUTHEADER, RIDEV_INPUTSINK, RIDEV_REMOVE, RID_INPUT, RIM_TYPEKEYBOARD,
+            },
+            WindowsAndMessaging::{
+                CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetMessageW,
+                PostThreadMessageW, RegisterClassW, TranslateMessage, HWND_MESSAGE, MSG, WM_APP,
+                WM_INPUT, WNDCLASSW,
+            },
+        },
+    };
+
+    use crate::event_filter_windows::WindowsEventFilter;
+
+    use super::{KeyboardMonitor, MonitorConfig, MonitorError, MonitorRunState, SharedMonitor};
+
+    const RAW_INPUT_USAGE_PAGE_GENERIC_DESKTOP: u16 = 0x01;
+    const RAW_INPUT_USAGE_KEYBOARD: u16 = 0x06;
+    const STOP_MESSAGE: u32 = WM_APP + 0x51;
+    const WINDOW_CLASS_NAME: [u16; 18] = [
+        81, 82, 89, 82, 97, 119, 73, 110, 112, 117, 116, 87, 105, 110, 100, 111, 119, 0,
+    ];
+
+    pub(super) fn start(
+        config: MonitorConfig,
+    ) -> Result<(KeyboardMonitor, mpsc::Receiver<TypingActivity>), MonitorError> {
+        let capacity = config.channel_capacity.max(1);
+        let (activity_sender, activity_receiver) = mpsc::sync_channel(capacity);
+        let (ready_sender, ready_receiver) = mpsc::sync_channel(1);
+        let shared = Arc::new(SharedMonitor::new());
+        let worker_shared = Arc::clone(&shared);
+
+        let worker = thread::Builder::new()
+            .name("typepulse-input-monitor".into())
+            .spawn(move || {
+                if let Err(error) = run_worker(activity_sender, &worker_shared, &ready_sender) {
+                    worker_shared.set_state(MonitorRunState::Failed);
+                    let _ = ready_sender.try_send(Err(error));
+                }
+                worker_shared.worker_thread_id.store(0, Ordering::Release);
+            })
+            .map_err(|error| MonitorError::ThreadSpawn(error.to_string()))?;
+
+        match ready_receiver.recv_timeout(config.startup_timeout) {
+            Ok(Ok(())) => Ok((
+                KeyboardMonitor {
+                    shared,
+                    worker: Some(worker),
+                },
+                activity_receiver,
+            )),
+            Ok(Err(error)) => {
+                let _ = worker.join();
+                Err(error)
+            }
+            Err(_) => {
+                shared.stop_requested.store(true, Ordering::Release);
+                request_stop(&shared);
+                let _ = worker.join();
+                Err(MonitorError::StartupTimedOut)
+            }
+        }
+    }
+
+    pub(super) fn request_stop(shared: &SharedMonitor) {
+        let thread_id = shared.worker_thread_id.load(Ordering::Acquire);
+        if thread_id != 0 {
+            // SAFETY: the identifier belongs to the live worker. The message
+            // contains no pointers and is consumed only as a shutdown signal.
+            let _ = unsafe { PostThreadMessageW(thread_id, STOP_MESSAGE, 0, 0) };
+        }
+    }
+
+    fn run_worker(
+        activity_sender: mpsc::SyncSender<TypingActivity>,
+        shared: &Arc<SharedMonitor>,
+        ready_sender: &mpsc::SyncSender<Result<(), MonitorError>>,
+    ) -> Result<(), MonitorError> {
+        // SAFETY: called on the worker and used only to post its private stop message.
+        let thread_id = unsafe { GetCurrentThreadId() };
+        shared.worker_thread_id.store(thread_id, Ordering::Release);
+
+        let window = create_message_window()?;
+        if let Err(error) = register_keyboard(window) {
+            // SAFETY: `window` was created on this worker and has not been destroyed.
+            let _ = unsafe { DestroyWindow(window) };
+            return Err(error);
+        }
+
+        shared.set_state(MonitorRunState::Running);
+        let _ = ready_sender.try_send(Ok(()));
+
+        let origin = Instant::now();
+        let mut filter = WindowsEventFilter::default();
+        let result = run_message_loop(window, origin, &mut filter, &activity_sender, shared);
+
+        unregister_keyboard();
+        // SAFETY: `window` remains owned by this worker until this call.
+        let _ = unsafe { DestroyWindow(window) };
+        if result.is_ok() {
+            shared.set_state(MonitorRunState::Stopped);
+        }
+        result
+    }
+
+    fn create_message_window() -> Result<HWND, MonitorError> {
+        // SAFETY: null requests the module containing the current executable.
+        let instance = unsafe { GetModuleHandleW(ptr::null()) };
+        if instance.is_null() {
+            return Err(MonitorError::NativeWindowFailed);
+        }
+
+        let window_class = WNDCLASSW {
+            lpfnWndProc: Some(window_proc),
+            hInstance: instance,
+            lpszClassName: WINDOW_CLASS_NAME.as_ptr(),
+            ..Default::default()
+        };
+        // SAFETY: the class definition and static UTF-16 name remain valid.
+        let atom = unsafe { RegisterClassW(&window_class) };
+        if atom == 0 {
+            // SAFETY: reads the calling thread's last-error value.
+            let error = unsafe { GetLastError() };
+            if error != ERROR_CLASS_ALREADY_EXISTS {
+                return Err(MonitorError::NativeWindowFailed);
+            }
+        }
+
+        // SAFETY: creates a private message-only window with no visual surface
+        // and no user data. All handles belong to this worker thread.
+        let window = unsafe {
+            CreateWindowExW(
+                0,
+                WINDOW_CLASS_NAME.as_ptr(),
+                ptr::null(),
+                0,
+                0,
+                0,
+                0,
+                0,
+                HWND_MESSAGE,
+                ptr::null_mut(),
+                instance,
+                ptr::null(),
+            )
+        };
+        (!window.is_null())
+            .then_some(window)
+            .ok_or(MonitorError::NativeWindowFailed)
+    }
+
+    fn register_keyboard(window: HWND) -> Result<(), MonitorError> {
+        let device = RAWINPUTDEVICE {
+            usUsagePage: RAW_INPUT_USAGE_PAGE_GENERIC_DESKTOP,
+            usUsage: RAW_INPUT_USAGE_KEYBOARD,
+            dwFlags: RIDEV_INPUTSINK,
+            hwndTarget: window,
+        };
+        // SAFETY: the array contains one initialized registration descriptor.
+        let registered =
+            unsafe { RegisterRawInputDevices(&device, 1, size_of::<RAWINPUTDEVICE>() as u32) };
+        (registered != 0)
+            .then_some(())
+            .ok_or(MonitorError::NativeRegistrationFailed)
+    }
+
+    fn unregister_keyboard() {
+        let device = RAWINPUTDEVICE {
+            usUsagePage: RAW_INPUT_USAGE_PAGE_GENERIC_DESKTOP,
+            usUsage: RAW_INPUT_USAGE_KEYBOARD,
+            dwFlags: RIDEV_REMOVE,
+            hwndTarget: ptr::null_mut(),
+        };
+        // SAFETY: Windows requires a null target when removing this process's registration.
+        let _ = unsafe { RegisterRawInputDevices(&device, 1, size_of::<RAWINPUTDEVICE>() as u32) };
+    }
+
+    fn run_message_loop(
+        window: HWND,
+        origin: Instant,
+        filter: &mut WindowsEventFilter,
+        activity_sender: &mpsc::SyncSender<TypingActivity>,
+        shared: &SharedMonitor,
+    ) -> Result<(), MonitorError> {
+        let mut message = MSG::default();
+        loop {
+            // SAFETY: `message` is a valid out pointer and this worker owns the queue.
+            let status = unsafe { GetMessageW(&mut message, ptr::null_mut(), 0, 0) };
+            if status == -1 {
+                return Err(MonitorError::MessageLoopFailed);
+            }
+            if status == 0 || message.message == STOP_MESSAGE {
+                return Ok(());
+            }
+
+            if message.message == WM_INPUT {
+                process_raw_input(
+                    message.lParam as HRAWINPUT,
+                    origin,
+                    filter,
+                    activity_sender,
+                    shared,
+                );
+            }
+
+            // SAFETY: the message came from this thread's queue. The private
+            // window procedure delegates every message to DefWindowProcW.
+            unsafe {
+                TranslateMessage(&message);
+                DispatchMessageW(&message);
+            }
+
+            if shared.stop_requested.load(Ordering::Acquire) {
+                return Ok(());
+            }
+            if message.hwnd == window && message.message == STOP_MESSAGE {
+                return Ok(());
+            }
+        }
+    }
+
+    fn process_raw_input(
+        handle: HRAWINPUT,
+        origin: Instant,
+        filter: &mut WindowsEventFilter,
+        activity_sender: &mpsc::SyncSender<TypingActivity>,
+        shared: &SharedMonitor,
+    ) {
+        let started = Instant::now();
+        shared
+            .metrics
+            .callback_count
+            .fetch_add(1, Ordering::Relaxed);
+
+        if let Some(raw) = read_raw_input(handle) {
+            if raw.header.dwType == RIM_TYPEKEYBOARD {
+                shared.metrics.events_seen.fetch_add(1, Ordering::Relaxed);
+                // SAFETY: `dwType` identifies the initialized keyboard union member.
+                let keyboard = unsafe { raw.data.keyboard };
+                let elapsed_ms = started
+                    .saturating_duration_since(origin)
+                    .as_millis()
+                    .min(u128::from(u64::MAX)) as u64;
+                if filter.accepts(keyboard.MakeCode, keyboard.Flags, keyboard.VKey, elapsed_ms) {
+                    match activity_sender.try_send(TypingActivity::at(started)) {
+                        Ok(()) => {
+                            shared
+                                .metrics
+                                .activities_emitted
+                                .fetch_add(1, Ordering::Relaxed);
+                        }
+                        Err(TrySendError::Full(_)) => {
+                            shared
+                                .metrics
+                                .activities_dropped
+                                .fetch_add(1, Ordering::Relaxed);
+                        }
+                        Err(TrySendError::Disconnected(_)) => {
+                            shared.stop_requested.store(true, Ordering::Release);
+                        }
+                    }
+                }
+            }
+        }
+
+        record_callback_duration(shared, started.elapsed());
+    }
+
+    fn read_raw_input(handle: HRAWINPUT) -> Option<RAWINPUT> {
+        let mut value = MaybeUninit::<RAWINPUT>::zeroed();
+        let mut size = size_of::<RAWINPUT>() as u32;
+        // SAFETY: `value` is aligned and large enough for one RAWINPUT value;
+        // `size` and the header size describe that initialized destination.
+        let read = unsafe {
+            GetRawInputData(
+                handle,
+                RID_INPUT,
+                value.as_mut_ptr().cast(),
+                &mut size,
+                size_of::<RAWINPUTHEADER>() as u32,
+            )
+        };
+        if read == u32::MAX || read < size_of::<RAWINPUTHEADER>() as u32 {
+            return None;
+        }
+        // SAFETY: a successful read initialized the RAWINPUT header and union.
+        Some(unsafe { value.assume_init() })
+    }
+
+    fn record_callback_duration(shared: &SharedMonitor, duration: Duration) {
+        let elapsed_ns = duration.as_nanos().min(u128::from(u64::MAX)) as u64;
+        shared
+            .metrics
+            .callback_total_ns
+            .fetch_add(elapsed_ns, Ordering::Relaxed);
+        shared
+            .metrics
+            .callback_max_ns
+            .fetch_max(elapsed_ns, Ordering::Relaxed);
+    }
+
+    unsafe extern "system" fn window_proc(
+        window: HWND,
+        message: u32,
+        wparam: WPARAM,
+        lparam: LPARAM,
+    ) -> LRESULT {
+        // SAFETY: this is the registered procedure for `window`; forwarding is
+        // required because QRY does not consume or suppress native messages.
+        unsafe { DefWindowProcW(window, message, wparam, lparam) }
+    }
+}
+
+#[cfg(not(any(target_os = "macos", windows)))]
 mod platform {
     use std::sync::{mpsc, Arc};
 
@@ -567,6 +920,8 @@ mod platform {
         shared.set_state(MonitorRunState::Unsupported);
         Err(MonitorError::UnsupportedPlatform)
     }
+
+    pub(super) const fn request_stop(_shared: &SharedMonitor) {}
 }
 
 #[cfg(test)]

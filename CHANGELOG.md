@@ -9,6 +9,17 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 - official `michele-lombardi/qry` Homebrew tap with automatic tracking of the
   latest public, non-prerelease GitHub Release.
+- Windows 10/11 x64 parity through a privacy-minimized Raw Input adapter,
+  permission-free onboarding, focused-display placement, tray and autostart;
+- complete Windows CI plus NSIS and MSI packaging with normalized names,
+  SHA-256 files and release-content audits;
+- one cross-platform draft release workflow for Apple Silicon, Intel and
+  Windows artifacts.
+
+### Changed
+
+- desktop documentation, privacy guarantees and contributor checks now cover
+  both macOS and Windows without duplicating product logic.
 
 ## [0.1.1] - 2026-08-06
 

@@ -9,7 +9,7 @@ promise in the interface.
 Transiently in memory:
 
 - a monotonic timestamp for each accepted typing activity;
-- temporary key identity inside the private macOS filter only, long enough to
+- temporary key identity inside the private native filter only, long enough to
   reject modifiers, auto-repeat, and abusive repetition;
 - temporary focused-window position and size when optional Accessibility access
   is enabled, reduced immediately to a display point.
@@ -37,9 +37,11 @@ The public platform API emits `TypingActivity { occurred_at: Instant }`. Raw
 key information has no serializable domain type and cannot enter the engine,
 Tauri DTOs, frontend, or storage repository.
 
-The macOS event tap is passive (`ListenOnly`) and returns events unchanged. Its
-callback performs no disk, network, UI, or synchronous database work. Secure
-Input gaps are accepted; QRY does not attempt to work around protected fields.
+The macOS event tap is passive (`ListenOnly`) and returns events unchanged. The
+Windows Raw Input adapter observes background activity without suppressing or
+injecting input and does not bypass UAC secure desktop. Native callbacks perform
+no disk, network, UI, or synchronous database work. Protected-input gaps are
+accepted rather than bypassed.
 
 The SQLite schema contains aggregate rows only. Migrations are embedded and a
 local backup may be created before upgrading an older non-empty database. That
@@ -63,14 +65,19 @@ window. QRY requests `AXFocusedApplication`, `AXFocusedWindow`, `AXPosition`,
 and `AXSize`, then discards the temporary geometry. Without it, Pip uses the
 fallback display and all metrics continue to work.
 
+Windows does not require an equivalent permission. It reduces the foreground
+window rectangle to a center point without reading its title, class, process or
+content.
+
 ### Start at login
 
-Optional and off by default during onboarding. It creates a macOS LaunchAgent
-only after required permission is valid. It does not change what QRY collects.
+Optional and off by default during onboarding. It creates the platform's native
+login registration only after the setup gate is valid. It does not change what
+QRY collects.
 
 ## Local storage and export
 
-Application data is stored under the macOS application-data directory in
+Application data is stored under the operating system's application-data directory in
 `typepulse.sqlite3`. QRY does not automatically upload it. CSV export occurs
 only after a direct user action and contains aggregate statistics.
 

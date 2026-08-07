@@ -1,12 +1,14 @@
 # Development guide
 
 QRY is a Tauri 2 application with a Rust workspace and a small TypeScript
-frontend. macOS is required to run the complete desktop application and its
-platform adapter; most core and storage tests remain portable.
+frontend. The complete desktop workspace builds on macOS and Windows; native
+input, shell and installer behavior must still be exercised on the matching
+operating system.
 
 ## Requirements
 
-- macOS with Xcode Command Line Tools or a compatible Apple SDK;
+- macOS with Xcode Command Line Tools, or Windows 10/11 with the MSVC build
+  tools and Windows SDK;
 - Rust stable with `rustfmt` and Clippy;
 - Node.js 24;
 - npm.
@@ -45,9 +47,9 @@ Development builds still need explicit Input Monitoring permission. Because an
 unsigned executable's identity may change after rebuilding, macOS can request
 permission again.
 
-QRY is a menu-bar accessory after onboarding. Left-click the Pulse for Today;
-right-click it for Statistics, Settings, monitoring controls, menu-bar WPM, and
-Quit. Closing a window hides it without terminating the background process.
+QRY is a tray or menu-bar accessory after onboarding. Left-click the Pulse for
+Today; use its menu for Statistics, Settings, monitoring controls, shell WPM,
+and Quit. Closing a window hides it without terminating the background process.
 
 ## Quality checks
 
@@ -60,6 +62,11 @@ Run the complete gate from the repository root:
 It verifies frontend formatting, ESLint, TypeScript, the production Vite build,
 Rustfmt, Clippy, Rust tests, Tauri capabilities, SQLite schema boundaries, and
 privacy-sensitive DTOs.
+
+CI exposes three stable checks intended to be required by the repository's
+branch rules: `Frontend`, `Desktop workspace (macOS)` and
+`Desktop workspace (Windows)`. A pull request is releasable only when all three
+are green.
 
 Individual commands, run from `QRY/` unless noted:
 
@@ -82,11 +89,11 @@ diff before committing.
 QRY/
 ├── crates/
 │   ├── typepulse-core/
-│   ├── typepulse-platform-macos/
+│   ├── typepulse-platform-desktop/
 │   └── typepulse-storage-sqlite/
 ├── src/                    # TypeScript, HTML, and CSS presentation
 ├── src-tauri/              # Tauri composition and desktop lifecycle
-├── tests/manual/           # real-macOS checks that CI cannot grant
+├── tests/manual/           # real macOS/Windows checks CI cannot exercise
 └── package.json
 ```
 
@@ -108,19 +115,19 @@ The trusted application windows currently receive only `core:default` Tauri
 capabilities. New permissions require a concrete feature, the narrowest
 available scope, and a documented privacy review.
 
-## Tests requiring a real Mac
+## Tests requiring a real desktop system
 
-Automated checks cannot grant TCC consent or exercise logout/login reliably.
-Reproducible manual procedures live in [`QRY/tests/manual/`](../QRY/tests/manual/)
-and cover Input Monitoring, Secure Input, callback performance, menu-bar
-behavior, startup, overlay focus/click-through, multi-monitor placement, and
-release installation.
+Automated checks cannot grant macOS TCC consent, validate Windows Raw Input in
+real applications, or exercise logout/login reliably. Reproducible procedures
+live in [`QRY/tests/manual/`](../QRY/tests/manual/) and cover native input,
+callback performance, tray behavior, startup, overlay focus/click-through,
+multi-monitor placement, system transitions and release installation.
 
 Never attach raw keyboard-event logs to a test result. The callback reference
 benchmark intentionally reports aggregate timing only:
 
 ```bash
-cargo test -p typepulse-platform-macos --release \
+cargo test -p typepulse-platform-desktop --release \
   typing_callback_hot_path_reference -- --ignored --nocapture
 ```
 

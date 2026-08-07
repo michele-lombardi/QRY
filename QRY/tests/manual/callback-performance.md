@@ -3,7 +3,7 @@
 ## Repeatable Rust hot-path reference
 
 ```bash
-cargo test -p typepulse-platform-macos --release \
+cargo test -p typepulse-platform-desktop --release \
   typing_callback_hot_path_reference -- --ignored --nocapture
 ```
 

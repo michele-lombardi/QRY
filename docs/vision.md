@@ -32,7 +32,7 @@ briefly and then the interface returns to rest.
 ### Native respect
 
 The app follows macOS conventions for permissions, appearance, reduced motion,
-menu-bar behavior, and login items. It never attempts to bypass system consent.
+tray/menu-bar behavior, and login items. It never attempts to bypass system consent.
 
 ### Portable core
 
@@ -42,7 +42,8 @@ consistent.
 
 ## The core experience
 
-- QRY starts as a menu-bar accessory after a clear first-run permission flow.
+- QRY starts as a tray or menu-bar accessory after a clear first-run platform
+  capability flow.
 - Pip appears after three accepted typing activities and reacts to pace.
 - Live WPM, estimated words, active time, streaks, and personal records build a
   private picture of typing rhythm.
