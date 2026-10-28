@@ -5,6 +5,14 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
+### Maintenance
+
+- update Tauri to 2.12 (crate, CLI and JavaScript API), single-instance 2.5,
+  rusqlite 0.40.2 and the frontend toolchain (ESLint, typescript-eslint,
+  Prettier, Vite);
+- hold `tauri-plugin-autostart` at 2.6 until its SMAppService login-item
+  migration is validated on real devices.
+
 ## [0.2.0-2] - 2026-10-28
 
 Development prerelease source; publication remains subject to the release gate.
