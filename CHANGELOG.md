@@ -5,22 +5,6 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
-### Fixed
-
-- retain the overlay's last connected typing display during idle refreshes and
-  transient focus failures; avoid repeated native resize/move commands for an
-  unchanged frame, which can interact with desktop window managers.
-
-### Documentation
-
-- add the supplied integration screenshots for QRY Today, Capsule, the local
-  Vorssaint module, summary, history and combined compact activity;
-- document the reported physical-notch clipping and the need to measure the
-  complete compact groups while keeping Pip on its original wing in a separately
-  maintained host adapter;
-- extend the focused-display checklist with sustained typing, idle focus
-  changes and window-manager compatibility checks.
-
 ## [0.2.0-2] - 2026-10-28
 
 Development prerelease source; publication remains subject to the release gate.
@@ -44,7 +28,20 @@ Development prerelease source; publication remains subject to the release gate.
   actions visible, transparent rounded corners and no rectangular window shadow;
 - merge the active session into the bridge's daily totals using the same
   character-weighted mean as stored statistics, without double counting;
-- keep menu-bar activity independent of the desktop overlay preference.
+- keep menu-bar activity independent of the desktop overlay preference;
+- retain the overlay's last connected typing display during idle refreshes and
+  transient focus failures; avoid repeated native resize/move commands for an
+  unchanged frame, which can interact with desktop window managers.
+
+### Documentation
+
+- add the supplied integration screenshots for QRY Today, Capsule, the local
+  Vorssaint module, summary, history and combined compact activity;
+- document the reported physical-notch clipping and the need to measure the
+  complete compact groups while keeping Pip on its original wing in a separately
+  maintained host adapter;
+- extend the focused-display checklist with sustained typing, idle focus
+  changes and window-manager compatibility checks.
 
 ### Maintenance
 
@@ -141,7 +138,8 @@ First public macOS beta.
   remain planned before the stable V1;
 - Linux packaging is planned after the macOS beta and is not included here.
 
-[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.1.2-2...HEAD
+[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.2.0-2...HEAD
+[0.2.0-2]: https://github.com/michele-lombardi/QRY/compare/v0.1.2-2...v0.2.0-2
 [0.1.2-2]: https://github.com/michele-lombardi/QRY/compare/v0.1.1...v0.1.2-2
 [0.1.1]: https://github.com/michele-lombardi/QRY/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/michele-lombardi/QRY/releases/tag/v0.1.0
