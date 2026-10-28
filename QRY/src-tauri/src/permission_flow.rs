@@ -387,6 +387,7 @@ pub(crate) fn complete_permission_flow(
     runtime.mark_running();
     crate::shell::exit_permission_gate(&app);
     crate::overlay::exit_permission_gate(&app);
+    crate::navigation::deliver(&app);
     if let Some(window) = app.get_webview_window(GATE_LABEL) {
         let _ = window.hide();
     }

@@ -241,6 +241,13 @@ fn position_dashboard<R: Runtime>(
                 .ok()
                 .flatten()
         })
+        .or_else(|| {
+            app.cursor_position().ok().and_then(|position| {
+                app.monitor_from_point(position.x, position.y)
+                    .ok()
+                    .flatten()
+            })
+        })
         .or_else(|| app.primary_monitor().ok().flatten());
     if let Some(monitor) = monitor {
         let scale = monitor.scale_factor();
@@ -455,8 +462,19 @@ mod tests {
         ] {
             let image = Image::from_bytes(bytes).unwrap();
             assert_eq!((image.width(), image.height()), (48, 32));
-            assert!(image.rgba().chunks_exact(4).any(|pixel| pixel[3] > 0));
-            for pixel in image.rgba().chunks_exact(4).filter(|pixel| pixel[3] > 0) {
+            assert!(image
+                .rgba()
+                .as_chunks::<4>()
+                .0
+                .iter()
+                .any(|pixel| pixel[3] > 0));
+            for pixel in image
+                .rgba()
+                .as_chunks::<4>()
+                .0
+                .iter()
+                .filter(|pixel| pixel[3] > 0)
+            {
                 assert_eq!(pixel[0], pixel[1]);
                 assert_eq!(pixel[1], pixel[2]);
             }

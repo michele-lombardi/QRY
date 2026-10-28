@@ -13,7 +13,8 @@
 html,
 body {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
   margin: 0;
   background: transparent;
 }
@@ -23,14 +24,17 @@ body {
 }
 
 .dashboard-card {
-  min-height: 454px;
-  padding: 20px;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  gap: 12px;
+  height: 100%;
+  padding: 16px;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 16%);
   border-radius: 18px;
-  background: rgb(24 25 29 / 96%);
-  box-shadow: 0 24px 70px rgb(0 0 0 / 38%);
-  backdrop-filter: blur(30px) saturate(140%);
+  clip-path: inset(0 round 18px);
+  background: rgb(24 25 29 / 98%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 12%);
+  isolation: isolate;
 }
 
 .dashboard-header,
@@ -74,15 +78,18 @@ body {
 }
 
 .live-reading {
-  padding: 22px 0 19px;
-  border-bottom: 1px solid rgb(255 255 255 / 11%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 62px;
 }
 .live-reading > div {
   align-items: baseline;
   gap: 8px;
 }
 .live-reading strong {
-  font-size: 3.05rem;
+  font-size: 2.7rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -94,10 +101,10 @@ body {
 }
 
 .wave {
-  width: 100%;
-  height: 42px;
-  margin-top: 14px;
-  overflow: visible;
+  width: 125px;
+  height: 36px;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 .wave path {
   fill: none;
@@ -108,19 +115,31 @@ body {
 }
 
 .today-list {
-  margin: 10px 0 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-height: 0;
+  margin: 0;
 }
 .today-list div {
-  min-height: 37px;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  min-height: 56px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 4%);
 }
 .today-list dt {
   color: rgb(245 245 243 / 52%);
-  font-size: 0.82rem;
+  font-size: 0.66rem;
+  line-height: 1.25;
 }
 .today-list dd {
   margin: 0;
-  font-size: 0.86rem;
+  font-size: 1.15rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -154,11 +173,19 @@ button:focus-visible {
 }
 
 #dashboard-message {
-  min-height: 14px;
-  margin: 8px 0 0;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  line-height: 14px;
   color: #ff9f0a;
   font-size: 0.68rem;
   text-align: center;
+}
+
+#dashboard-message:empty {
+  display: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {

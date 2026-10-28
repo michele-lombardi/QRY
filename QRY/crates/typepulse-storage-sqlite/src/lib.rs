@@ -17,7 +17,7 @@ use typepulse_core::{
     StatisticsRepository, TypingRecords,
 };
 
-const LATEST_SCHEMA_VERSION: usize = 6;
+const LATEST_SCHEMA_VERSION: usize = 7;
 const MIGRATION_LIST: &[M<'_>] = &[
     M::up(include_str!("../migrations/0001_initial.sql")),
     M::up(include_str!("../migrations/0002_overlay_preferences.sql")),
@@ -27,6 +27,7 @@ const MIGRATION_LIST: &[M<'_>] = &[
     M::up(include_str!(
         "../migrations/0006_sustained_records_and_overlay_delay.sql"
     )),
+    M::up(include_str!("../migrations/0007_local_integrations.sql")),
 ];
 const MIGRATIONS: Migrations<'_> = Migrations::from_slice(MIGRATION_LIST);
 
@@ -361,7 +362,8 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                 "SELECT onboarding_completed, auto_start_enabled,
                         menu_bar_wpm_enabled, overlay_enabled,
                         overlay_position, overlay_size, overlay_content,
-                        overlay_background_enabled, overlay_hide_delay_seconds
+                        overlay_background_enabled, overlay_hide_delay_seconds,
+                        capsule_enabled, integrations_enabled, notch_pip_enabled
                  FROM app_preferences WHERE singleton_id = 1",
                 [],
                 |row| {
@@ -375,6 +377,9 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                         row.get::<_, String>(6)?,
                         row.get::<_, i64>(7)?,
                         row.get::<_, i64>(8)?,
+                        row.get::<_, i64>(9)?,
+                        row.get::<_, i64>(10)?,
+                        row.get::<_, i64>(11)?,
                     ))
                 },
             )
@@ -390,6 +395,9 @@ impl StatisticsRepository for SqliteStatisticsRepository {
             content,
             background_enabled,
             hide_delay_seconds,
+            capsule_enabled,
+            integrations_enabled,
+            notch_pip_enabled,
         )) = stored
         else {
             return Ok(AppPreferences::default());
@@ -413,6 +421,9 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                 .ok()
                 .filter(|value| (1..=15).contains(value))
                 .ok_or_else(|| invalid_data("invalid overlay hide delay preference"))?,
+            capsule_enabled: stored_bool(capsule_enabled, "capsule enabled")?,
+            integrations_enabled: stored_bool(integrations_enabled, "integrations enabled")?,
+            notch_pip_enabled: stored_bool(notch_pip_enabled, "notch Pip enabled")?,
         })
     }
 
@@ -423,8 +434,9 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                     singleton_id, onboarding_completed, auto_start_enabled,
                     menu_bar_wpm_enabled,
                     overlay_enabled, overlay_position, overlay_size, overlay_content,
-                    overlay_background_enabled, overlay_hide_delay_seconds
-                 ) VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+                    overlay_background_enabled, overlay_hide_delay_seconds,
+                    capsule_enabled, integrations_enabled, notch_pip_enabled
+                 ) VALUES (1, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
                  ON CONFLICT(singleton_id) DO UPDATE SET
                     onboarding_completed = excluded.onboarding_completed,
                     auto_start_enabled = excluded.auto_start_enabled,
@@ -434,7 +446,10 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                     overlay_size = excluded.overlay_size,
                     overlay_content = excluded.overlay_content,
                     overlay_background_enabled = excluded.overlay_background_enabled,
-                    overlay_hide_delay_seconds = excluded.overlay_hide_delay_seconds",
+                    overlay_hide_delay_seconds = excluded.overlay_hide_delay_seconds,
+                    capsule_enabled = excluded.capsule_enabled,
+                    integrations_enabled = excluded.integrations_enabled,
+                    notch_pip_enabled = excluded.notch_pip_enabled",
                 params![
                     i64::from(preferences.onboarding_completed),
                     i64::from(preferences.auto_start_enabled),
@@ -445,6 +460,9 @@ impl StatisticsRepository for SqliteStatisticsRepository {
                     preferences.overlay_content.as_str(),
                     i64::from(preferences.overlay_background_enabled),
                     i64::from(preferences.overlay_hide_delay_seconds),
+                    i64::from(preferences.capsule_enabled),
+                    i64::from(preferences.integrations_enabled),
+                    i64::from(preferences.notch_pip_enabled),
                 ],
             )
             .map_err(query_error)?;
@@ -685,6 +703,9 @@ mod tests {
                     overlay_content: OverlayContent::Animation,
                     overlay_background_enabled: false,
                     overlay_hide_delay_seconds: 10,
+                    capsule_enabled: true,
+                    integrations_enabled: true,
+                    notch_pip_enabled: true,
                 })
                 .unwrap();
             repository
@@ -713,6 +734,9 @@ mod tests {
                 overlay_content: OverlayContent::Animation,
                 overlay_background_enabled: false,
                 overlay_hide_delay_seconds: 10,
+                capsule_enabled: true,
+                integrations_enabled: true,
+                notch_pip_enabled: true,
             }
         );
         assert_eq!(reopened.personal_best_wpm().unwrap(), Some(90.0));

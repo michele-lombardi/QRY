@@ -305,7 +305,13 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
             celebration_sequence: snapshot.live_metrics.celebration_sequence,
         };
         let tray_status = (
-            should_present,
+            snapshot.run_state == typepulse_platform_desktop::MonitorRunState::Running
+                && should_present_overlay(
+                    true,
+                    session_qualified,
+                    quiet_for,
+                    preferences.overlay_hide_delay_seconds,
+                ),
             snapshot.live_metrics.displayed_wpm.round().max(0.0) as u64,
         );
         if last_tray_status != Some(tray_status) {
@@ -404,7 +410,7 @@ fn logical_to_physical(value: f64, scale: f64) -> u32 {
     (value * scale).round().clamp(0.0, f64::from(u32::MAX)) as u32
 }
 
-fn pip_behavior(displayed_wpm: f64, active_typing_seconds: f64) -> &'static str {
+pub(crate) fn pip_behavior(displayed_wpm: f64, active_typing_seconds: f64) -> &'static str {
     if active_typing_seconds.is_finite() && active_typing_seconds >= 90.0 * 60.0 {
         "tired"
     } else if !displayed_wpm.is_finite() || displayed_wpm <= 0.0 {
@@ -607,6 +613,7 @@ mod tests {
             overlay_content: OverlayContent::Both,
             overlay_background_enabled: false,
             overlay_hide_delay_seconds: 5,
+            ..AppPreferences::default()
         }))
         .unwrap();
         let Value::Object(object) = value else {

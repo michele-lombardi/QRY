@@ -2,6 +2,8 @@
 
 mod app_state;
 mod commands;
+mod integrations;
+mod navigation;
 mod overlay;
 mod permission_flow;
 mod shell;
@@ -46,8 +48,9 @@ fn local_database_path(app_data_directory: &std::path::Path) -> std::path::PathB
 /// Starts the Tauri desktop runtime.
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            permission_flow::focus_primary_surface(app);
+        .manage(navigation::NavigationRuntime::default())
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            navigation::second_instance(app, args);
         }))
         .plugin(autostart_plugin())
         .setup(|app| {
@@ -64,6 +67,7 @@ pub fn run() {
             let permission_runtime =
                 permission_flow::configure(app, preferences.onboarding_completed);
             let normal_start = permission_runtime.permits_normal_start();
+            integrations::configure(app, preferences)?;
             if normal_start {
                 let state = app.state::<DiagnosticState>();
                 match state.start() {
@@ -140,14 +144,30 @@ pub fn run() {
             open_statistics_window,
             open_today_window,
             hide_dashboard_window,
+            integrations::integration_status,
+            integrations::set_integration_preference,
             permission_flow_status,
             begin_permission_flow,
             wait_for_input_permission,
             complete_permission_flow,
             exit_permission_flow,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| match event {
+            #[cfg(target_os = "macos")]
+            tauri::RunEvent::Opened { urls } => {
+                for url in urls {
+                    navigation::open_url(app, &url);
+                }
+            }
+            tauri::RunEvent::Exit => {
+                app.state::<integrations::IntegrationRuntime>().stop();
+                app.state::<overlay::OverlayRuntime>().stop();
+                let _ = app.state::<DiagnosticState>().stop();
+            }
+            _ => (),
+        });
 }
 
 #[cfg(test)]

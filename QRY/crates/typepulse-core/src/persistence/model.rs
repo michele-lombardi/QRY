@@ -207,6 +207,12 @@ pub struct AppPreferences {
     pub overlay_background_enabled: bool,
     /// Seconds Pip breathes after typing stops before disappearing.
     pub overlay_hide_delay_seconds: u32,
+    /// Publish aggregate status for the optional native right-hand capsule.
+    pub capsule_enabled: bool,
+    /// Allow optional local integrations to read the aggregate status bridge.
+    pub integrations_enabled: bool,
+    /// Allow the Vorssaint adapter to show Pip as a compact live activity.
+    pub notch_pip_enabled: bool,
 }
 
 impl Default for AppPreferences {
@@ -221,6 +227,9 @@ impl Default for AppPreferences {
             overlay_content: OverlayContent::Both,
             overlay_background_enabled: true,
             overlay_hide_delay_seconds: 5,
+            capsule_enabled: false,
+            integrations_enabled: false,
+            notch_pip_enabled: false,
         }
     }
 }
