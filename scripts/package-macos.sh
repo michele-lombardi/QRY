@@ -46,6 +46,9 @@ fi
 
 cd "$app_root"
 npm run tauri -- build --bundles app --target "$target_triple"
+bash "$script_dir/embed-capsule.sh" "$bundle_path" "$binary_arch"
+# Adding a helper changes the outer resource seal. Keep Tauri's entitlements.
+codesign --force --sign - --preserve-metadata=entitlements "$bundle_path"
 
 bundle_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$info_plist")"
 if [[ "$bundle_version" != "$release_version" ]]; then

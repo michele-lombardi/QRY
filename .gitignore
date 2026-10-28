@@ -36,6 +36,9 @@ npm-debug.log*
 !**/.env.example
 exports/
 release/
+integrations/.local/
+.playwright-cli/
+output/playwright/
 
 # Local assistants, credentials and signing material
 .claude/
