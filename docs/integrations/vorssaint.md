@@ -28,6 +28,10 @@ A useful first version is an optional **QRY statistics** destination with:
 Treat compact Pip animation as a separate optional extension. Respect existing
 activity priorities such as timers and alerts.
 
+The [screenshot gallery](screenshots.md#vorssaint-module-and-statistics) shows
+the local module chooser, summary, history and compact island. These captures
+illustrate a separate development build rather than an official upstream feature.
+
 ## 1. Prepare a separate checkout
 
 Read the current [Vorssaint contribution guide](https://github.com/vorssaint/vorssaint-utils/blob/main/CONTRIBUTING.md)
@@ -94,6 +98,15 @@ when the graph range changes.
 If adding compact Pip, require both `externalEnabled` and `notchPipEnabled`.
 Use `presentation`, `animationBand` and `celebrationSequence` from QRY, handle a
 new `instanceId`, and honor Reduce Motion. Do not infer animation from raw input.
+
+For a physical notch, retain only the real camera gap between the two wings.
+Keep Pip on its original wing when a companion arrives, with both marks beside
+each other and WPM on the opposite wing. Measure the complete content of both
+wings, including their rounded-edge insets; an agent-only width limit can clip
+the larger group. Reserve a three-digit WPM
+slot to keep the layout stable. When menus leave insufficient room, use the
+host's unavailable-space behavior rather than drawing into the camera or clipping
+the unit. See the [reported physical-notch layout](screenshots.md#physical-notch-reported-layout-regression).
 
 ## 4. Open QRY through explicit actions
 

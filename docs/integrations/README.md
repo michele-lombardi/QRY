@@ -7,6 +7,9 @@ input or opening QRY's database.
 These guides describe the `0.2.0-2` development source on `release/next`.
 Check the installed version before expecting bridge or capsule support.
 
+See the [integration screenshots](screenshots.md) for the updated Today panel,
+capsule, local Vorssaint statistics and combined compact activities.
+
 | Integration           | Status                                                                                       | Guide                                           |
 | --------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | QRY Capsule           | QRY-owned macOS 14+ helper, included by the macOS release packager.                          | [Build, enable and use the capsule](capsule.md) |

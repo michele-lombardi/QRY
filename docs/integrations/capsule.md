@@ -9,6 +9,11 @@ This is QRY's own helper. It does not require AeroSpace, SketchyBar or a plugin
 inside another Capsule application. To render QRY inside another host, implement
 a consumer of the [bridge protocol](bridge-protocol-v1.md) in that host's project.
 
+![QRY Capsule with Pip and a compact WPM reading](../../img/integrations/qry-capsule.png)
+
+See the [full desktop example](screenshots.md#qry-today-and-the-desktop-capsule)
+with the updated Today panel.
+
 ## Enable and use
 
 1. Install a QRY build containing `QRY Capsule.app` in its `Contents/Helpers`.

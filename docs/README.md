@@ -5,6 +5,7 @@
 - [Installation](installation.md): downloads, checksums, permissions and removal.
 - [Privacy](privacy.md): collected aggregates, local storage and permission boundaries.
 - [Integrations](integrations/README.md): native capsule, Vorssaint and the local bridge.
+- [Integration screenshots](integrations/screenshots.md): desktop capsule, updated Today panel and local Vorssaint examples.
 - [Product vision](vision.md) and [roadmap](../ROADMAP.md).
 
 ## Develop and release

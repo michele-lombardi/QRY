@@ -5,6 +5,22 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
+### Fixed
+
+- retain the overlay's last connected typing display during idle refreshes and
+  transient focus failures; avoid repeated native resize/move commands for an
+  unchanged frame, which can interact with desktop window managers.
+
+### Documentation
+
+- add the supplied integration screenshots for QRY Today, Capsule, the local
+  Vorssaint module, summary, history and combined compact activity;
+- document the reported physical-notch clipping and the need to measure the
+  complete compact groups while keeping Pip on its original wing in a separately
+  maintained host adapter;
+- extend the focused-display checklist with sustained typing, idle focus
+  changes and window-manager compatibility checks.
+
 ## [0.2.0-2] - 2026-10-28
 
 Development prerelease source; publication remains subject to the release gate.

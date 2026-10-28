@@ -157,6 +157,14 @@ does not install an upstream notch module.
 See [capsule setup](docs/integrations/capsule.md) and the
 [bridge protocol](docs/integrations/bridge-protocol-v1.md).
 
+| QRY Today and Capsule                                                                              | Local Vorssaint adapter                                                                         |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| ![Updated QRY Today panel with the right-hand capsule](img/integrations/qry-today-and-capsule.png) | ![Local Vorssaint QRY summary and personal records](img/integrations/vorssaint-qry-summary.png) |
+
+The [integration gallery](docs/integrations/screenshots.md) includes the host's
+module chooser, history chart and compact island alongside another activity.
+Vorssaint images show a separate local development build.
+
 ## Project status
 
 This branch contains QRY `0.2.0-2` development source. Active development is
