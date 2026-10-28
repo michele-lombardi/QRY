@@ -19,7 +19,8 @@ portable Rust engine ── rolling WPM, sessions, animation, records
        │
        ├──► aggregate repository ──► SQLite
        │
-       └──► desktop controller ──► tray/menu bar, Pip, Today, Statistics
+       ├──► desktop controller ──► tray/menu bar, Pip, Today, Statistics
+       └──► opt-in aggregate bridge ──► native capsule / external consumers
 ```
 
 The application never creates a serializable raw-key model. This prevents a
@@ -98,6 +99,23 @@ registration only after the platform gate is valid.
 The frontend displays prepared DTOs and sends user intentions through a narrow
 Tauri command surface. It cannot query SQLite or receive raw input data.
 
+## Local integration boundary
+
+The desktop composition root can atomically publish a versioned aggregate JSON
+snapshot for the QRY capsule and external consumers. All integration preferences
+are off by default. Only external sharing enables all-time records and up to
+90 daily summaries; consumers must honor its flag even when the capsule alone
+causes a snapshot to exist. The active day is merged with persisted data under
+the relay transaction lock so session completion cannot count it twice.
+
+The macOS helper is QRY-owned AppKit/SwiftUI code under `integrations/`. Release
+packaging embeds the matching architecture in `QRY.app/Contents/Helpers` and
+re-signs the outer bundle. The helper has no input monitor or database access.
+External host implementations remain in their own repositories.
+
+See the [bridge contract](integrations/bridge-protocol-v1.md) and
+[integration guides](integrations/README.md) for lifecycle and compatibility.
+
 ## Runtime and concurrency
 
 - native input callbacks perform only filtering, timestamp creation, atomic
@@ -112,13 +130,14 @@ Tauri command surface. It cannot query SQLite or receive raw input data.
 
 ## Data and permission boundaries
 
-| Boundary                  | Allowed                                        | Forbidden                                |
-| ------------------------- | ---------------------------------------------- | ---------------------------------------- |
-| Platform → core           | monotonic occurrence time                      | key code, character, text, active app    |
-| Core → UI                 | WPM, bands, records, aggregate session state   | raw activities or focused-window data    |
-| Core → storage            | sessions, minute buckets, records, preferences | per-key rows or reconstructable text     |
-| Accessibility → placement | temporary window center point                  | title, value, URL, app identity          |
-| Application → network     | explicit release/update navigation only        | telemetry or automatic statistics upload |
+| Boundary                  | Allowed                                         | Forbidden                                     |
+| ------------------------- | ----------------------------------------------- | --------------------------------------------- |
+| Platform → core           | monotonic occurrence time                       | key code, character, text, active app         |
+| Core → UI                 | WPM, bands, records, aggregate session state    | raw activities or focused-window data         |
+| Core → storage            | sessions, minute buckets, records, preferences  | per-key rows or reconstructable text          |
+| Accessibility → placement | temporary window center point                   | title, value, URL, app identity               |
+| Bridge → local consumers  | prepared metrics and presentation, after opt-in | raw events, text, commands or database access |
+| Application → network     | explicit release/update navigation only         | telemetry or automatic statistics upload      |
 
 ## Failure behavior
 

@@ -61,7 +61,11 @@ Run the complete gate from the repository root:
 
 It verifies frontend formatting, ESLint, TypeScript, the production Vite build,
 Rustfmt, Clippy, Rust tests, Tauri capabilities, SQLite schema boundaries, and
-privacy-sensitive DTOs.
+privacy-sensitive DTOs. On macOS it also compiles and self-tests the native
+capsule; no permission prompt or live input collection is needed for that test.
+
+Development changes target `release/next`; `main` remains the release baseline.
+CI runs on pushes to both branches and on pull requests.
 
 CI exposes three stable checks intended to be required by the repository's
 branch rules: `Frontend`, `Desktop workspace (macOS)` and
@@ -86,7 +90,7 @@ diff before committing.
 ## Repository layout
 
 ```text
-QRY/
+QRY/                       # application workspace
 ├── crates/
 │   ├── typepulse-core/
 │   ├── typepulse-platform-desktop/
@@ -96,6 +100,16 @@ QRY/
 ├── tests/manual/           # real macOS/Windows checks CI cannot exercise
 └── package.json
 ```
+
+At repository level, `docs/` holds public documentation, `integrations/` holds
+QRY-owned native components, `scripts/` holds validation and packaging automation,
+and `packaging/` holds distribution templates. Brand references live in
+`docs/brand/`; production assets live in `QRY/assets/brand/`.
+
+The [capsule guide](integrations/capsule.md) covers native previews and embedding.
+The release packager includes the helper automatically; `npm run tauri dev` does
+not. Keep external host applications in a separate checkout as described in the
+[Vorssaint guide](integrations/vorssaint.md).
 
 Read [architecture.md](architecture.md) before changing dependency boundaries
 and [decisions/README.md](decisions/README.md) before revisiting an accepted
@@ -135,7 +149,9 @@ cargo test -p typepulse-platform-desktop --release \
 
 Committed lockfiles, migrations, Tauri configuration, and capability files are
 part of reproducible builds. Generated dependencies, build outputs, local
-databases, exports, and release artifacts are ignored by Git.
+databases, exports, and release artifacts are ignored by Git. Native helper output
+is under `build/macos-capsule/`; private integration experiments are under
+`integrations/.local/`. Neither belongs in a source archive or release bundle.
 
 The development database is `typepulse.sqlite3` under the Tauri application-data
 directory. An older non-empty schema may produce a sibling

@@ -11,6 +11,10 @@ Windows MSI version field accepts only one numeric prerelease identifier, beta
 and release-candidate tags use a number such as `v1.0.0-1`. Use the GitHub
 Release title and notes to identify the build as Beta 1 or RC 1.
 
+Development changes are committed on `release/next`. Review and integrate the
+release candidate into `main` according to repository policy before tagging.
+Branch pushes run CI and do not publish a release.
+
 Before tagging, update the same version in:
 
 - `QRY/package.json` and its lockfile;
@@ -21,7 +25,7 @@ Before tagging, update the same version in:
 Validate the metadata:
 
 ```bash
-./scripts/release-audit.sh v0.1.1
+./scripts/release-audit.sh v0.2.0-2
 ```
 
 ## Pre-release gate
@@ -43,10 +47,17 @@ On compatible macOS hardware:
 ./scripts/package-macos.sh x86_64-apple-darwin
 ```
 
-Each command builds an ad-hoc-signed `.app`, verifies the bundle, creates an
+Each command builds QRY, compiles and embeds the matching native capsule,
+re-signs the outer app while preserving entitlements, verifies the bundle, creates an
 architecture-specific ZIP, and writes a matching SHA-256 file under the ignored
 `release/` directory. Cross-architecture builds still need compatible SDK and
-toolchain support.
+toolchain support. The capsule requires a macOS 14+ SDK to build and macOS 14+
+to run; test the Intel helper on Intel hardware. A cross-compiled helper is
+architecture/signature checked but its self-test is only run on matching hardware.
+
+Use the [capsule guide](integrations/capsule.md) for debug embedding. Personal
+installers, upstream application checkouts and signing identities are outside
+the public release pipeline.
 
 ## GitHub release pipeline
 
@@ -138,6 +149,9 @@ The tap intentionally ignores prereleases. A maintainer can run its
 - downloaded ZIPs pass `shasum -a 256 -c` and open through the documented
   Gatekeeper flow;
 - versions, tag, changelog, bundle metadata, and cask agree;
+- each macOS bundle contains a correctly signed capsule for the same architecture;
+- capsule navigation, opt-out, stale-state behavior and display placement are verified;
+- source archives exclude private data, local experiments and external application code;
 - installation, upgrade, and removal do not lose unexpected user data;
 - the Windows NSIS/MSI install and uninstall checklist is signed off on a clean
   Windows 11 x64 VM;

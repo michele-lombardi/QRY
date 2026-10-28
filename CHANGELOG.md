@@ -5,6 +5,38 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
+## [0.2.0-2] - 2026-10-28
+
+Development prerelease source; publication remains subject to the release gate.
+
+### Added
+
+- opt-in local aggregate JSON bridge with live presentation values, all-time
+  speed records and up to 90 days of daily summaries;
+- QRY-owned native macOS 14+ capsule with Pip, live WPM, per-display placement,
+  single-instance protection and embedded release packaging;
+- allowlisted Today, Statistics and Settings navigation through QRY's single
+  instance and permission gate;
+- independent capsule, external-sharing and notch-Pip preferences, disabled by
+  default, with SQLite migration support;
+- English integration guides for the capsule and a separate Vorssaint adapter,
+  including the versioned bridge contract and synthetic fixture.
+
+### Fixed
+
+- fit the quick QRY panel into its 360×470 window with all six indicators and
+  actions visible, transparent rounded corners and no rectangular window shadow;
+- merge the active session into the bridge's daily totals using the same
+  character-weighted mean as stored statistics, without double counting;
+- keep menu-bar activity independent of the desktop overlay preference.
+
+### Maintenance
+
+- run CI on `release/next` and compile the capsule for Apple Silicon and Intel;
+- group public integration guides and brand references under `docs/`;
+- exclude personal installers, upstream patches and local experiment records
+  from the public source tree.
+
 ## [0.1.2-2] - 2026-08-07
 
 ### Added

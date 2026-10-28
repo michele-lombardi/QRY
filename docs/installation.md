@@ -12,10 +12,11 @@ QRY provides two Windows artifacts:
 - `QRY_<version>_x64_en-US.msi`: alternative Windows Installer package.
 
 Download one installer and its matching `.sha256` file. In PowerShell, from the
-download directory, verify it before launch:
+download directory, verify it before launch. Replace the example filename
+with the version actually downloaded:
 
 ```powershell
-$asset = "QRY_0.1.1_x64-setup.exe"
+$asset = "QRY_0.2.0-2_x64-setup.exe"
 $expected = (Get-Content "$asset.sha256").Split()[0].ToLowerInvariant()
 $actual = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($actual -ne $expected) { throw "QRY checksum mismatch" }
@@ -75,10 +76,11 @@ choices always remain in macOS System Settings.
    [GitHub Releases](https://github.com/michele-lombardi/QRY/releases) page:
    `aarch64` for Apple Silicon or `x86_64` for Intel.
 2. Download the matching `.sha256` file into the same directory.
-3. In Terminal, change to that directory and verify the archive. For example:
+3. In Terminal, change to that directory and verify the archive. Replace the
+   example version with the actual filename:
 
     ```bash
-    shasum -a 256 -c QRY-0.1.1-aarch64.app.zip.sha256
+    shasum -a 256 -c QRY-0.2.0-2-aarch64.app.zip.sha256
     ```
 
     Continue only if the command reports `OK`.
@@ -119,3 +121,14 @@ invalid login item, and returns to the permission flow.
 For development builds and local compilation, follow the
 [development guide](development.md). Rebuilding an unsigned executable can make
 macOS treat it as a new identity and request Input Monitoring again.
+
+## Optional capsule and local integrations
+
+In a compatible QRY build, enable the capsule or external sharing under
+**Settings → Appearance → Desktop integrations**. They are off by default.
+The native capsule requires macOS 14+ and is embedded inside QRY; it does not
+require a separate installer or launch agent.
+
+See [capsule setup](integrations/capsule.md) and the
+[Vorssaint guide](integrations/vorssaint.md). External sharing does not install
+an upstream adapter, and older QRY downloads may not provide these features.

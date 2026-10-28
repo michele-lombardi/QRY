@@ -1,7 +1,7 @@
 # Contributing to QRY
 
 Thanks for helping build QRY. The project is in public beta and targets macOS
-first, with a portable Rust core for future Linux support.
+and Windows, with a portable Rust core for future Linux support.
 
 ## License
 
@@ -11,10 +11,9 @@ contact details are recorded in `NOTICE.md`.
 
 ## Prerequisites
 
-- macOS for the desktop application and platform adapter;
+- macOS with Xcode Command Line Tools, or Windows with MSVC build tools and the Windows SDK;
 - Rust stable with `rustfmt` and `clippy`;
 - Node.js 24 and npm;
-- macOS development SDK/toolchain;
 - VS Code is recommended but not required.
 
 See [`docs/development.md`](docs/development.md) for setup and architecture.
@@ -23,7 +22,7 @@ See [`docs/development.md`](docs/development.md) for setup and architecture.
 
 ```bash
 cd QRY
-npm install
+npm ci
 npm run tauri dev
 ```
 
@@ -39,7 +38,8 @@ From the repository root:
 ```
 
 The script checks frontend formatting, TypeScript, ESLint, the Vite build,
-Rust formatting, Clippy and all workspace tests.
+Rust formatting, Clippy, workspace tests and privacy boundaries. On macOS it
+also builds and self-tests the native capsule.
 
 ## Architecture rules
 
@@ -52,6 +52,10 @@ Rust formatting, Clippy and all workspace tests.
 Any pull request touching input or persistence must explain its privacy impact.
 
 ## Workflow
+
+Active development is integrated on `release/next`; `main` is the release
+baseline. Target `release/next` for development pull requests unless a maintainer
+specifies another base. A branch commit does not publish a release.
 
 1. Open or choose an issue.
 2. Create a short branch such as `feat/CORE-02-rolling-window`.
@@ -79,3 +83,10 @@ A contribution is complete when checks pass, acceptance criteria are verified,
 privacy constraints remain true, and the relevant public documentation is
 updated. Release-direction changes should also update [`ROADMAP.md`](ROADMAP.md)
 or `CHANGELOG.md` as appropriate.
+
+## External integrations
+
+Keep host application implementations in their own repositories. QRY owns the
+aggregate producer and native capsule; do not vendor Vorssaint source or patches
+here. Document protocol changes in the [integration guides](docs/integrations/README.md).
+Keep private checkouts, signing material and local data out of commits.
