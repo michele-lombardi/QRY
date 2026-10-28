@@ -122,6 +122,9 @@ See the [bridge contract](integrations/bridge-protocol-v1.md) and
   counters, and non-blocking channel delivery;
 - a Rust relay owns the engine and database writes;
 - the WebView consumes aggregate snapshots and does not drive metric meaning;
+- the overlay selects a focused display when presenting or receiving typing
+  activity, retains that connected destination during idle refreshes, and skips
+  native resize/move commands when its frame already matches the target;
 - overlay visibility is delayed until the third accepted activity;
 - after activity stops, Pip breathes until the configured 1–15 second delay has
   elapsed, while the session itself closes under its separate timeout;
