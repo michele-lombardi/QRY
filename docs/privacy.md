@@ -50,6 +50,25 @@ backup contains the same aggregate data as the source database.
 Tauri capabilities do not grant general filesystem, shell, opener, global
 shortcut, or network plugin access to the application windows.
 
+## Optional local integrations
+
+The right-hand capsule and compatible external adapters consume an opt-in, versioned local
+snapshot containing only prepared aggregate metrics and presentation state.
+When external sharing is enabled, this also includes the three personal speed
+records and up to 90 daily summaries (date, estimated words, mean WPM and peak
+WPM). It contains no per-event history. Historical days are read every ten
+seconds; current-day totals include the active session under the same
+transaction boundary used when saving it.
+There is no HTTP listener and no second keyboard monitor. The snapshot is
+atomically replaced, not appended to a history, and removed when both the capsule and external sharing are
+disabled, or QRY exits normally. With only the capsule enabled, the snapshot
+contains no detailed history and external consumers must honor `externalEnabled: false`. Consumers reject stale or incompatible data.
+Files are private to the local account; other processes running as that same
+account can read them when enabled. See the [bridge contract](integrations/bridge-protocol-v1.md).
+
+The native capsule also records its own window geometry for display validation;
+this does not include other applications or input activity.
+
 ## Permissions
 
 ### Input Monitoring

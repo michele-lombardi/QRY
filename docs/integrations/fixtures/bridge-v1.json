@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "generatedAtUnixMs": 1768478400000,
+  "instanceId": "example-session",
+  "sequence": 1,
+  "status": "monitoring",
+  "displayedWpm": 0,
+  "animationBand": "still",
+  "celebrationSequence": 0,
+  "capsuleEnabled": false,
+  "externalEnabled": true,
+  "notchPipEnabled": false,
+  "presentation": {
+    "visible": false,
+    "behavior": "breathe"
+  },
+  "today": {
+    "date": "2026-01-15",
+    "estimatedWords": 1500,
+    "peakWpm": 110,
+    "activeTypingSeconds": 900
+  },
+  "statistics": {
+    "records": {
+      "peakWpm": 128,
+      "sustained30Wpm": 92,
+      "sustained60Wpm": 87
+    },
+    "days": [
+      {
+        "date": "2026-01-14",
+        "estimatedWords": 900,
+        "averageWpm": 62,
+        "peakWpm": 105
+      },
+      {
+        "date": "2026-01-15",
+        "estimatedWords": 1500,
+        "averageWpm": 65,
+        "peakWpm": 110
+      }
+    ]
+  }
+}

@@ -16,6 +16,16 @@ The current beta focuses on the complete local-first desktop experience:
 - user-controlled launch at login;
 - reproducible Apple Silicon, Intel, Windows NSIS and Windows MSI artifacts.
 
+## Integration development
+
+The `0.2.0-2` development source adds an opt-in local aggregate bridge and a
+QRY-owned native macOS capsule. Public documentation covers a separately
+maintained Vorssaint adapter; it is not included in QRY or promised by an
+upstream release. See the [integration guides](docs/integrations/README.md).
+
+The capsule's live interaction, multi-display behavior and packaged Intel build
+remain subject to the same real-device release checks as the desktop app.
+
 ## Toward V1
 
 The stable desktop release requires:

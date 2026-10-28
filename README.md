@@ -29,7 +29,7 @@
   <a href="https://github.com/michele-lombardi/QRY/actions/workflows/ci.yml"><img src="https://github.com/michele-lombardi/QRY/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--only-30D158" alt="GPL-3.0-only license" /></a>
   <img src="https://img.shields.io/badge/platform-macOS%2010.15%2B%20%7C%20Windows%2010%2F11-111113" alt="macOS 10.15 or later and Windows 10 or 11" />
-  <img src="https://img.shields.io/badge/version-0.1.1%20beta-3CEFFF" alt="Version 0.1.1 beta" />
+  <img src="https://img.shields.io/badge/development-0.2.0--2-3CEFFF" alt="Development version 0.2.0-2" />
 </p>
 
 <p align="center">
@@ -108,7 +108,8 @@ QRY is built around a strict data boundary:
   and preferences;
 - optional Accessibility access reads only temporary focused-window geometry for
   display placement—not its title, application, or content;
-- data leaves your computer only when you explicitly export it.
+- optional local integrations share prepared aggregates only after you enable them;
+- data leaves your computer only through an explicit export or another app you authorize.
 
 The repository includes an automated privacy audit for runtime logging, Tauri
 capabilities, public DTOs, and the aggregate-only SQLite schema. Read the full
@@ -140,77 +141,57 @@ returns to the same guided permission gate without deleting aggregate history.
 QRY cannot grant or bypass system permissions. Windows does not simulate macOS
 consent controls; both platforms keep launch-at-login under the user's control.
 
+## Optional desktop integrations
+
+On macOS 14+, **QRY Capsule** adds a native Pip and WPM indicator to the top
+right of each display. Enable it in **Settings → Appearance** in a build that
+includes the helper. It has no additional input permissions.
+
+QRY can also publish an opt-in local JSON snapshot for external consumers,
+including daily aggregates and speed records. The
+[Vorssaint integration guide](docs/integrations/vorssaint.md) explains how to
+build an adapter in **[@vorssaint/vorssaint-utils](https://github.com/vorssaint/vorssaint-utils)**.
+Vorssaint code and patches are maintained outside this repository. Sharing data
+does not install an upstream notch module.
+
+See [capsule setup](docs/integrations/capsule.md) and the
+[bridge protocol](docs/integrations/bridge-protocol-v1.md).
+
+| QRY Today and Capsule                                                                              | Local Vorssaint adapter                                                                         |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| ![Updated QRY Today panel with the right-hand capsule](img/integrations/qry-today-and-capsule.png) | ![Local Vorssaint QRY summary and personal records](img/integrations/vorssaint-qry-summary.png) |
+
+The [integration gallery](docs/integrations/screenshots.md) includes the host's
+module chooser, history chart and compact island alongside another activity.
+Vorssaint images show a separate local development build.
+
 ## Project status
 
-QRY `0.1.1` is the current public macOS beta line. Windows support implements
-the native monitor, permission-free onboarding, tray, focused-display placement,
-autostart, local persistence, CI, NSIS/MSI packaging and unified draft-release
-automation without forking the product logic.
+This branch contains QRY `0.2.0-2` development source. Active development is
+integrated on `release/next`; `main` is the release baseline. Source version,
+installed version and published release availability can differ. Use
+[GitHub Releases](https://github.com/michele-lombardi/QRY/releases) for actual
+downloads and the [changelog](CHANGELOG.md) for source changes.
 
-Before the stable V1, the project is completing its real-device release matrix:
-TCC permission flows, logout/login, Gatekeeper/SmartScreen, sleep/wake,
-multi-monitor behavior, Windows install/uninstall and final architecture checks.
-Release candidates stay draft until those checks are signed off. Initial macOS
-artifacts use ad-hoc signing and are not Apple-notarized; initial Windows
-artifacts may be unsigned until an Authenticode identity is available.
-
-See the public [roadmap](ROADMAP.md) and [changelog](CHANGELOG.md) for the current
-direction and release history.
+The macOS and Windows application, aggregate storage, CI and release packaging
+are implemented. Real-device permission, startup, sleep/wake, multi-monitor and
+installer checks remain part of the release gate. The capsule requires macOS 14+;
+QRY's base application targets macOS 10.15+ and Windows 10/11 x64.
 
 ## Install QRY
 
-### Windows 10/11 x64
+Download the build for your platform and its matching SHA-256 file from
+[GitHub Releases](https://github.com/michele-lombardi/QRY/releases).
+The [installation guide](docs/installation.md) covers checksum verification,
+macOS permissions and Gatekeeper, Windows installers, updates and removal.
+Current beta artifacts may use ad-hoc macOS signing or be unsigned on Windows.
 
-Download either `QRY_0.1.1_x64-setup.exe` or
-`QRY_0.1.1_x64_en-US.msi` and its matching `.sha256` file from the draft or
-published [GitHub Release](https://github.com/michele-lombardi/QRY/releases).
-Verify it in PowerShell before running:
-
-```powershell
-$asset = "QRY_0.1.1_x64-setup.exe"
-$expected = (Get-Content "$asset.sha256").Split()[0].ToLowerInvariant()
-$actual = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLowerInvariant()
-if ($actual -ne $expected) { throw "QRY checksum mismatch" }
-```
-
-The setup executable installs for the current user without requiring admin.
-Unsigned development builds can trigger SmartScreen; verify the official URL,
-filename and checksum before using **More info → Run anyway**. Never disable
-SmartScreen globally.
-
-### macOS beta
-
-QRY targets macOS 10.15 or later.
-
-### Homebrew
-
-Install QRY with its official Homebrew cask:
+The official Homebrew tap follows public stable releases, excluding drafts and
+prereleases:
 
 ```bash
 brew install --cask michele-lombardi/qry/qry
 ```
-
-The tap follows the latest public, non-prerelease GitHub Release and refreshes
-its version and architecture-specific checksums automatically.
-
-### Manual unsigned installation
-
-1. Download the archive for your architecture and its `.sha256` file from
-   [GitHub Releases](https://github.com/michele-lombardi/QRY/releases).
-2. Verify the archive, for example:
-
-    ```bash
-    shasum -a 256 -c QRY-0.1.1-aarch64.app.zip.sha256
-    ```
-
-3. Extract `QRY.app`, move it to `/Applications`, and open it normally.
-4. If Gatekeeper blocks the first launch, open **System Settings → Privacy &
-   Security**, confirm the warning names QRY, and choose **Open Anyway**.
-5. Complete QRY's separate permission onboarding.
-
-Do not disable Gatekeeper globally or remove quarantine recursively from broad
-directories. Read the complete [installation guide](docs/installation.md) for
-architecture selection, updates, removal, and the unsigned-build trust model.
 
 ## Build from source
 
@@ -243,7 +224,7 @@ From the repository root:
 
 The gate checks frontend formatting, ESLint, TypeScript, the Vite build,
 Rustfmt, Clippy, all Rust tests, Tauri capability boundaries, the SQLite schema,
-and privacy-sensitive DTOs.
+privacy-sensitive DTOs, and the native capsule build/self-test on macOS.
 
 ## How it is built
 
@@ -260,16 +241,22 @@ TypingActivity(timestamp only)
 portable Rust engine ── WPM, sessions, records, animation state
       │
       ├──► aggregate-only SQLite storage
-      └──► Tauri menu bar, Pip overlay, and statistics UI
+      ├──► Tauri menu bar, Pip overlay, and statistics UI
+      └──► opt-in local JSON bridge ──► capsule / external adapters
 ```
 
-| Area                                                                  | Responsibility                                                                       |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| [`typepulse-core`](QRY/crates/typepulse-core)                         | Portable WPM, session, record, date, and persistence contracts.                      |
-| [`typepulse-platform-desktop`](QRY/crates/typepulse-platform-desktop) | Target-gated desktop permissions, input filtering, and focused-display geometry.     |
-| [`typepulse-storage-sqlite`](QRY/crates/typepulse-storage-sqlite)     | Aggregate-only local SQLite adapter and migrations.                                  |
-| [`src-tauri`](QRY/src-tauri)                                          | Desktop lifecycle, tray/menu bar, windows, commands, permissions, and orchestration. |
-| [`src`](QRY/src)                                                      | Vanilla TypeScript, HTML, and CSS presentation layer.                                |
+| Directory                                 | Purpose                                                               |
+| ----------------------------------------- | --------------------------------------------------------------------- |
+| [`QRY/`](QRY/README.md)                   | Tauri application, TypeScript UI, Rust workspace and manual tests.    |
+| [`docs/`](docs/README.md)                 | Product, development, integration, privacy and release documentation. |
+| [`integrations/`](integrations/README.md) | QRY-owned native capsule, JSON reader and Pip renderer.               |
+| [`scripts/`](scripts/README.md)           | Validation, packaging and release automation.                         |
+| `packaging/`                              | Public package templates, including the Homebrew cask.                |
+| `img/`                                    | README screenshots and demonstrations.                                |
+| `.github/`                                | CI, release workflows and contribution templates.                     |
+
+Dependencies, generated builds, private data and external checkouts are ignored.
+Public artifacts are generated under `release/` rather than committed.
 
 Start with the [architecture guide](docs/architecture.md),
 [decision log](docs/decisions/README.md), and
@@ -277,15 +264,13 @@ Start with the [architecture guide](docs/architecture.md),
 
 ## Documentation
 
-- [Product vision](docs/vision.md)
-- [Installation guide](docs/installation.md)
-- [Privacy model](docs/privacy.md)
-- [Architecture](docs/architecture.md)
-- [UI guidelines](docs/ui-guidelines.md)
-- [Development guide](docs/development.md)
-- [Public roadmap](ROADMAP.md)
-- [Release process](docs/release-process.md)
-- [Architecture decisions](docs/decisions/README.md)
+Start at the [documentation index](docs/README.md), or go directly to:
+
+- [Installation](docs/installation.md) and [privacy](docs/privacy.md).
+- [Development](docs/development.md) and [architecture](docs/architecture.md).
+- [Capsule setup](docs/integrations/capsule.md).
+- [Vorssaint integration](docs/integrations/vorssaint.md) and [bridge protocol](docs/integrations/bridge-protocol-v1.md).
+- [Release process](docs/release-process.md), [roadmap](ROADMAP.md) and [changelog](CHANGELOG.md).
 
 ## Contributing
 

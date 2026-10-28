@@ -100,6 +100,36 @@
 
         <section class="settings-section" data-panel="appearance">
           <div class="settings-group">
+            <h2>Desktop integrations</h2>
+            <label class="setting-row interactive">
+              <div>
+                <strong>Right-hand capsule</strong
+                ><small>Show Pip and live WPM opposite your workspace capsule.</small>
+              </div>
+              <input id="capsule-enabled" class="switch" type="checkbox" />
+            </label>
+            <label class="setting-row interactive">
+              <div>
+                <strong>Share local aggregate status</strong
+                ><small
+                  >Let SketchyBar and Vorssaint read WPM, records and 90 days of daily
+                  totals on this Mac.</small
+                >
+              </div>
+              <input id="integrations-enabled" class="switch" type="checkbox" />
+            </label>
+            <label class="setting-row interactive">
+              <div>
+                <strong>Pip in the notch</strong
+                ><small
+                  >Allow the QRY adapter for Vorssaint to show Pip while typing.</small
+                >
+              </div>
+              <input id="notch-pip-enabled" class="switch" type="checkbox" />
+            </label>
+            <p id="integration-detail" class="group-note" role="status"></p>
+          </div>
+          <div class="settings-group">
             <h2>Live overlay</h2>
             <label class="setting-row interactive">
               <div>

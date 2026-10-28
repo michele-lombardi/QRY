@@ -35,6 +35,15 @@ permission prompt.
    factors.
 6. With three displays in a horizontal chain, jump directly from a Retina 2× display to
    the farthest 1× display. The PiP must not stop on the intermediate display.
+7. Keep typing on the secondary display for at least 30 seconds, including short pauses
+   that are shorter than the configured disappearance delay. The PiP must remain on that
+   display throughout the burst and its breathing state.
+8. During a short pause, focus a window on another display without typing. The PiP must
+   retain the last typing display. Begin typing there and confirm that the PiP moves
+   once to the new destination.
+9. Repeat with AeroSpace or the window manager used for the report running. Do not
+   change its workspace rules to make the test pass. Check all three display
+   destinations and transitions between the 1× and 2× displays.
 
 Expected: the focused window—not the mouse and not the configured primary
 display—selects the PiP display when Accessibility is granted.
@@ -48,6 +57,10 @@ display—selects the PiP display when Accessibility is granted.
 Expected: a transient read failure keeps the PiP on its current valid display. A cold
 start without a valid focused target uses the primary/available display. QRY remains
 responsive and does not invent focused-window data.
+
+Idle topology refreshes retain the last connected typing display. Disconnecting it
+permits a fallback; reconnecting displays or changing scaling/work-area geometry must
+not leave the overlay outside the available area.
 
 ## Privacy observation
 
@@ -67,6 +80,9 @@ exported or stored.
 - active-session display switch: PASS / FAIL
 - mixed scaling/corners: PASS / FAIL
 - direct Retina-to-third-display jump: PASS / FAIL
+- sustained typing and short pauses without display flashing: PASS / FAIL
+- focus change without typing retains the last typing display: PASS / FAIL
+- window-manager compatibility without configuration changes: PASS / FAIL
 - revocation/unsupported-window fallback: PASS / FAIL
 - privacy observation: PASS / FAIL
 - notes without app, title or content data:

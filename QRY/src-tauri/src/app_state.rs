@@ -31,7 +31,7 @@ pub(crate) struct DiagnosticState {
     repository: Arc<Mutex<SqliteStatisticsRepository>>,
     total_activities: Arc<AtomicU64>,
     last_activity_unix_ms: Arc<AtomicI64>,
-    live_metrics: Arc<Mutex<LiveMetrics>>,
+    live_metrics: Arc<LiveMetricsState>,
     last_error: Arc<Mutex<Option<String>>>,
 }
 
@@ -42,7 +42,7 @@ impl DiagnosticState {
             repository: Arc::new(Mutex::new(repository)),
             total_activities: Arc::new(AtomicU64::new(0)),
             last_activity_unix_ms: Arc::new(AtomicI64::new(0)),
-            live_metrics: Arc::new(Mutex::new(LiveMetrics::default())),
+            live_metrics: Arc::new(LiveMetricsState::default()),
             last_error: Arc::new(Mutex::new(None)),
         }
     }
@@ -149,6 +149,45 @@ impl DiagnosticState {
             .map_err(|error| error.to_string())
     }
 
+    /// Reads persisted and active aggregates under the relay's transaction boundary.
+    pub(crate) fn integration_metrics(&self) -> Result<(LiveMetrics, DailySummary), String> {
+        let _transaction = self.live_metrics.transaction.lock().map_err(lock_error)?;
+        let today = current_wall_observation().date;
+        let live = *self.live_metrics.lock().map_err(lock_error)?;
+        let mut summary = self
+            .repository
+            .lock()
+            .map_err(lock_error)?
+            .daily_summary(today)
+            .map_err(|error| error.to_string())?;
+        if live.session_date == Some(today) && live.current_session_characters > 0 {
+            let previous_count = summary.estimated_character_count;
+            summary.estimated_character_count =
+                previous_count.saturating_add(live.current_session_characters);
+            summary.average_wpm = (summary.average_wpm * previous_count as f64
+                + live.current_session_average_wpm * live.current_session_characters as f64)
+                / summary.estimated_character_count as f64;
+            summary.estimated_word_count += live.current_session_characters as f64 / 5.0;
+            summary.peak_wpm = summary.peak_wpm.max(live.current_session_peak_wpm);
+            summary.active_typing_duration += Duration::from_secs_f64(live.active_typing_seconds);
+            summary.session_count = summary.session_count.saturating_add(1);
+        }
+        Ok((live, summary))
+    }
+
+    /// Bounded, aggregate-only history for the optional local statistics shortcut.
+    pub(crate) fn integration_history(&self) -> Result<(Vec<DailySummary>, TypingRecords), String> {
+        let today = current_wall_observation().date;
+        let mut repository = self.repository.lock().map_err(lock_error)?;
+        let days = repository
+            .recent_daily_summaries(today, 90)
+            .map_err(|error| error.to_string())?;
+        let records = repository
+            .typing_records()
+            .map_err(|error| error.to_string())?;
+        Ok((days, records))
+    }
+
     pub(crate) fn recent_summaries(&self, days: usize) -> Result<Vec<DailySummary>, String> {
         let today = current_wall_observation().date;
         self.repository
@@ -211,6 +250,7 @@ pub(crate) struct RuntimeSnapshot {
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct LiveMetrics {
+    pub(crate) session_date: Option<LocalDate>,
     pub(crate) phase: SessionPhase,
     pub(crate) raw_wpm: f64,
     pub(crate) displayed_wpm: f64,
@@ -228,6 +268,7 @@ pub(crate) struct LiveMetrics {
 impl Default for LiveMetrics {
     fn default() -> Self {
         Self {
+            session_date: None,
             phase: SessionPhase::Idle,
             raw_wpm: 0.0,
             displayed_wpm: 0.0,
@@ -241,6 +282,18 @@ impl Default for LiveMetrics {
             sustained_60_best_wpm: 0.0,
             celebration_sequence: 0,
         }
+    }
+}
+
+#[derive(Default)]
+struct LiveMetricsState {
+    value: Mutex<LiveMetrics>,
+    transaction: Mutex<()>,
+}
+
+impl LiveMetricsState {
+    fn lock(&self) -> std::sync::LockResult<std::sync::MutexGuard<'_, LiveMetrics>> {
+        self.value.lock()
     }
 }
 
@@ -264,7 +317,7 @@ fn relay_activity(
     total: Arc<AtomicU64>,
     last_activity_unix_ms: Arc<AtomicI64>,
     repository: Arc<Mutex<SqliteStatisticsRepository>>,
-    live_metrics: Arc<Mutex<LiveMetrics>>,
+    live_metrics: Arc<LiveMetricsState>,
     last_error: Arc<Mutex<Option<String>>>,
 ) {
     let records = repository
@@ -280,6 +333,10 @@ fn relay_activity(
     loop {
         match receiver.recv_timeout(RELAY_TICK) {
             Ok(activity) => {
+                let _transaction = live_metrics
+                    .transaction
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner());
                 let wall = current_wall_observation();
                 last_activity_unix_ms.store(wall.unix_ms, Ordering::Relaxed);
                 if session_context.is_some_and(|context| context.date != wall.date) {
@@ -310,12 +367,16 @@ fn relay_activity(
                             .get_or_insert_with(|| BucketAccumulator::new(wall))
                             .record(update.snapshot.displayed_wpm);
                         total.fetch_add(1, Ordering::Relaxed);
-                        set_live_metrics(&live_metrics, update);
+                        set_live_metrics(&live_metrics, update, session_context.map(|c| c.date));
                     }
                     Err(error) => set_shared_error(&last_error, error.to_string()),
                 }
             }
             Err(RecvTimeoutError::Timeout) => {
+                let _transaction = live_metrics
+                    .transaction
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner());
                 let wall = current_wall_observation();
                 if session_context.is_some_and(|context| context.date != wall.date) {
                     if let Some(summary) = engine.finish_active_session() {
@@ -333,7 +394,7 @@ fn relay_activity(
                                 &last_error,
                             );
                         }
-                        set_live_metrics(&live_metrics, update);
+                        set_live_metrics(&live_metrics, update, session_context.map(|c| c.date));
                     }
                     Err(error) => set_shared_error(&last_error, error.to_string()),
                 }
@@ -342,6 +403,10 @@ fn relay_activity(
         }
     }
 
+    let _transaction = live_metrics
+        .transaction
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
     if let Some(summary) = engine.finish_active_session() {
         persist_summary(&repository, session_context, summary, &last_error);
     }
@@ -447,8 +512,13 @@ fn flush_bucket(
     }
 }
 
-fn set_live_metrics(target: &Arc<Mutex<LiveMetrics>>, update: EngineUpdate) {
+fn set_live_metrics(
+    target: &Arc<LiveMetricsState>,
+    update: EngineUpdate,
+    session_date: Option<LocalDate>,
+) {
     let mut metrics = target.lock().unwrap_or_else(|error| error.into_inner());
+    metrics.session_date = session_date;
     if update.new_record.is_some() {
         metrics.celebration_sequence = metrics.celebration_sequence.saturating_add(1);
     }
@@ -562,6 +632,95 @@ mod tests {
     use super::{bucket_start, BucketAccumulator, WallObservation, BUCKET_DURATION};
     use chrono::{FixedOffset, TimeZone, Utc};
     use typepulse_core::LocalDate;
+
+    #[test]
+    fn integration_summary_counts_active_session_once_and_excludes_previous_days() {
+        use super::*;
+        let state = DiagnosticState::new(SqliteStatisticsRepository::open_in_memory().unwrap());
+        let today = current_wall_observation().date;
+        *state.live_metrics.lock().unwrap() = LiveMetrics {
+            session_date: Some(today),
+            current_session_characters: 50,
+            current_session_average_wpm: 60.0,
+            current_session_peak_wpm: 80.0,
+            active_typing_seconds: 10.0,
+            ..LiveMetrics::default()
+        };
+        assert_eq!(
+            state.integration_metrics().unwrap().1.estimated_word_count,
+            10.0
+        );
+        assert_eq!(state.integration_metrics().unwrap().1.average_wpm, 60.0);
+        assert_eq!(state.integration_metrics().unwrap().1.session_count, 1);
+        {
+            let _guard = state.live_metrics.transaction.lock().unwrap();
+            state
+                .repository
+                .lock()
+                .unwrap()
+                .save_session(CompletedSessionRecord {
+                    local_date: today,
+                    started_at_unix_ms: 1,
+                    ended_at_unix_ms: 10_001,
+                    estimated_character_count: 50,
+                    estimated_word_count: 10.0,
+                    average_wpm: 60.0,
+                    peak_wpm: 80.0,
+                    active_typing_duration: Duration::from_secs(10),
+                })
+                .unwrap();
+            *state.live_metrics.lock().unwrap() = LiveMetrics::default();
+        }
+        assert_eq!(
+            state.integration_metrics().unwrap().1.estimated_word_count,
+            10.0
+        );
+        *state.live_metrics.lock().unwrap() = LiveMetrics {
+            session_date: Some(today),
+            current_session_characters: 50,
+            current_session_average_wpm: 80.0,
+            current_session_peak_wpm: 90.0,
+            ..LiveMetrics::default()
+        };
+        let merged = state.integration_metrics().unwrap().1;
+        assert_eq!(merged.average_wpm, 70.0);
+        assert_eq!(merged.estimated_word_count, 20.0);
+        assert_eq!(merged.peak_wpm, 90.0);
+        assert_eq!(merged.session_count, 2);
+        state.live_metrics.lock().unwrap().session_date = Some(LocalDate::new(2000, 1, 1).unwrap());
+        state
+            .live_metrics
+            .lock()
+            .unwrap()
+            .current_session_characters = 100;
+        assert_eq!(
+            state.integration_metrics().unwrap().1.estimated_word_count,
+            10.0
+        );
+    }
+
+    #[test]
+    fn integration_history_is_bounded_and_uses_persisted_all_time_records() {
+        use super::*;
+        let mut repository = SqliteStatisticsRepository::open_in_memory().unwrap();
+        repository
+            .save_typing_records(TypingRecords {
+                peak_wpm: Some(120.0),
+                sustained_30_wpm: Some(90.0),
+                sustained_60_wpm: Some(80.0),
+            })
+            .unwrap();
+        let state = DiagnosticState::new(repository);
+        let (days, records) = state.integration_history().unwrap();
+        assert_eq!(days.len(), 90);
+        assert!(days
+            .windows(2)
+            .all(|pair| pair[1].date.previous_day() == Some(pair[0].date)));
+        assert_eq!(days.last().unwrap().date, current_wall_observation().date);
+        assert_eq!(records.peak_wpm, Some(120.0));
+        assert_eq!(records.sustained_30_wpm, Some(90.0));
+        assert_eq!(records.sustained_60_wpm, Some(80.0));
+    }
 
     #[test]
     fn buckets_align_to_absolute_minutes_and_aggregate() {

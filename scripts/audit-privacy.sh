@@ -15,5 +15,6 @@ cargo test -p typepulse-app gate_dto_exposes_only_permission_lifecycle_state
 cargo test -p typepulse-app menu_bar_preference_dto_contains_only_the_visibility_flag
 cargo test -p typepulse-app preference_dto_contains_only_visual_configuration
 cargo test -p typepulse-app overlay_event_dto_contains_only_aggregate_presentation_state
+cargo test -p typepulse-app bridge_dto_contains_only_bounded_aggregate_presentation
 
 printf 'Privacy audit passed: no runtime event logs, narrow capability, aggregate-only schema and DTOs.\n'

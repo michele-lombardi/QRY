@@ -21,3 +21,7 @@ cargo test --workspace --all-targets
 cargo check --workspace --all-targets
 
 "$project_root/scripts/audit-privacy.sh"
+
+if [[ "$(uname -s)" == Darwin ]]; then
+  "$project_root/scripts/build-capsule.sh"
+fi

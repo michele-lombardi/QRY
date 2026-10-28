@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, windows-parity]
+    branches: [main, release/next, windows-parity]
   pull_request:
 
 permissions:
@@ -100,3 +100,11 @@ jobs:
 
       - name: Audit privacy boundary
         run: node ../scripts/audit-privacy.mjs
+
+      - name: Build and self-test the native capsule
+        if: runner.os == 'macOS'
+        run: ../scripts/build-capsule.sh arm64
+
+      - name: Compile the Intel capsule
+        if: runner.os == 'macOS'
+        run: ../scripts/build-capsule.sh x86_64

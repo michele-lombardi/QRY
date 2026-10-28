@@ -5,6 +5,51 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
+## [0.2.0-2] - 2026-10-28
+
+Development prerelease source; publication remains subject to the release gate.
+
+### Added
+
+- opt-in local aggregate JSON bridge with live presentation values, all-time
+  speed records and up to 90 days of daily summaries;
+- QRY-owned native macOS 14+ capsule with Pip, live WPM, per-display placement,
+  single-instance protection and embedded release packaging;
+- allowlisted Today, Statistics and Settings navigation through QRY's single
+  instance and permission gate;
+- independent capsule, external-sharing and notch-Pip preferences, disabled by
+  default, with SQLite migration support;
+- English integration guides for the capsule and a separate Vorssaint adapter,
+  including the versioned bridge contract and synthetic fixture.
+
+### Fixed
+
+- fit the quick QRY panel into its 360×470 window with all six indicators and
+  actions visible, transparent rounded corners and no rectangular window shadow;
+- merge the active session into the bridge's daily totals using the same
+  character-weighted mean as stored statistics, without double counting;
+- keep menu-bar activity independent of the desktop overlay preference;
+- retain the overlay's last connected typing display during idle refreshes and
+  transient focus failures; avoid repeated native resize/move commands for an
+  unchanged frame, which can interact with desktop window managers.
+
+### Documentation
+
+- add the supplied integration screenshots for QRY Today, Capsule, the local
+  Vorssaint module, summary, history and combined compact activity;
+- document the reported physical-notch clipping and the need to measure the
+  complete compact groups while keeping Pip on its original wing in a separately
+  maintained host adapter;
+- extend the focused-display checklist with sustained typing, idle focus
+  changes and window-manager compatibility checks.
+
+### Maintenance
+
+- run CI on `release/next` and compile the capsule for Apple Silicon and Intel;
+- group public integration guides and brand references under `docs/`;
+- exclude personal installers, upstream patches and local experiment records
+  from the public source tree.
+
 ## [0.1.2-2] - 2026-08-07
 
 ### Added
@@ -93,7 +138,8 @@ First public macOS beta.
   remain planned before the stable V1;
 - Linux packaging is planned after the macOS beta and is not included here.
 
-[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.1.2-2...HEAD
+[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.2.0-2...HEAD
+[0.2.0-2]: https://github.com/michele-lombardi/QRY/compare/v0.1.2-2...v0.2.0-2
 [0.1.2-2]: https://github.com/michele-lombardi/QRY/compare/v0.1.1...v0.1.2-2
 [0.1.1]: https://github.com/michele-lombardi/QRY/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/michele-lombardi/QRY/releases/tag/v0.1.0

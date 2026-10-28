@@ -5,6 +5,7 @@ import type {
   OverlayPreference,
   PermissionStatus,
   StartupPreference,
+  IntegrationStatus,
 } from "./contracts";
 import { byId, pulsePath } from "./ui";
 
@@ -18,6 +19,9 @@ const startButton = byId<HTMLButtonElement>("start-monitor");
 const stopButton = byId<HTMLButtonElement>("stop-monitor");
 const autoStart = byId<HTMLInputElement>("auto-start");
 const menuBarWpm = byId<HTMLInputElement>("menu-bar-wpm");
+const capsuleEnabled = byId<HTMLInputElement>("capsule-enabled");
+const integrationsEnabled = byId<HTMLInputElement>("integrations-enabled");
+const notchPipEnabled = byId<HTMLInputElement>("notch-pip-enabled");
 const overlayEnabled = byId<HTMLInputElement>("overlay-enabled");
 const overlayBackgroundEnabled = byId<HTMLInputElement>("overlay-background-enabled");
 const overlayPosition = byId<HTMLSelectElement>("overlay-position");
@@ -97,21 +101,64 @@ const renderOverlay = (preference: OverlayPreference): void => {
 };
 
 const refresh = async (): Promise<void> => {
-  const [input, accessibility, monitor, startup, menuBar, overlay] = await Promise.all([
-    invoke<PermissionStatus>("input_permission_status"),
-    invoke<PermissionStatus>("accessibility_permission_status"),
-    invoke<MonitorStatus>("monitor_status"),
-    invoke<StartupPreference>("startup_preference"),
-    invoke<MenuBarPreference>("menu_bar_preference"),
-    invoke<OverlayPreference>("overlay_preference"),
-  ]);
+  const [input, accessibility, monitor, startup, menuBar, overlay, integrations] =
+    await Promise.all([
+      invoke<PermissionStatus>("input_permission_status"),
+      invoke<PermissionStatus>("accessibility_permission_status"),
+      invoke<MonitorStatus>("monitor_status"),
+      invoke<StartupPreference>("startup_preference"),
+      invoke<MenuBarPreference>("menu_bar_preference"),
+      invoke<OverlayPreference>("overlay_preference"),
+      invoke<IntegrationStatus>("integration_status"),
+    ]);
   renderPermission(permissionValue, input);
   renderPermission(accessibilityValue, accessibility);
   renderMonitor(monitor);
   renderStartup(startup);
   renderMenuBar(menuBar);
   renderOverlay(overlay);
+  renderIntegrations(integrations);
 };
+
+const renderIntegrations = (status: IntegrationStatus): void => {
+  const { preference } = status;
+  capsuleEnabled.checked = preference.capsuleEnabled;
+  integrationsEnabled.checked = preference.externalEnabled;
+  notchPipEnabled.checked = preference.notchPipEnabled;
+  notchPipEnabled.disabled = !preference.externalEnabled;
+  byId<HTMLElement>("integration-detail").textContent =
+    status.lastError ??
+    [
+      status.capsuleInstalled
+        ? "Capsule installed."
+        : "Capsule companion is not installed.",
+      status.vorssaintInstalled
+        ? "Vorssaint detected; the QRY adapter is required."
+        : "Vorssaint not detected.",
+    ].join(" ");
+};
+
+const saveIntegrations = async (): Promise<void> => {
+  try {
+    renderIntegrations(
+      await invoke<IntegrationStatus>("set_integration_preference", {
+        preference: {
+          capsuleEnabled: capsuleEnabled.checked,
+          externalEnabled: integrationsEnabled.checked,
+          notchPipEnabled: notchPipEnabled.checked,
+        },
+      }),
+    );
+    setMessage("Desktop integrations updated.");
+  } catch (error) {
+    setMessage(String(error), true);
+    await refresh();
+  }
+};
+
+[capsuleEnabled, integrationsEnabled, notchPipEnabled].forEach((control) =>
+  control.addEventListener("change", () => void saveIntegrations()),
+);
 
 const selectSection = (name: string): void => {
   document

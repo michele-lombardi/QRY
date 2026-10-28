@@ -39,6 +39,20 @@ export type MenuBarPreference = {
   wpmEnabled: boolean;
 };
 
+export type IntegrationPreference = {
+  capsuleEnabled: boolean;
+  externalEnabled: boolean;
+  notchPipEnabled: boolean;
+};
+
+export type IntegrationStatus = {
+  preference: IntegrationPreference;
+  snapshotPath: string;
+  vorssaintInstalled: boolean;
+  capsuleInstalled: boolean;
+  lastError: string | null;
+};
+
 export type OverlayPreference = {
   enabled: boolean;
   position: "top-left" | "top-right" | "bottom-left" | "bottom-right";

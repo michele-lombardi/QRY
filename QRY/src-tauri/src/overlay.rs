@@ -10,8 +10,8 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 use tauri::{
-    App, AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, Runtime, State, WebviewUrl,
-    WebviewWindow, WebviewWindowBuilder,
+    App, AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, Monitor, Runtime, State,
+    WebviewUrl, WebviewWindow, WebviewWindowBuilder,
 };
 use typepulse_core::{AppPreferences, OverlayContent, OverlayPosition, OverlaySize};
 
@@ -143,14 +143,15 @@ pub(crate) fn configure(app: &mut App, preferences: AppPreferences) -> tauri::Re
             .visible(false)
             .build()?;
     window.set_ignore_cursor_events(true)?;
-    position_window(app.handle(), &window, preferences)?;
+    let mut placement = PlacementState::default();
+    position_window(app.handle(), &window, preferences, true, &mut placement)?;
 
     let runtime = OverlayRuntime::new(preferences);
     app.manage(runtime.clone());
     let handle = app.handle().clone();
     std::thread::Builder::new()
         .name("typepulse-overlay-controller".into())
-        .spawn(move || run_controller(handle, runtime))
+        .spawn(move || run_controller(handle, runtime, placement))
         .map_err(tauri::Error::Io)?;
     Ok(())
 }
@@ -206,7 +207,11 @@ pub(crate) fn set_overlay_preference(
     Ok(preferences.into())
 }
 
-fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
+fn run_controller<R: Runtime>(
+    app: AppHandle<R>,
+    runtime: OverlayRuntime,
+    mut placement: PlacementState,
+) {
     let mut presented = false;
     let mut hide_after: Option<Instant> = None;
     let mut last_payload: Option<OverlayEventDto> = None;
@@ -262,7 +267,13 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
             || typing_moved_on
             || now >= next_display_refresh
         {
-            if let Err(error) = position_window(&app, &window, preferences) {
+            if let Err(error) = position_window(
+                &app,
+                &window,
+                preferences,
+                first_presentation || typing_moved_on,
+                &mut placement,
+            ) {
                 app.state::<DiagnosticState>()
                     .record_runtime_error(format!("overlay placement failed: {error}"));
             }
@@ -305,7 +316,13 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
             celebration_sequence: snapshot.live_metrics.celebration_sequence,
         };
         let tray_status = (
-            should_present,
+            snapshot.run_state == typepulse_platform_desktop::MonitorRunState::Running
+                && should_present_overlay(
+                    true,
+                    session_qualified,
+                    quiet_for,
+                    preferences.overlay_hide_delay_seconds,
+                ),
             snapshot.live_metrics.displayed_wpm.round().max(0.0) as u64,
         );
         if last_tray_status != Some(tray_status) {
@@ -336,25 +353,58 @@ fn run_controller<R: Runtime>(app: AppHandle<R>, runtime: OverlayRuntime) {
     }
 }
 
+/// Retains only the destination display, never focused-window geometry.
+#[derive(Default)]
+struct PlacementState {
+    display: Option<DisplayKey>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct DisplayKey {
+    origin: (i32, i32),
+    size: (u32, u32),
+    scale: u64,
+}
+
+impl From<&Monitor> for DisplayKey {
+    fn from(monitor: &Monitor) -> Self {
+        Self {
+            origin: (monitor.position().x, monitor.position().y),
+            size: (monitor.size().width, monitor.size().height),
+            scale: monitor.scale_factor().to_bits(),
+        }
+    }
+}
+
 fn position_window<R: Runtime>(
     app: &AppHandle<R>,
     window: &WebviewWindow<R>,
     preferences: AppPreferences,
+    follow_focus: bool,
+    state: &mut PlacementState,
 ) -> tauri::Result<()> {
-    let focused_monitor = typepulse_platform_desktop::focused_window_center()
+    // Idle refreshes reconcile display topology and placement, not a new typing
+    // destination. Focus can change during a pause or a window-manager transition.
+    let focused_monitor = follow_focus
+        .then(typepulse_platform_desktop::focused_window_center)
+        .flatten()
         .and_then(|point| app.monitor_from_point(point.x, point.y).ok().flatten());
-    let current_monitor = window.current_monitor()?;
+    let available = app.available_monitors()?;
+    let previous = available
+        .iter()
+        .find(|monitor| state.display == Some(DisplayKey::from(*monitor)))
+        .cloned();
     let monitor = select_monitor(
         focused_monitor,
-        current_monitor,
+        previous,
+        window.current_monitor()?,
         app.primary_monitor()?,
-        app.available_monitors()?.into_iter().next(),
+        available.into_iter().next(),
     );
     let Some(monitor) = monitor else {
         return Ok(());
     };
     let logical_size = dimensions(preferences.overlay_size);
-    window.set_size(LogicalSize::new(logical_size.0, logical_size.1))?;
     let scale = monitor.scale_factor();
     let item_width = logical_to_physical(logical_size.0, scale);
     let item_height = logical_to_physical(logical_size.1, scale);
@@ -371,7 +421,39 @@ fn position_window<R: Runtime>(
         preferences.overlay_position,
     );
     let logical_position = target_logical_position(position, scale);
-    window.set_position(LogicalPosition::new(logical_position.0, logical_position.1))
+    let current_scale = window.scale_factor()?;
+    let current_size = window.inner_size()?.to_logical::<f64>(current_scale);
+    let current_position = window.outer_position()?.to_logical::<f64>(current_scale);
+    let (resize, reposition) = geometry_changes(
+        (current_size.width, current_size.height),
+        (current_position.x, current_position.y),
+        logical_size,
+        logical_position,
+    );
+    // Avoid redundant native frame requests that window managers may react to.
+    if resize {
+        window.set_size(LogicalSize::new(logical_size.0, logical_size.1))?;
+    }
+    if resize || reposition {
+        window.set_position(LogicalPosition::new(logical_position.0, logical_position.1))?;
+    }
+    state.display = Some(DisplayKey::from(&monitor));
+    Ok(())
+}
+
+fn geometry_changes(
+    current_size: (f64, f64),
+    current_position: (f64, f64),
+    target_size: (f64, f64),
+    target_position: (f64, f64),
+) -> (bool, bool) {
+    let differs = |actual: (f64, f64), target: (f64, f64)| {
+        (actual.0 - target.0).abs() > 0.5 || (actual.1 - target.1).abs() > 0.5
+    };
+    (
+        differs(current_size, target_size),
+        differs(current_position, target_position),
+    )
 }
 
 fn target_logical_position(position: (i32, i32), target_scale: f64) -> (f64, f64) {
@@ -385,11 +467,12 @@ fn target_logical_position(position: (i32, i32), target_scale: f64) -> (f64, f64
 
 fn select_monitor<T>(
     focused: Option<T>,
+    previous: Option<T>,
     current: Option<T>,
     primary: Option<T>,
     available: Option<T>,
 ) -> Option<T> {
-    focused.or(current).or(primary).or(available)
+    focused.or(previous).or(current).or(primary).or(available)
 }
 
 const fn dimensions(size: OverlaySize) -> (f64, f64) {
@@ -404,7 +487,7 @@ fn logical_to_physical(value: f64, scale: f64) -> u32 {
     (value * scale).round().clamp(0.0, f64::from(u32::MAX)) as u32
 }
 
-fn pip_behavior(displayed_wpm: f64, active_typing_seconds: f64) -> &'static str {
+pub(crate) fn pip_behavior(displayed_wpm: f64, active_typing_seconds: f64) -> &'static str {
     if active_typing_seconds.is_finite() && active_typing_seconds >= 90.0 * 60.0 {
         "tired"
     } else if !displayed_wpm.is_finite() || displayed_wpm <= 0.0 {
@@ -469,24 +552,71 @@ mod tests {
     use typepulse_core::{AppPreferences, OverlayContent, OverlayPosition, OverlaySize};
 
     use super::{
-        corner_position, dimensions, pip_behavior, select_monitor, should_present_overlay,
-        target_logical_position, OverlayEventDto, OverlayPreferenceDto,
+        corner_position, dimensions, geometry_changes, pip_behavior, select_monitor,
+        should_present_overlay, target_logical_position, OverlayEventDto, OverlayPreferenceDto,
     };
 
     #[test]
     fn transient_focus_failure_keeps_the_current_monitor_before_primary_fallback() {
         assert_eq!(
-            select_monitor(None, Some("current"), Some("primary"), Some("available")),
+            select_monitor(
+                None,
+                None,
+                Some("current"),
+                Some("primary"),
+                Some("available")
+            ),
             Some("current")
         );
         assert_eq!(
             select_monitor(
                 Some("focused"),
+                Some("previous"),
                 Some("current"),
                 Some("primary"),
                 Some("available")
             ),
             Some("focused")
+        );
+    }
+
+    #[test]
+    fn idle_refresh_retains_the_typing_display_until_new_typing_or_disconnection() {
+        let idle = select_monitor(None, Some("typing"), Some("drifted"), Some("primary"), None);
+        assert_eq!(idle, Some("typing"));
+        let typing = select_monitor(
+            Some("new typing"),
+            idle,
+            Some("drifted"),
+            Some("primary"),
+            None,
+        );
+        assert_eq!(typing, Some("new typing"));
+        // A disconnected display is filtered out of the remembered selection.
+        assert_eq!(
+            select_monitor(None, None, None, Some("primary"), Some("available")),
+            Some("primary")
+        );
+    }
+
+    #[test]
+    fn stable_placement_does_not_emit_resize_or_move_commands() {
+        let size = (210.0, 108.0);
+        for target in [(-3820.0, -78.0), (-1900.0, -78.0), (20.0, 52.0)] {
+            assert_eq!(geometry_changes(size, target, size, target), (false, false));
+            assert!(!geometry_changes(size, (20.0, 52.0), size, target).0);
+        }
+        assert_eq!(
+            geometry_changes(size, (20.0, 52.0), size, (-3820.0, -78.0)),
+            (false, true)
+        );
+        assert_eq!(
+            geometry_changes(size, (20.0, 52.0), (260.0, 132.0), (20.0, 52.0)),
+            (true, false)
+        );
+        assert_eq!(
+            geometry_changes(size, (20.25, 51.75), size, (20.0, 52.0)),
+            (false, false)
         );
     }
 
@@ -607,6 +737,7 @@ mod tests {
             overlay_content: OverlayContent::Both,
             overlay_background_enabled: false,
             overlay_hide_delay_seconds: 5,
+            ..AppPreferences::default()
         }))
         .unwrap();
         let Value::Object(object) = value else {
