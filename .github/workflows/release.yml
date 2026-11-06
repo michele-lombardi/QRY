@@ -24,7 +24,7 @@ env:
 jobs:
   validate:
     name: Validate release metadata and source
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - name: Check out repository
@@ -61,7 +61,7 @@ jobs:
   build-macos:
     name: Build macOS ${{ matrix.artifact_arch }}
     needs: validate
-    runs-on: macos-14
+    runs-on: macos-15
     strategy:
       fail-fast: false
       matrix:

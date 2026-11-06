@@ -29,7 +29,9 @@ Corrective release for unbounded macOS overlay memory growth. See the
   rusqlite 0.40.2 and the frontend toolchain (ESLint, typescript-eslint,
   Prettier, Vite);
 - hold `tauri-plugin-autostart` at 2.6 until its SMAppService login-item
-  migration is validated on real devices.
+  migration is validated on real devices;
+- move macOS CI and release builds to the supported `macos-15` runner after
+  the `macos-14` image retirement.
 
 ## [0.2.0-2] - 2026-10-28
 
