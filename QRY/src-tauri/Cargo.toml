@@ -23,15 +23,20 @@ chrono = "0.4.45"
 # Tauri's build-time validator requires this feature and `macOSPrivateApi` to
 # remain paired in the primary manifest/config on every desktop target. The
 # underlying private API is macOS-only; the feature is a no-op on Windows.
-tauri = { version = "2", features = ["image-png", "macos-private-api", "tray-icon"] }
+tauri = { version = "2.12.5", features = ["image-png", "macos-private-api", "tray-icon"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 typepulse-core = { path = "../crates/typepulse-core" }
 typepulse-platform-desktop = { path = "../crates/typepulse-platform-desktop" }
 typepulse-storage-sqlite = { path = "../crates/typepulse-storage-sqlite" }
 
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6.4"
+
 [target.'cfg(any(target_os = "macos", target_os = "linux", windows))'.dependencies]
-tauri-plugin-autostart = "2.5.1"
+# 2.7 moves macOS login items to SMAppService (auto-launch 0.6); keep the
+# existing login-item mechanism until that migration is validated on devices.
+tauri-plugin-autostart = "~2.6.0"
 tauri-plugin-single-instance = "2"
 
 [lints]

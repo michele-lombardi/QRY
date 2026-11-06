@@ -25,7 +25,7 @@ Before tagging, update the same version in:
 Validate the metadata:
 
 ```bash
-./scripts/release-audit.sh v0.2.0-2
+./scripts/release-audit.sh v0.2.1
 ```
 
 ## Pre-release gate
@@ -61,6 +61,18 @@ the public release pipeline.
 
 ## GitHub release pipeline
 
+To prepare all platform artifacts and a draft before merging the release candidate
+to `main`, run the workflow manually against the candidate branch:
+
+```bash
+gh workflow run release.yml --ref release/next -f tag=v0.2.1
+```
+
+The supplied tag must match all source versions and the dated changelog section.
+This builds the exact selected commit and prepares a draft targeting that commit.
+Integrate the reviewed candidate into `main` before final tagging/publication.
+Manual dispatch does not publish the draft or update Homebrew.
+
 Pushing a `v*` tag starts `.github/workflows/release.yml`:
 
 1. validate version metadata, source quality, and privacy boundaries;
@@ -75,6 +87,11 @@ The workflow deliberately stops at a draft. A maintainer must inspect and test
 the downloaded artifacts on clean systems before publication. A normal SemVer
 tag creates a stable draft; only a tag with a prerelease suffix marks the draft
 as a prerelease.
+
+Keep curated release notes in `docs/releases/vVERSION.md`. The workflow uses that
+file as the draft body when present, otherwise it generates notes from GitHub.
+Edit an existing draft when publishing the same candidate; do not start a second
+release build for an already prepared version without resolving its existing draft.
 
 ## Windows installers
 

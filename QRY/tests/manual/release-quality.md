@@ -1,7 +1,7 @@
 # Manual check — release quality and macOS lifecycle
 
-Use only dummy text. Record aggregate CPU/RSS and pass/fail results, never input events,
-keys, application names or window titles.
+Use only dummy text. Record aggregate CPU/memory and pass/fail results, never input
+events, keys, application names or window titles.
 
 ## Resource profile (QA-02)
 
@@ -14,7 +14,22 @@ keys, application names or window titles.
 
 3. Grant Input Monitoring, start QRY and type dummy prose for two minutes.
 4. Repeat the sample during ordinary typing.
-5. Record average/max CPU percentage and RSS MiB only.
+5. Record average/max CPU, RSS and physical footprint MiB. On macOS, RSS alone excludes
+   compressed memory and can hide multi-gigabyte native allocation growth.
+6. Leave the app running for several hours and repeat the measurements. Check physical
+   footprint growth as well as resident memory.
+
+For a permission-free regression check of native display queries, run from `QRY/`:
+
+```bash
+cargo run -p typepulse-app --example monitor_memory --release
+```
+
+This uses a separate hidden native window and no input monitor or database. After warmup
+it performs 20,000 worker-thread display refreshes (over 11 hours of idle refreshes at
+the normal two-second interval) and fails if physical footprint grows by more than 16
+MiB. It covers both the runtime's main-thread monitor dispatch and QRY's per-refresh
+autorelease scope. It requires a logged-in macOS desktop session.
 
 - [ ] Idle baseline recorded.
 - [ ] Typing baseline recorded.
@@ -23,6 +38,25 @@ keys, application names or window titles.
 
 Record the first distributed-build baseline here; it will define comparison thresholds
 for later betas.
+
+### Native memory regression — 6 November 2026
+
+Local arm64 check on macOS 26.6.2, with Tauri 2.12.5 / runtime-wry 2.12.3 and the
+per-refresh native scope:
+
+```text
+warmup=1000 footprint_bytes=20169712
+refreshes=5000 footprint_bytes=19989488
+refreshes=10000 footprint_bytes=19989488
+refreshes=15000 footprint_bytes=19989488
+refreshes=20000 footprint_bytes=20022256
+PASS refreshes=20000 peak_growth_bytes=0
+```
+
+The earlier installed build had reached 5,487,055,744 bytes of physical footprint; heap
+inspection found 6,884,610 deferred display-description dictionaries and 185,774,080
+bytes of autorelease-pool contents. The native probe checks repeated display queries;
+the multi-hour full-app lifecycle check remains separate.
 
 ## Suspend, logout and restart (QA-03)
 

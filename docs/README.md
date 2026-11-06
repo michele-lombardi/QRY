@@ -15,5 +15,7 @@
 - [UI guidelines](ui-guidelines.md) and [brand reference](brand/README.md).
 - [Contributing](../CONTRIBUTING.md) and [security policy](../SECURITY.md).
 - [Release process](release-process.md): packaging, draft releases and publication checks.
+- [v0.2.1 release notes](releases/v0.2.1.md): macOS memory correction and upgrade instructions.
 - [Manual test procedures](../QRY/tests/manual/README.md) and [automation](../scripts/README.md).
+- [macOS overlay memory bug](bugs/macos-overlay-memory-leak.md): cause, measurements, regression checks and upgrade steps.
 - [Changelog](../CHANGELOG.md).
