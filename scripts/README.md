@@ -13,7 +13,7 @@ Run these commands from the repository root. Public output is generated under
 | `node scripts/audit-release-content.mjs PATH...`          | Reject databases, exports, environment files and logs in selected package content.                                             |
 | `node scripts/audit-release-assets.mjs DIRECTORY VERSION` | Verify the exact release asset set and every SHA-256 file.                                                                     |
 | `./scripts/release-audit.sh vX.Y.Z`                       | Validate tag/version/changelog consistency and installer policy. Numeric prereleases such as `v0.2.0-2` are supported.         |
-| `./scripts/sample-resources.sh PID [SAMPLES] [INTERVAL]`  | Capture aggregate CPU/RSS without observing input.                                                                             |
+| `./scripts/sample-resources.sh PID [SAMPLES] [INTERVAL]`  | Capture aggregate CPU/RSS and macOS physical footprint, including compressed allocations, without observing input.             |
 
 ## Build and package
 

@@ -4010,6 +4010,7 @@ name = "typepulse-app"
 version = "0.2.0-2"
 dependencies = [
  "chrono",
+ "objc2",
  "serde",
  "serde_json",
  "tauri",

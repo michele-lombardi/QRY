@@ -16,4 +16,5 @@
 - [Contributing](../CONTRIBUTING.md) and [security policy](../SECURITY.md).
 - [Release process](release-process.md): packaging, draft releases and publication checks.
 - [Manual test procedures](../QRY/tests/manual/README.md) and [automation](../scripts/README.md).
+- [macOS overlay memory bug](bugs/macos-overlay-memory-leak.md): cause, measurements, regression checks and upgrade steps.
 - [Changelog](../CHANGELOG.md).

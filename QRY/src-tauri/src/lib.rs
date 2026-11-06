@@ -3,6 +3,7 @@
 mod app_state;
 mod commands;
 mod integrations;
+mod native_scope;
 mod navigation;
 mod overlay;
 mod permission_flow;

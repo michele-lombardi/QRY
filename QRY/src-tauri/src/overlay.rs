@@ -383,6 +383,20 @@ fn position_window<R: Runtime>(
     follow_focus: bool,
     state: &mut PlacementState,
 ) -> tauri::Result<()> {
+    // Display metadata can create autoreleased Cocoa dictionaries. Drain them
+    // after each refresh instead of retaining them until this worker exits.
+    crate::native_scope::run(|| {
+        position_window_scoped(app, window, preferences, follow_focus, state)
+    })
+}
+
+fn position_window_scoped<R: Runtime>(
+    app: &AppHandle<R>,
+    window: &WebviewWindow<R>,
+    preferences: AppPreferences,
+    follow_focus: bool,
+    state: &mut PlacementState,
+) -> tauri::Result<()> {
     // Idle refreshes reconcile display topology and placement, not a new typing
     // destination. Focus can change during a pause or a window-manager transition.
     let focused_monitor = follow_focus

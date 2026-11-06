@@ -5,6 +5,18 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
+### Fixed
+
+- bound temporary macOS display metadata allocations to each overlay placement
+  refresh instead of accumulating them for the lifetime of its worker thread;
+- require Tauri 2.12.5 or newer so app-level monitor queries run on the main
+  thread; rebuild installed bundles to pick up the runtime fix.
+
+### Development
+
+- add a permission-free native monitor memory soak check and report macOS
+  physical footprint alongside RSS so compressed leaks remain visible.
+
 ### Maintenance
 
 - update Tauri to 2.12 (crate, CLI and JavaScript API), single-instance 2.5,
