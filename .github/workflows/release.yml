@@ -1,6 +1,12 @@
 name: Release desktop
 
 on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to prepare as a draft (for example v0.2.1)"
+        required: true
+        type: string
   push:
     tags:
       - "v*"
@@ -9,8 +15,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref }}
   cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   validate:
@@ -44,7 +53,7 @@ jobs:
         run: npm ci
 
       - name: Verify tag, versions and installer policy
-        run: ./scripts/release-audit.sh "$GITHUB_REF_NAME"
+        run: ./scripts/release-audit.sh "$RELEASE_TAG"
 
       - name: Run quality and privacy gate
         run: ./scripts/check.sh
@@ -173,20 +182,29 @@ jobs:
           path: release-assets
 
       - name: Audit names and checksums
-        run: node scripts/audit-release-assets.mjs release-assets "${GITHUB_REF_NAME#v}"
+        run: node scripts/audit-release-assets.mjs release-assets "${RELEASE_TAG#v}"
 
       - name: Create draft release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           release_flags=(--draft)
-          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+          if [[ "$RELEASE_TAG" == *-* ]]; then
             release_flags+=(--prerelease)
           fi
-          gh release create "$GITHUB_REF_NAME" \
+          if [[ "$GITHUB_EVENT_NAME" == push ]]; then
+            release_flags+=(--verify-tag)
+          else
+            release_flags+=(--target "$GITHUB_SHA")
+          fi
+          notes_path="docs/releases/$RELEASE_TAG.md"
+          if [[ -f "$notes_path" ]]; then
+            release_flags+=(--notes-file "$notes_path")
+          else
+            release_flags+=(--generate-notes)
+          fi
+          gh release create "$RELEASE_TAG" \
             release-assets/* \
             "${release_flags[@]}" \
-            --generate-notes \
             --repo "$GITHUB_REPOSITORY" \
-            --title "QRY $GITHUB_REF_NAME" \
-            --verify-tag
+            --title "QRY $RELEASE_TAG"

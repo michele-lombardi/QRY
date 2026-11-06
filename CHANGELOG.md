@@ -5,6 +5,12 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-06
+
+Corrective release for unbounded macOS overlay memory growth. See the
+[bug report](docs/bugs/macos-overlay-memory-leak.md) and
+[release notes](docs/releases/v0.2.1.md).
+
 ### Fixed
 
 - bound temporary macOS display metadata allocations to each overlay placement
@@ -19,7 +25,7 @@ Changelog and release tags use Semantic Versioning with a `v` prefix.
 
 ### Maintenance
 
-- update Tauri to 2.12 (crate, CLI and JavaScript API), single-instance 2.5,
+- update Tauri to 2.12 (crate, CLI and JavaScript API), single-instance 2.4.3,
   rusqlite 0.40.2 and the frontend toolchain (ESLint, typescript-eslint,
   Prettier, Vite);
 - hold `tauri-plugin-autostart` at 2.6 until its SMAppService login-item
@@ -158,7 +164,8 @@ First public macOS beta.
   remain planned before the stable V1;
 - Linux packaging is planned after the macOS beta and is not included here.
 
-[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.2.0-2...HEAD
+[Unreleased]: https://github.com/michele-lombardi/QRY/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/michele-lombardi/QRY/compare/v0.2.0-2...v0.2.1
 [0.2.0-2]: https://github.com/michele-lombardi/QRY/compare/v0.1.2-2...v0.2.0-2
 [0.1.2-2]: https://github.com/michele-lombardi/QRY/compare/v0.1.1...v0.1.2-2
 [0.1.1]: https://github.com/michele-lombardi/QRY/compare/v0.1.0...v0.1.1

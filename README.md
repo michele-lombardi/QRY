@@ -29,7 +29,7 @@
   <a href="https://github.com/michele-lombardi/QRY/actions/workflows/ci.yml"><img src="https://github.com/michele-lombardi/QRY/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--only-30D158" alt="GPL-3.0-only license" /></a>
   <img src="https://img.shields.io/badge/platform-macOS%2010.15%2B%20%7C%20Windows%2010%2F11-111113" alt="macOS 10.15 or later and Windows 10 or 11" />
-  <img src="https://img.shields.io/badge/development-0.2.0--2-3CEFFF" alt="Development version 0.2.0-2" />
+  <img src="https://img.shields.io/badge/development-0.2.1-3CEFFF" alt="Development version 0.2.1" />
 </p>
 
 <p align="center">
@@ -167,7 +167,7 @@ Vorssaint images show a separate local development build.
 
 ## Project status
 
-This branch contains QRY `0.2.0-2` development source. Active development is
+This branch contains QRY `0.2.1` development source. Active development is
 integrated on `release/next`; `main` is the release baseline. Source version,
 installed version and published release availability can differ. Use
 [GitHub Releases](https://github.com/michele-lombardi/QRY/releases) for actual

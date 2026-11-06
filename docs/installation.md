@@ -16,7 +16,7 @@ download directory, verify it before launch. Replace the example filename
 with the version actually downloaded:
 
 ```powershell
-$asset = "QRY_0.2.0-2_x64-setup.exe"
+$asset = "QRY_0.2.1_x64-setup.exe"
 $expected = (Get-Content "$asset.sha256").Split()[0].ToLowerInvariant()
 $actual = (Get-FileHash $asset -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($actual -ne $expected) { throw "QRY checksum mismatch" }
@@ -80,7 +80,7 @@ choices always remain in macOS System Settings.
    example version with the actual filename:
 
     ```bash
-    shasum -a 256 -c QRY-0.2.0-2-aarch64.app.zip.sha256
+    shasum -a 256 -c QRY-0.2.1-aarch64.app.zip.sha256
     ```
 
     Continue only if the command reports `OK`.
